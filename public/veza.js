@@ -163,8 +163,10 @@ async function ucitajJa() {
 function sakrijNedozvoljeno(ja) {
   // Konsultantska komandna tabla — nikom osim izvođaču. Odgovorno lice tamo
   // vidi banku pitanja i podešavanja koja nisu njegov posao.
+  // `data-samo="konsultant"` stoji i na vezama u meniju i na napomenama koje su
+  // pisane tebi, a ne klijentu — zato se gleda cio dokument, ne samo meni.
   if (ja?.uloga !== 'izvodjac')
-    document.querySelectorAll('.nav a[data-samo="konsultant"]').forEach(a => a.remove());
+    document.querySelectorAll('[data-samo="konsultant"]').forEach(a => a.remove());
   if (ja?.uloga !== 'operater') return;
   document.querySelectorAll('.nav a[data-samo="vodi"]').forEach(a => a.remove());
 }

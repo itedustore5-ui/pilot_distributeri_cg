@@ -1000,9 +1000,16 @@ app.get('/api/izvestaj/:grupaId/dopuna-zbirno', iUprava, uhvati(async (req, res)
   res.json(rows);
 }));
 
+// Oznaka izdanja. Mijenja se kad se doda nešto što traži restart ili SQL
+// dopunu — po njoj `alati/provjeri.mjs` vidi vrti li se stari kod.
+const IZDANJE = '2026-09-16-ljudi';
+
 app.get('/api/zdravlje', uhvati(async (_req, res) => {
   await upit('SELECT 1');
-  res.json({ ok: true, vreme: new Date().toISOString() });
+  const { rows: [t] } = await upit(
+    "SELECT to_regclass('public.lice') IS NOT NULL AS ima_lice");
+  res.json({ ok: true, izdanje: IZDANJE, ima_lice: t.ima_lice,
+    vreme: new Date().toISOString() });
 }));
 
 proveriPriPokretanju();

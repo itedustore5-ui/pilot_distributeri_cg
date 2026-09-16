@@ -79,10 +79,13 @@
   <div class="kartica">
     <h2>Sve odjednom</h2>
     <p class="uvod">
-      Jedan fajl sa svime — prijemi, isporuke, dnevni zapisi, dobavljači, kupci,
-      artikli, odstupanja i trag ispravki. Ovo se daje kad se traži kompletna
-      kopija: prilikom audita, prilikom promjene sistema, ili kad se saradnja
-      završava. Format je JSON, otvoren i čitljiv svakom programu.
+      Jedan fajl sa svime: prijemi, isporuke, dnevni zapisi P3–D4, dobavljači,
+      kupci sa telefonima, artikli sa kritičnim granicama, vozila, odstupanja sa
+      korektivnim mjerama, trag ispravki, i spisak lica sa rokovima sanitarnih
+      knjižica. Format je JSON — otvoren, čitljiv svakom programu.
+      <b style="display:block;margin-top:6px">Fajl sadrži lične podatke</b>
+      Imena zaposlenih, brojevi sanitarnih knjižica, imena i telefoni kupaca.
+      Čuvati kao i svaki drugi spisak zaposlenih — ne slati nezaštićeno.
     </p>
     <a class="dugme veliko" href="/api/cg/izvoz/sve.json">Preuzmi sve (JSON)</a>
   </div>
@@ -97,18 +100,24 @@
   </div>
 
   <div class="traka info">
-    <b>Zašto ovo postoji</b>
-    Podaci u ovoj aplikaciji su klijentovi, ne tvoji. Sledljivost je njegova
-    zakonska obaveza po članu 27 Zakona o bezbjednosti hrane — ako mu je ne
-    možeš vratiti, nisi mu prodala alat nego zavisnost. Prvi ozbiljan kupac
-    to pita na sastanku. Sad na to postoji odgovor u jednom kliku.
+    <b>Ovo su vaši podaci</b>
+    Sledljivost je obaveza vaše firme po članu 27 Zakona o bezbjednosti hrane.
+    Zato se cijela evidencija preuzima u otvorenom formatu, bilo kad, bez pitanja
+    — za audit kupca, za promjenu sistema, ili da je jednostavno imate kod sebe.
   </div>
 
   <div class="traka pazi">
-    <b>Izvoz nije bekap</b>
-    Ovo je kopija podataka u čitljivom obliku, a ne kopija baze. Ako baza
-    nestane, iz CSV-a se sistem ne vraća u rad. Bekap se radi zasebno —
-    <span class="sitno">alati\bekap.ps1</span>, najmanje jednom sedmično.
+    <b>Preuzimanje nije bekap</b>
+    Ovo je čitljiva kopija podataka, ne kopija baze. Ako baza nestane, iz ovih
+    fajlova se sistem ne vraća u rad — podaci se vide, ali aplikacija ne proradi
+    sama od sebe. Kopiju baze radi konsultant, po ugovoru o održavanju.
+  </div>
+
+  <div class="traka pazi" data-samo="konsultant">
+    <b>Za tebe, ne za klijenta</b>
+    Bekap baze je <span class="sitno">alati\bekap.ps1</span>, najmanje jednom
+    sedmično, i mora biti u Task Scheduleru — dok ga neko pokreće ručno, bekapa
+    nema. Ovaj okvir vidi samo uloga <span class="sitno">izvodjac</span>.
   </div>
 </main>
 
