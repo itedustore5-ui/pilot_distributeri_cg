@@ -55,7 +55,7 @@
 <body>
 
 <header>
-  <span class="oznaka">Za nadzornika · seče se i deli zaposlenima</span>
+  <span class="oznaka">Za nadzornika · siječe se i dijeli zaposlenima</span>
   <h1>Ceduljice sa šiframa</h1>
   <div class="vrh nestampa">
     <input id="grupa" placeholder="grupa" aria-label="Grupa" style="max-width:90px">
@@ -109,8 +109,8 @@ $('ucitaj').onclick = async () => {
       <div class="ceduljica">
         <div class="firma">${zag.firma}<br>${zag.program}</div>
         <div class="sifra">${x.sifra}</div>
-        <div class="mesto">${x.radno_mesto ?? ''}${x.smena ? ' · smena ' + x.smena : ''}</div>
-        <div class="uput">Sačuvaj ovu ceduljicu.<br>Ista šifra važi za sve provere.</div>
+        <div class="mesto">${x.radno_mesto ?? ''}${x.smena ? ' · smjena ' + x.smena : ''}</div>
+        <div class="uput">Sačuvaj ovu ceduljicu.<br>Ista šifra važi za sve provjere.<br><b>${location.origin}</b></div>
       </div>`).join('')}</div>`;
   }catch(e){ alert(e.message); }
 };

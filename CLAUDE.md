@@ -35,6 +35,32 @@ za prodajne sastanke. Demo se nikad ne koristi za pravi rad, niti obrnuto.
 
 ---
 
+## Kome se predaje aplikacija
+
+**Prvi nalog koji se otvara u klijentovoj firmi je `bzr` — odgovorno lice za bezbjednost
+hrane.** Ne direktor, ne magacioner.
+
+Zakon 59/2026 ne propisuje da firma mora imenovati „odgovorno lice za bezbjednost hrane"
+kao funkciju. Ono što postoji je **„odgovorno lice u pravnom licu" iz čl. 82** — pojam
+prekršajnog prava, koje lično plaća 500–2.000 €. Dok firma pisano ne odredi ko to jeste,
+to je izvršni direktor. *(likely — iz teksta kazni, ne iz odredbe koja imenuje funkciju.)*
+
+Zato se sistem predaje ovim redom:
+
+| # | Šta | Čime |
+|---|---|---|
+| 1 | Direktor potpiše rješenje o imenovanju | `prilozi.html` → prva stavka u spisku |
+| 2 | Imenovanom licu se otvara nalog `bzr` | `alati/prvi-korisnik.mjs` / komandna tabla |
+| 3 | To lice dobija `tabla.html` kao prvu stranu | automatski, po ulozi |
+| 4 | Magacioneri i vozači dobijaju `operater` naloge i ceduljice sa šiframa | komandna tabla, korak 5 |
+| 5 | Direktor dobija `uprava` — samo pogled, bez unosa | po potrebi |
+
+**Rješenje o imenovanju nije zakonski obrazac** i tako se i predstavlja. Ono je pisani
+trag ko sprovodi postupke iz čl. 36 i ko javlja UBH po čl. 28. Bez njega inspektor pita
+direktora, a direktor pokazuje na nekoga ko nigdje nije zapisan.
+
+---
+
 ## Pravni okvir — Crna Gora, provjereno
 
 **Obrazac 6 ne postoji u Crnoj Gori.** To je srpski obrazac iz Pravilnika o evidencijama
@@ -93,6 +119,37 @@ Brojevi članova pročitani iz teksta zakona 14.09.2026. Potvrđeni dvostruko: i
 > **Posljedica:** broj Službenog lista za Uredbu, koji od početka stoji kao neprovjeren,
 > više nije sitnica — postao je glavni oslonac za polovinu onoga što prodaješ. Provjeri ga
 > prije sljedeće ponude koja pominje obuku.
+
+> ### ⛔ OBUKA ZAPOSLENIH NIJE ZAKONSKA OBAVEZA — provjereno 16.09.2026
+>
+> **Zakon o bezbjednosti hrane 59/2026: nema je.** Pretražen cio tekst po svim
+> oblicima (obuk, obuč, osposob, edukac, znanj, upućen, instru). Jedina „obuka" u
+> zakonu je **obuka službenih lica koja vrše kontrole**, koju organizuje nadležni
+> organ — to su inspektori, ne klijentovi zaposleni.
+>
+> **Uredba o higijeni hrane: ne nalazi se ni tamo.** Prilog 2 ima deset dijelova i
+> završava se **termičkom obradom** — tačno tamo gdje u EU Uredbi 852/2004 počinje
+> **Poglavlje XII „Osposobljavanje"**. Dva nezavisna čitanja istog teksta daju isto.
+> *(likely, ne dokaz — čitano kroz sažetak PDF-a, nije isključeno da posljednja
+> strana nije obuhvaćena.)*
+>
+> **Provjeru znanja sa pitanjima i rezultatom ne traži niko** — ni zakon, ni Uredba,
+> a ni EU 852 koja traži „instructed and/or trained", dakle upućivanje, ne ispit.
+>
+> **ŠTA TO ZNAČI ZA PRODAJU.** Obuka i provjera znanja se **ne smiju predstaviti kao
+> zakonska obaveza.** To je Obrazac 6 u drugom izdanju — jednom izgovoreno pred
+> klijentom koji provjeri, gubi se sve.
+>
+> Prodaju se kao **dokaz da HACCP sistem stvarno radi**: čl. 36 traži da subjekat
+> postupke *uspostavi, primjenjuje i kontinuirano održava*, i da **na zahtjev
+> nadležnog organa dokaže usaglašenost**. Čovjek koji ne zna šta je kritična
+> kontrolna tačka ne može primjenjivati postupak — evidencija obuke je kako se to
+> dokazuje. Uz to, **Vodič UBH ima Prilog 13 i Prilog 14**; vodič nije obavezujući,
+> ali ga je izdala sama Uprava i to inspektor traži u praksi.
+>
+> **Tvrda obaveza sa kaznom u ovoj oblasti su sanitarne knjižice** —
+> Zakon o zaštiti stanovništva od zaraznih bolesti, čl. 31, kazna 2.500–20.000 €.
+> To je ljekarski pregled, ne obuka. Ne miješati to dvoje.
 
 **Podzakonski akti sa osnovom u 57/15 OSTAJU NA SNAZI** — čl. 84: novi propisi se donose
 u roku od 18 mjeseci od stupanja na snagu (dakle do ~12.11.2027), a do tada se primjenjuju
@@ -161,6 +218,9 @@ app.use(zapisiRuter);                         // odmah ispod
 
 | Stranica | Za koga | Uređaj |
 |---|---|---|
+| `index.html` | ulazna strana — vodi na prijavu; provjera znanja je sporedna vrata | svi |
+| `tabla.html` | **odgovorno lice za bezbjednost hrane** — prva strana poslije prijave za ulogu `bzr` | računar |
+| `admin.html` | konsultant — komandna tabla (uloga `izvodjac`) | računar |
 | `podesavanje.html` | konsultant | računar |
 | `promet.html` | magacioner, vozač — prijem (KKT 1) i isporuka (KKT 3) | **telefon** |
 | `zapisi.html` | magacioner — dnevni obrasci P1–D4 | **telefon** |
@@ -274,7 +334,9 @@ odstupanja na `/prilozi.html`.
 | ✓ | Datum po podgoričkom vremenu umjesto UTC-a | riješeno |
 | ✓ | Naknadan unos se prepoznaje i prikazuje | riješeno |
 | ✓ | Operater ne može da promijeni lozinku | riješeno |
-| ✓ | Svaka uloga ide na svoj ekran poslije prijave | riješeno |
+| ✓ | Svaka uloga ide na svoj ekran poslije prijave (`bzr` → `tabla.html`) | riješeno |
+| ✓ | `/api/cg/spremnost` ima svoj ekran — `tabla.html` | riješeno |
+| ✓ | Rješenje o imenovanju odgovornog lica — `prilozi.html`, prva stavka u spisku | riješeno |
 | ✓ | Ispravka pogrešnog unosa + trag ispravki | riješeno |
 
 ### Van koda

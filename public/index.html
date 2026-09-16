@@ -27,11 +27,20 @@
 
   .uvod{font-size:15px;color:var(--steel);margin:0 0 24px;max-width:56ch}
 
-  .vrata{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:2px}
   a.vrata-kartica{
     display:block;background:var(--list);border:1px solid var(--linija);
-    border-left:3px solid var(--cold);padding:22px 24px;text-decoration:none;color:inherit;
+    border-left:3px solid var(--cold);padding:26px 28px;text-decoration:none;color:inherit;
   }
+  /* Drugi ulaz je namjerno tiši: zaposleni ga otvori dva-tri puta godišnje,
+     a odgovorno lice i magacioner prvi svaki dan. */
+  a.sporedni{
+    display:block;background:transparent;border:1px solid var(--linija);
+    border-left:3px solid var(--linija);padding:17px 20px;margin-top:2px;
+    text-decoration:none;color:inherit;
+  }
+  a.sporedni:hover{border-left-color:var(--muted)}
+  a.sporedni h2{font-size:15px;font-weight:600;margin:0 0 3px;color:var(--steel)}
+  a.sporedni p{margin:0;font-size:13px;color:var(--muted)}
   a.vrata-kartica:hover{border-left-color:var(--ink)}
   a.vrata-kartica:focus-visible{outline:2px solid var(--cold);outline-offset:2px}
   a.vrata-kartica .ko{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;
@@ -58,21 +67,17 @@
   <p class="uvod">Distribucija hrane: prijem, skladištenje, prevoz i isporuka.
     Sledljivost u oba smjera, dnevni zapisi i obuka zaposlenih.</p>
 
-  <div class="vrata">
-    <a class="vrata-kartica" href="/prijava.html">
-      <span class="ko">Sa nalogom i lozinkom</span>
-      <h2>Prijava <span class="strelica">→</span></h2>
-      <p>Magacioner, vozač, odgovorno lice i konsultant. Prijem robe, isporuka,
-        dnevni zapisi, pretraga serije i štampa priloga.</p>
-    </a>
+  <a class="vrata-kartica" href="/prijava.html">
+    <span class="ko">Sa nalogom i lozinkom</span>
+    <h2>Prijava <span class="strelica">→</span></h2>
+    <p>Magacioner, vozač, odgovorno lice i konsultant. Prijem robe, isporuka,
+      dnevni zapisi, pretraga serije i štampa priloga.</p>
+  </a>
 
-    <a class="vrata-kartica" href="/provjera.html">
-      <span class="ko">Sa šifrom sa ceduljice</span>
-      <h2>Provjera znanja <span class="strelica">→</span></h2>
-      <p>Za zaposlene poslije održane obuke. Ne treba nalog ni lozinka —
-        samo šifra koju si dobio na papiru.</p>
-    </a>
-  </div>
+  <a class="sporedni" href="/provjera.html">
+    <h2>Provjera znanja poslije obuke <span style="color:var(--cold)">→</span></h2>
+    <p>Samo za zaposlene koji imaju šifru sa ceduljice. Bez naloga i lozinke.</p>
+  </a>
 
   <div class="osnov">
     <b>Zaboravljena lozinka ili šifra?</b> Javi se odgovornom licu u svojoj firmi.

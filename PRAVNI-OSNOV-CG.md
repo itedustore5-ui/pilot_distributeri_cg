@@ -82,6 +82,37 @@ Usvojen u Skupštini **27.04.2026**, objavljen **04.05.2026**, **na snazi od 12.
 > više nije sitnica — postao je glavni oslonac za polovinu onoga što prodaješ. Provjeri ga
 > prije sljedeće ponude koja pominje obuku.
 
+> ### ⛔ OBUKA ZAPOSLENIH NIJE ZAKONSKA OBAVEZA — provjereno 16.09.2026
+>
+> **Zakon o bezbjednosti hrane 59/2026: nema je.** Pretražen cio tekst po svim
+> oblicima (obuk, obuč, osposob, edukac, znanj, upućen, instru). Jedina „obuka" u
+> zakonu je **obuka službenih lica koja vrše kontrole**, koju organizuje nadležni
+> organ — to su inspektori, ne klijentovi zaposleni.
+>
+> **Uredba o higijeni hrane: ne nalazi se ni tamo.** Prilog 2 ima deset dijelova i
+> završava se **termičkom obradom** — tačno tamo gdje u EU Uredbi 852/2004 počinje
+> **Poglavlje XII „Osposobljavanje"**. Dva nezavisna čitanja istog teksta daju isto.
+> *(likely, ne dokaz — čitano kroz sažetak PDF-a, nije isključeno da posljednja
+> strana nije obuhvaćena.)*
+>
+> **Provjeru znanja sa pitanjima i rezultatom ne traži niko** — ni zakon, ni Uredba,
+> a ni EU 852 koja traži „instructed and/or trained", dakle upućivanje, ne ispit.
+>
+> **ŠTA TO ZNAČI ZA PRODAJU.** Obuka i provjera znanja se **ne smiju predstaviti kao
+> zakonska obaveza.** To je Obrazac 6 u drugom izdanju — jednom izgovoreno pred
+> klijentom koji provjeri, gubi se sve.
+>
+> Prodaju se kao **dokaz da HACCP sistem stvarno radi**: čl. 36 traži da subjekat
+> postupke *uspostavi, primjenjuje i kontinuirano održava*, i da **na zahtjev
+> nadležnog organa dokaže usaglašenost**. Čovjek koji ne zna šta je kritična
+> kontrolna tačka ne može primjenjivati postupak — evidencija obuke je kako se to
+> dokazuje. Uz to, **Vodič UBH ima Prilog 13 i Prilog 14**; vodič nije obavezujući,
+> ali ga je izdala sama Uprava i to inspektor traži u praksi.
+>
+> **Tvrda obaveza sa kaznom u ovoj oblasti su sanitarne knjižice** —
+> Zakon o zaštiti stanovništva od zaraznih bolesti, čl. 31, kazna 2.500–20.000 €.
+> To je ljekarski pregled, ne obuka. Ne miješati to dvoje.
+
 **Podzakonski akti:** čl. 84 — propisi doneseni na osnovu 57/15 primjenjuju se do
 donošenja novih, najduže 18 mjeseci od stupanja na snagu (do ~12.11.2027), ako nijesu u
 suprotnosti sa novim zakonom. Dakle Pravilnik o sledljivosti 48/16 i Uredba o higijeni

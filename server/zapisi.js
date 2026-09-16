@@ -546,7 +546,7 @@ zapisiRuter.get('/api/cg/spremnost', vodi, uhvati(async (req, res) => {
   const dodaj = (t, n, p, r) => { if (n > 0) nalazi.push({ tezina: t, broj: n, poruka: p, rjesenje: r }); };
 
   dodaj('visoka', rupe.rows[0].n,
-    `${pade(rupe.rows[0].n, 'dan', 'dana', 'dana')} bez obaveznog zapisa u poslednjih 30 dana`,
+    `${pade(rupe.rows[0].n, 'dan', 'dana', 'dana')} bez obaveznog zapisa u posljednjih 30 dana`,
     'Popuni unazad samo ono što je stvarno mjereno. Izmišljen zapis je teži prekršaj od praznog.');
   dodaj('visoka', odst.rows[0].n,
     `${pade(odst.rows[0].n, 'odstupanje', 'odstupanja', 'odstupanja')} bez korektivne mjere`,
@@ -567,7 +567,7 @@ zapisiRuter.get('/api/cg/spremnost', vodi, uhvati(async (req, res) => {
     poruka: 'Vježba povlačenja nikad nije izvedena',
     rjesenje: 'Godišnja vježba je dio verifikacije i traže je auditori kupaca.' });
   else if (starost > 365) nalazi.push({ tezina: 'srednja', broj: 1,
-    poruka: `Poslednja vježba povlačenja prije ${starost} dana`,
+    poruka: `Posljednja vježba povlačenja prije ${starost} dana`,
     rjesenje: 'Vježba se izvodi najmanje jednom godišnje.' });
 
   res.json({

@@ -196,11 +196,11 @@ function nacrtaj(zag, zab, teme, uc, sidra, smene, pon){
     </div>
     ${osnovni ? '' : `<div class="broj">
       <div class="v ${prosekZad >= 20 ? 'dobro' : prosekZad >= 10 ? 'pazi' : 'lose'}">${prosekZad === null ? '—' : (prosekZad>0?'+':'') + prosekZad.toFixed(0)}</div>
-      <div class="o">procentnih poena — koliko je ostalo posle tri meseca</div>
+      <div class="o">procentnih poena — koliko je ostalo poslije tri mjeseca</div>
     </div>`}
     <div class="broj">
       <div class="v ${ispodPraga.length === 0 ? 'dobro' : 'lose'}">${ispodPraga.length}</div>
-      <div class="o">od ${zab.length} tema ispod praga na poslednjem merenju</div>
+      <div class="o">od ${zab.length} tema ispod praga na posljednjem mjerenju</div>
     </div>
   </div>
 
@@ -217,7 +217,7 @@ function nacrtaj(zag, zab, teme, uc, sidra, smene, pon){
       Poimeničan spisak vodi lice za bezbednost i zdravlje na radu.</div>` : ''}
   </div>
 
-  <h2>Rezultat po temama<span class="oznaka">merenja kroz vreme</span></h2>
+  <h2>Rezultat po temama<span class="oznaka">mjerenja kroz vrijeme</span></h2>
   <table>
     <thead><tr>
       <th>Tema</th><th>Rizik</th>
@@ -290,7 +290,7 @@ function nacrtaj(zag, zab, teme, uc, sidra, smene, pon){
 
   <div class="potpisi">
     <div class="potpis"><div class="linija-potpisa"></div>Sačinio — lice za bezbednost i zdravlje na radu / menadžer kvaliteta</div>
-    <div class="potpis"><div class="linija-potpisa"></div>Odgovorno lice poslodavca, mesto i datum</div>
+    <div class="potpis"><div class="linija-potpisa"></div>Odgovorno lice poslodavca, mjesto i datum</div>
   </div>`;
 
   $('list').innerHTML = html;

@@ -103,6 +103,7 @@
   <h1>Dnevni zapisi</h1>
   <nav class="nav">
     <span id="koSam" style="color:#8FA6B2"></span>
+    <a data-samo="vodi" href="/tabla.html">Tabla</a>
     <a data-samo="vodi" href="/podesavanje.html">Podešavanje</a>
     <a href="/promet.html">Prijem i isporuka</a>
     <a class="tu" href="/zapisi.html">Zapisi</a>
@@ -212,7 +213,7 @@ const poruka = (vrsta, naslov, tekst) => {
   } else {
     try {
       const rupe = await api(`/api/cg/rupe?firma=${FIRMA}&dana=7`);
-      if (rupe.length) poruka('pazi', `${rupe.length} zapisa nedostaje u poslednjih 7 dana`,
+      if (rupe.length) poruka('pazi', `${rupe.length} zapisa nedostaje u posljednjih 7 dana`,
         rupe.slice(0, 6).map(r => `${r.datum.slice(0,10)} · Prilog ${r.obrazac}`).join(' · ')
         + (rupe.length > 6 ? ' …' : ''));
     } catch {}

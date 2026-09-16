@@ -131,7 +131,7 @@
   <div class="upozorenje nestampa">
     Ova stranica prikazuje rezultate po zaposlenom i, u pojedinačnom pregledu, tačne odgovore.
     Ne otvara se pred zaposlenima dok svi termini mjerenja nisu završeni, i ne prosleđuje se
-    upravi ni šefovima smena. Uprava dobija zbirni izvještaj bez imena.
+    upravi ni šefovima smjena. Uprava dobija zbirni izvještaj bez imena.
   </div>
 
   <section id="sekObuka">
@@ -176,7 +176,7 @@
         <button id="pZbirno" type="button" aria-pressed="true">Zbirno</button>
         <button id="pDetaljno" type="button" aria-pressed="false">Pojedinačno</button>
       </div>
-      <label for="fSmena">Smena</label>
+      <label for="fSmena">Smjena</label>
       <select id="fSmena"><option value="">sve</option></select>
       <label for="fMesto">Radno mjesto</label>
       <select id="fMesto"><option value="">sva</option></select>
@@ -204,7 +204,7 @@
       Tema se ovde ocenjuje po pojedincu samo ako u formi ima <b>najmanje tri pitanja</b>.
       Kod teme sa jednim pitanjem rezultat pojedinca može biti isključivo 0% ili 100%,
       pa bi jedan promašaj neopravdano oborio čovjeka ispod praga. Zbirni rezultat te teme
-      za celu grupu ostaje valjan i vidi se u izvještaju za menadžera kvaliteta.</p>
+      za cijelu grupu ostaje valjan i vidi se u izvještaju za menadžera kvaliteta.</p>
 
     <div class="traka nestampa">
       <div class="prekidac">
@@ -215,7 +215,7 @@
       <select id="fRizik"><option value="">svi</option></select>
       <label for="fTema">Tema</label>
       <select id="fTema"><option value="">sve</option></select>
-      <label for="fSmena2">Smena</label>
+      <label for="fSmena2">Smjena</label>
       <select id="fSmena2"><option value="">sve</option></select>
       <button class="mali" id="izveziPon" type="button">Izvezi prikazano u CSV</button>
       <span class="desno" id="brojacPon"></span>
@@ -641,7 +641,7 @@ function crtajRok(){
       r.status === 'DOSPELO ZA ANONIMIZACIJU' ? 'var(--alarm)' :
       anon ? 'var(--muted)' : 'var(--cold)'}">
       <div class="polja">
-        <div><span class="p">Poslednje merenje</span><b>${dan(r.poslednje_merenje)}</b></div>
+        <div><span class="p">Posljednje mjerenje</span><b>${dan(r.poslednje_merenje)}</b></div>
         <div><span class="p">Ugovoreni rok</span><b>${r.rok_cuvanja_meseci} meseci</b></div>
         <div><span class="p">Rok ističe</span><b>${dan(r.dospeva)}</b></div>
         <div><span class="p">Imena u sistemu</span><b>${r.cuva_imena ? 'da' : 'ne — samo šifre'}</b></div>
@@ -776,7 +776,7 @@ $('izveziSve').onclick = () => {
     [],
 
     ['ROK ČUVANJA'],
-    ['Poslednje merenje', keš.rok?.poslednje_merenje ?? ''],
+    ['Posljednje mjerenje', keš.rok?.poslednje_merenje ?? ''],
     ['Rok (meseci)', keš.rok?.rok_cuvanja_meseci ?? ''],
     ['Ističe', keš.rok?.dospeva ?? ''],
     ['Status', keš.rok?.status ?? ''],

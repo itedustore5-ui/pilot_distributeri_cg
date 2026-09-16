@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="sr-Latn-ME">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tabla odgovornog lica</title>
+<style>
+  :root{
+    --ink:#131A1F; --steel:#3A4A56; --muted:#6B7A85;
+    --paper:#EFF2F3; --list:#FFF; --linija:#CBD5D9;
+    --cold:#0B6E8C; --signal:#B4410E; --ok:#2C6B47; --alarm:#96161B;
+    --mono: ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+    --sans: system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+    font-size:16px;line-height:1.5;-webkit-text-size-adjust:100%}
+  .oznaka{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted)}
+
+  header{background:var(--ink);color:#fff;padding:14px 16px}
+  header .omot{max-width:860px;margin:0 auto}
+  header h1{margin:5px 0 0;font-size:19px;font-weight:600}
+  header .oznaka{color:#8FA6B2}
+  .nav{display:flex;gap:13px;flex-wrap:wrap;margin-top:11px;padding-top:10px;
+    border-top:1px solid #2C3A44;font-size:13px}
+  .nav a{color:#8FA6B2;text-decoration:none}
+  .nav a:hover,.nav a.tu{color:#fff}
+  .nav a.tu{font-weight:600}
+
+  main{max-width:860px;margin:0 auto;padding:18px 16px 90px}
+
+  /* ---------- presuda ---------- */
+  .presuda{padding:20px 22px;margin-bottom:18px;border-left:4px solid;background:var(--list)}
+  .presuda.ok{border-color:var(--ok)}
+  .presuda.alarm{border-color:var(--alarm)}
+  .presuda.ceka{border-color:var(--linija)}
+  .presuda .veliko{font-family:var(--sans);font-size:21px;font-weight:600;display:block;
+    line-height:1.25;margin-bottom:5px}
+  .presuda.ok .veliko{color:var(--ok)}
+  .presuda.alarm .veliko{color:var(--alarm)}
+  .presuda p{margin:0;font-size:14px;color:var(--steel)}
+
+  .kartica{background:var(--list);border:1px solid var(--linija);padding:18px 20px;margin-bottom:14px}
+  .kartica h2{margin:0 0 3px;font-size:15px;font-weight:600}
+  .kartica .sta{font-size:13px;color:var(--muted);margin:0 0 14px}
+
+  /* ---------- nalazi ---------- */
+  .nalaz{display:grid;grid-template-columns:76px minmax(0,1fr);gap:0 14px;
+    padding:13px 0;border-top:1px solid var(--linija)}
+  .nalaz:first-of-type{border-top:none;padding-top:2px}
+  .tez{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+    padding:3px 7px;text-align:center;align-self:start;white-space:nowrap}
+  .tez.visoka{background:#EFD4D5;color:#6E1013}
+  .tez.srednja{background:#F4DFD5;color:#7A2C07}
+  .nalaz b{display:block;font-size:14.5px;font-weight:600;margin-bottom:2px}
+  .nalaz p{margin:0;font-size:13px;color:var(--steel)}
+
+  /* ---------- danas ---------- */
+  .fali{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+  .fali a{font-family:var(--mono);font-size:12px;padding:7px 11px;text-decoration:none;
+    background:#F7E9E3;color:#7A2C07;border:1px solid #E4C6B8}
+  .fali a:hover{background:#F0DACE}
+
+  /* ---------- brojke ---------- */
+  .brojke{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;
+    background:var(--linija);border:1px solid var(--linija);margin-top:4px}
+  .broj{background:var(--list);padding:13px 15px}
+  .broj .n{font-family:var(--mono);font-size:22px;font-variant-numeric:tabular-nums;
+    display:block;line-height:1.1}
+  .broj .n.dobro{color:var(--ok)}
+  .broj .n.lose{color:var(--alarm)}
+  .broj .k{font-size:12px;color:var(--muted);display:block;margin-top:3px;line-height:1.35}
+
+  /* ---------- obaveze ---------- */
+  table.ob{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:4px}
+  table.ob th,table.ob td{border-bottom:1px solid var(--linija);padding:9px 8px;
+    text-align:left;vertical-align:top}
+  table.ob th{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--muted);font-weight:600}
+  table.ob tr:last-child td{border-bottom:none}
+  table.ob td.kad{font-family:var(--mono);font-size:12px;color:var(--cold);white-space:nowrap}
+
+  /* ---------- prečice ---------- */
+  .precice{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:2px;margin-top:4px}
+  .precice a{display:block;background:var(--list);border:1px solid var(--linija);
+    border-left:3px solid var(--cold);padding:14px 16px;text-decoration:none;color:inherit}
+  .precice a:hover{border-left-color:var(--ink)}
+  .precice b{display:block;font-size:14.5px;font-weight:600}
+  .precice span{font-size:12.5px;color:var(--muted)}
+
+  .prazno{color:var(--muted);padding:18px 0;text-align:center;font-size:14px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="omot">
+    <span class="oznaka">Odgovorno lice za bezbjednost hrane</span>
+    <h1>Tabla</h1>
+    <nav class="nav">
+      <span id="koSam" style="color:#8FA6B2"></span>
+      <a class="tu" href="/tabla.html">Tabla</a>
+      <a href="/promet.html">Prijem i isporuka</a>
+      <a href="/zapisi.html">Dnevni zapisi</a>
+      <a href="/sledljivost.html">Sledljivost</a>
+      <a href="/prilozi.html">Štampa priloga</a>
+      <a href="/podesavanje.html">Podešavanje</a>
+      <a href="/izvoz.html">Izvoz</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div id="presuda" class="presuda ceka">
+    <span class="veliko">Učitavam…</span>
+    <p>Provjeravam stanje evidencije.</p>
+  </div>
+
+  <div class="kartica" id="danasBox" hidden>
+    <h2>Danas još nije uneseno</h2>
+    <p class="sta">Klikni na obrazac da ga otvoriš. Unosi se samo ono što je stvarno
+      izmjereno — prazan dan je manji problem od izmišljenog zapisa.</p>
+    <div class="fali" id="danas"></div>
+  </div>
+
+  <div class="kartica" id="nalaziBox" hidden>
+    <h2>Šta bi inspektor zapisao</h2>
+    <p class="sta">Isti spisak koji bi napravio na kontroli, samo prije njega.</p>
+    <div id="nalazi"></div>
+  </div>
+
+  <div class="kartica">
+    <h2>Stanje evidencije</h2>
+    <p class="sta">Brojke koje pokazuju da sistem živi, a ne da je popunjen jednom.</p>
+    <div class="brojke" id="brojke">
+      <div class="broj"><span class="n">—</span><span class="k">učitavam</span></div>
+    </div>
+  </div>
+
+  <div class="kartica">
+    <h2>Tvoje obaveze po HACCP planu</h2>
+    <p class="sta">Ovo ne radi aplikacija nego ti. Ona samo pamti da je urađeno.</p>
+    <table class="ob">
+      <thead><tr><th>Šta</th><th>Kada</th><th>Dokaz</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Pregled zapisa o temperaturama i potpis</td>
+          <td class="kad">mjesečno</td>
+          <td>potpis na Prilozima 5, 7, 8 i D2</td>
+        </tr>
+        <tr>
+          <td>Provjera da svako odstupanje ima korektivnu mjeru</td>
+          <td class="kad">mjesečno</td>
+          <td>Štampa priloga → Pregled odstupanja</td>
+        </tr>
+        <tr>
+          <td><b>Vježba povlačenja</b> — nasumična serija, kompletna lista kupaca</td>
+          <td class="kad">godišnje</td>
+          <td>zapis D3 · <b>cilj: ispod 4 sata</b></td>
+        </tr>
+        <tr>
+          <td>Obuka zaposlenih i nove potvrde</td>
+          <td class="kad">godišnje</td>
+          <td>Prilog 13 i 14, potvrde po zaposlenom</td>
+        </tr>
+        <tr>
+          <td>Odluka o povlačenju kad se pojavi nebezbjedna hrana</td>
+          <td class="kad">bez odlaganja</td>
+          <td><b>pisana odluka</b> + obavještenje UBH</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="kartica">
+    <h2>Gdje šta radiš</h2>
+    <p class="sta">Četiri stvari koje otvaraš najčešće.</p>
+    <div class="precice">
+      <a href="/sledljivost.html"><b>Pretraga serije</b>
+        <span>Kupac zove — kome je još otišla</span></a>
+      <a href="/prilozi.html"><b>Štampa za potpis</b>
+        <span>Prilozi, potvrde, pregled odstupanja</span></a>
+      <a href="/zapisi.html"><b>Dnevni zapisi</b>
+        <span>Šta je uneseno i gdje fali</span></a>
+      <a href="/podesavanje.html"><b>Dobavljači i artikli</b>
+        <span>Granice, telefoni kupaca, vozila</span></a>
+    </div>
+  </div>
+</main>
+
+<script src="/veza.js"></script>
+<script>
+const $  = s => document.querySelector(s);
+const el = (t, a = {}, ...d) => {
+  const n = document.createElement(t);
+  for (const [k, v] of Object.entries(a)) {
+    if (k === 'class') n.className = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else if (v !== null && v !== undefined && v !== false) n.setAttribute(k, v);
+  }
+  d.flat().forEach(x => n.append(x?.nodeType ? x : document.createTextNode(x ?? '')));
+  return n;
+};
+const dat = s => s ? String(s).slice(0, 10).split('-').reverse().join('.') : '—';
+
+function presuda(vrsta, veliko, sitno) {
+  $('#presuda').className = 'presuda ' + vrsta;
+  $('#presuda').replaceChildren(
+    el('span', { class: 'veliko' }, veliko),
+    el('p', {}, sitno));
+}
+
+(async () => {
+  const ja = await ucitajJa();
+  if (!ja) return;                    // nema veze — traka dolje, čeka se
+
+  // --- šta bi inspektor zapisao ---
+  let sp = null;
+  try {
+    sp = await api('/api/cg/spremnost');
+    const visokih = sp.nalazi.filter(n => n.tezina === 'visoka').length;
+    if (sp.spreman && !sp.nalazi.length) {
+      presuda('ok', 'Spremno za kontrolu',
+        'Nijedan nalaz. Evidencija je potpuna za posljednjih 30 dana.');
+    } else if (sp.spreman) {
+      presuda('ok', 'Nema teških nalaza',
+        `${sp.nalazi.length} ${pade(sp.nalazi.length, 'stavka', 'stavke', 'stavki')} `
+        + 'za sređivanje, nijedna nije teška.');
+    } else {
+      const ostalih = sp.nalazi.length - visokih;
+      presuda('alarm',
+        `${visokih} ${pade(visokih, 'težak nalaz', 'teška nalaza', 'teških nalaza')} `
+        + 'koji bi inspektor zapisao',
+        ostalih
+          ? `Još ${ostalih} ${pade(ostalih, 'lakša stavka', 'lakše stavke', 'lakših stavki')} ispod. Riješi teške prvo.`
+          : 'Ispod piše šta je i šta se radi.');
+    }
+
+    if (sp.nalazi.length) {
+      $('#nalaziBox').hidden = false;
+      $('#nalazi').replaceChildren(...sp.nalazi.map(n => el('div', { class: 'nalaz' },
+        el('span', { class: 'tez ' + n.tezina }, n.tezina),
+        el('div', {}, el('b', {}, n.poruka), el('p', {}, n.rjesenje)))));
+    }
+  } catch (e) {
+    presuda('ceka', 'Ne mogu da pročitam stanje', e.message);
+  }
+
+  // --- šta danas fali ---
+  try {
+    const rupe = await api('/api/cg/rupe?dana=1');
+    const danas = rupe.filter(r => String(r.datum).slice(0, 10) === new Date(
+      Date.now() - 864e5).toISOString().slice(0, 10) || true);
+    if (danas.length) {
+      $('#danasBox').hidden = false;
+      $('#danas').replaceChildren(...danas.map(r =>
+        el('a', { href: `/zapisi.html#${r.obrazac}` }, `${r.obrazac} · ${dat(r.datum)}`)));
+    }
+  } catch { /* rupe nisu presudne za tablu */ }
+
+  // --- stanje evidencije ---
+  try {
+    const d = await api('/api/cg/dnevni-pregled');
+    const vj = d.zadnja_vjezba_povlacenja
+      ? Math.floor((Date.now() - new Date(d.zadnja_vjezba_povlacenja)) / 864e5) : null;
+    const polje = (n, k, lose) => el('div', { class: 'broj' },
+      el('span', { class: 'n ' + (lose ? 'lose' : 'dobro') }, String(n)),
+      el('span', { class: 'k' }, k));
+    $('#brojke').replaceChildren(
+      polje(d.zapisa_7_dana, 'zapisa u 7 dana', Number(d.zapisa_7_dana) === 0),
+      polje(d.odstupanja_bez_mjere, 'odstupanja bez mjere', Number(d.odstupanja_bez_mjere) > 0),
+      polje(d.naknadnih_30_dana, 'unesenih naknadno', Number(d.naknadnih_30_dana) > 3),
+      polje(vj === null ? '—' : vj, vj === null ? 'vježba povlačenja nikad'
+        : 'dana od vježbe povlačenja', vj === null || vj > 365));
+  } catch (e) {
+    $('#brojke').replaceChildren(el('div', { class: 'prazno' }, e.message));
+  }
+})();
+</script>
+</body>
+</html>

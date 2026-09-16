@@ -35,7 +35,7 @@
 </head>
 <body>
 <div class="kutija">
-  <span class="oznaka">Merenje osposobljenosti</span>
+  <span class="oznaka">DHP i HACCP evidencija</span>
 
   <div id="ekranPrijava">
     <h1>Prijava</h1>
@@ -45,8 +45,8 @@
     <input id="lozinka" type="password" autocomplete="current-password">
     <button id="dugme" type="button">Prijavi se</button>
     <div id="greska" class="greska sakriveno"></div>
-    <p class="pod">Zaposleni koji rade proveru se ne prijavljuju — oni imaju samo šifru
-      sa ceduljice. <a href="/">Otvori proveru →</a></p>
+    <p class="pod">Zaposlijeni koji rade provjeru znanja se ne prijavljuju — oni imaju samo
+      šifru sa ceduljice. <a href="/provjera.html">Otvori provjeru →</a></p>
   </div>
 
   <div id="ekranLozinka" class="sakriveno">
@@ -74,6 +74,9 @@ function gde(uloga){
   if (dalje) return dalje;
   if (uloga === 'uprava')   return '/uprava.html';
   if (uloga === 'operater') return '/promet.html';
+  // Odgovorno lice ide na svoju tablu, ne na konsultantsku komandnu tablu.
+  // Njegov posao su zapisi o hrani, ne podešavanje obuke i banke pitanja.
+  if (uloga === 'bzr')      return '/tabla.html';
   return kuda;
 }
 

@@ -99,7 +99,7 @@
 <body>
 
 <header>
-  <span class="oznaka">Mjerenje osposobljenosti zaposlenih</span>
+  <span class="oznaka">Obuka i osposobljenost zaposlenih</span>
   <h1>Komandna tabla</h1>
   <div class="vrh">
     <input id="token" type="password" placeholder="pristupni token" aria-label="Token">
@@ -124,9 +124,13 @@
 
   <!-- ============ dokle si stigla ============ -->
   <section>
-    <span class="oznaka">Redosled</span>
+    <span class="oznaka">Jedan lanac, pet koraka</span>
     <h2>Dokle si stigla</h2>
-    <p class="pod">Koraci se popunjavaju sami. Zeleni krug znači gotovo.</p>
+    <p class="pod">Ko radi sa hranom → obuka je održana → potvrđene brojke iz plana →
+      otvoren termin → ceduljice sa šiframa. Svaki korak ostavlja papir koji neko traži:
+      <b>odgovorno lice</b> da zna ko je obučen i šta još fali, <b>direktor</b> da vidi da je
+      firma pokrivena — bez imena i bez ocjena, <b>inspektor</b> plan obuke, spisak prisutnih
+      sa potpisima i potvrde. Koraci se popunjavaju sami; zeleni krug znači gotovo.</p>
     <div id="koraci"><div class="prazno">Upiši token i izaberi grupu.</div></div>
   </section>
 
@@ -153,40 +157,28 @@
     <div id="spisakKorisnika"></div>
   </section>
 
-  <!-- ============ šifre ============ -->
-  <section id="sekSifre">
+
+  <!-- ============ radna mesta ============ -->
+  <section id="sekRM">
     <span class="oznaka">Korak 1</span>
-    <h2>Šifre zaposlenih</h2>
-    <p class="pod">
-      Zaposleni nema nalog ni lozinku — ima samo šifru sa ceduljice. Tako mjerenje ostaje
-      anonimno: u bazi nema imena, a spisak šifra→ime drži poslodavac kod sebe.
-      Isti čovjek koristi <b>istu šifru u svim terminima</b>.
-    </p>
-    <div class="polja">
-      <div><label for="rmNaziv">Radno mjesto</label>
-        <input id="rmNaziv" list="rmLista" placeholder="npr. Rasecanje"></div>
-      <datalist id="rmLista"></datalist>
-      <div><label for="rmSmena">Smena</label>
-        <input id="rmSmena" placeholder="A" maxlength="8"></div>
-      <div><label for="rmBroj">Koliko ljudi</label>
-        <input id="rmBroj" type="number" min="1" max="200" value="10"></div>
+    <h2>Ko radi sa hranom</h2>
+    <p class="pod">Poslovi i radna mjesta u firmi: magacin, prijem, vozni park. Unose se jednom i poslije se svaki zaposleni uparuje sa svojim mjestom. <b>Bez ovoga prilozi izlaze sa prazninama</b>, a odgovorno lice ne može da kaže ko je za šta zadužen.</p>
+    <div id="radnaMesta"></div>
+    <div class="dugmad" style="margin-top:12px">
+      <button class="mali" id="povezi" type="button">Poveži zaposlene sa radnim mjestima</button>
     </div>
-    <div class="dugmad">
-      <button class="glavno" id="dodajSifre" type="button">Napravi šifre</button>
-      <button class="mali" id="ceduljice" type="button">Odštampaj ceduljice</button>
-      <button class="mali" id="osveziSpisak" type="button">Osveži spisak</button>
+    <div class="savet">
+      Sadržaj radnih mjesta se uređuje u fajlu <b>db/banka.json</b>, blok <b>radna_mesta</b>,
+      pa se učita komandom <b>npm run seed:svez</b>. Ovde ih samo povezuješ sa zaposlenima.
     </div>
-    <div id="spisakUcesnika"></div>
   </section>
+
 
   <!-- ============ obuka ============ -->
   <section id="sekObuka">
     <span class="oznaka">Korak 2</span>
-    <h2>Održana obuka</h2>
-    <p class="pod">
-      Zapis o tome da je obuka izvedena i ko joj je prisustvovao. <b>To je prvi dokument
-      koji inspektor traži</b> — provjera znanja je tek druga kolona u evidenciji.
-    </p>
+    <h2>Održana obuka — ko je bio</h2>
+    <p class="pod">Datum, tema, ko je izveo obuku i ko joj je prisustvovao. <b>Ovo je prvi papir koji inspektor traži</b> — Prilog 13 (godišnji plan) i Prilog 14 (prisutni sa potpisima). Provjera znanja dolazi tek poslije ovoga.</p>
     <div id="postojeceObuke"></div>
     <div class="polja">
       <div class="siroko"><label for="obNaziv">Naziv obuke</label>
@@ -201,7 +193,7 @@
       <div><label for="obDatum">Datum održavanja</label><input id="obDatum" type="date"></div>
       <div><label for="obSati">Trajanje (sati)</label>
         <input id="obSati" type="number" min="0.5" max="40" step="0.5" value="4"></div>
-      <div><label for="obPrakticna">Datum praktičnog dela</label><input id="obPrakticna" type="date"></div>
+      <div><label for="obPrakticna">Datum praktičnog dijela</label><input id="obPrakticna" type="date"></div>
       <div><label for="obLzo">Datum obuke za zaštitnu opremu</label><input id="obLzo" type="date"></div>
       <div><label for="obMesto">Mjesto</label><input id="obMesto" placeholder="Sala za obuku, pogon"></div>
       <div><label for="obIzvodjac">Izvođač</label><input id="obIzvodjac" placeholder="Ime i prezime"></div>
@@ -226,15 +218,12 @@
     </div>
   </section>
 
+
   <!-- ============ pitanja ============ -->
   <section id="sekPitanja">
     <span class="oznaka">Korak 3</span>
-    <h2>Potvrda pitanja sa brojkama</h2>
-    <p class="pod">
-      Neka pitanja sadrže granične temperature i vremena iz HACCP plana poslodavca.
-      <b>Sistem ih neće servirati dok ih klijent ne potvrdi</b> — bolje da pukne kod tebe
-      nego da radnik dobije tuđu graničnu vrednost.
-    </p>
+    <h2>Brojke iz vašeg HACCP plana</h2>
+    <p class="pod">Neka pitanja sadrže granične temperature i vremena. Dok ih odgovorno lice ne potvrdi, ne postavljaju se — da se zaposleni ne provjeravaju po tuđim brojkama. Bolje da pitanje izostane nego da nauče pogrešnu granicu.</p>
     <div id="nepotvrdjene"></div>
     <div class="polja" style="margin-top:12px">
       <div class="siroko"><label for="potvrdio">Ko potvrđuje (ime i funkcija)</label>
@@ -243,34 +232,36 @@
     <button class="glavno" id="potvrdiStavke" type="button">Potvrdi sve</button>
   </section>
 
+
   <!-- ============ termini ============ -->
   <section id="sekTermini">
     <span class="oznaka">Korak 4</span>
-    <h2>Termini mjerenja</h2>
-    <p class="pod">
-      Otvori samo termin koji je na redu i zatvori ga poslije. Zatvoren termin se ne vidi
-      zaposlenima, pa niko ne može da uradi mjerenje van dogovorenog dana.
-    </p>
+    <h2>Kad se provjera radi</h2>
+    <p class="pod">Otvori termin na dan obuke i zatvori ga poslije. Zatvoren termin zaposleni ne vidi, pa se provjera ne može uraditi naknadno, od kuće ili umjesto nekoga.</p>
     <div id="termini"></div>
   </section>
 
-  <!-- ============ radna mesta ============ -->
-  <section id="sekRM">
+
+  <!-- ============ šifre ============ -->
+  <section id="sekSifre">
     <span class="oznaka">Korak 5</span>
-    <h2>Radna mjesta iz Akta o procjeni rizika</h2>
-    <p class="pod">
-      Opis poslova, šifre opasnosti i mjere ne zavise od čovjeka nego od radnog mjesta.
-      Unose se jednom i poslije se automatski uparuju sa svakim zaposlenim na tom mjestu
-      prilikom štampe Obrasca 6.
-    </p>
-    <div id="radnaMesta"></div>
-    <div class="dugmad" style="margin-top:12px">
-      <button class="mali" id="povezi" type="button">Poveži zaposlene sa radnim mjestima</button>
+    <h2>Ceduljice sa šiframa</h2>
+    <p class="pod">Dijele se na kraju obuke, kad ljudi sjednu. Zaposleni nema nalog ni lozinku — samo šifru sa papira. U bazi nema imena, pa uprava ne dobija spisak ko je koliko znao; spisak šifra→ime drži poslodavac kod sebe.</p>
+    <div class="polja">
+      <div><label for="rmNaziv">Radno mjesto</label>
+        <input id="rmNaziv" list="rmLista" placeholder="npr. Rasecanje"></div>
+      <datalist id="rmLista"></datalist>
+      <div><label for="rmSmena">Smjena</label>
+        <input id="rmSmena" placeholder="A" maxlength="8"></div>
+      <div><label for="rmBroj">Koliko ljudi</label>
+        <input id="rmBroj" type="number" min="1" max="200" value="10"></div>
     </div>
-    <div class="savet">
-      Sadržaj radnih mjesta se uređuje u fajlu <b>db/banka.json</b>, blok <b>radna_mesta</b>,
-      pa se učita komandom <b>npm run seed:svez</b>. Ovde ih samo povezuješ sa zaposlenima.
+    <div class="dugmad">
+      <button class="glavno" id="dodajSifre" type="button">Napravi šifre</button>
+      <button class="mali" id="ceduljice" type="button">Odštampaj ceduljice</button>
+      <button class="mali" id="osveziSpisak" type="button">Osveži spisak</button>
     </div>
+    <div id="spisakUcesnika"></div>
   </section>
 </main>
 
@@ -387,20 +378,20 @@ function crtajKorake(){
   const potvrdjeno = s.nepotv.length === 0;
   const otvoren = s.termini.some(t => t.otvoren);
   const povezano = s.ucesnici.some(u => u.povezano_radno_mesto);
-  const merено = s.termini.some(t => Number(t.predatih) > 0);
+  const mjereno = s.termini.some(t => Number(t.predatih) > 0);
 
   const k = [
-    [imaUcesnika, 'Šifre zaposlenih',
-     imaUcesnika ? `${s.ucesnici.length} šifri napravljeno` : 'Još nijedna šifra nije napravljena'],
-    [imaObuku, 'Zapis o održanoj obuci',
-     imaObuku ? `${s.obuke[0].naziv}, ${dan(s.obuke[0].datum_od)} — prisutnih ${s.obuke[0].prisutnih}/${s.obuke[0].upisanih}` : 'Obuka još nije upisana'],
-    [potvrdjeno, 'Potvrda pitanja sa brojkama',
-     potvrdjeno ? 'Sva pitanja su potvrđena' : `${s.nepotv.length} pitanja čeka potvrdu klijenta`],
-    [otvoren || merено, 'Termin merenja',
-     otvoren ? `Otvoreno: ${s.termini.filter(t=>t.otvoren).map(t=>t.oznaka).join(', ')}`
-             : merено ? 'Merenja postoje, svi termini zatvoreni' : 'Nijedan termin nije otvoren'],
-    [povezano, 'Radna mesta povezana',
+    [povezano, '1 · Ko radi sa hranom',
      povezano ? 'Zaposleni su povezani sa radnim mjestima' : 'Prilozi će izaći sa prazninama'],
+    [imaObuku, '2 · Održana obuka',
+     imaObuku ? `${s.obuke[0].naziv}, ${dan(s.obuke[0].datum_od)} — prisutnih ${s.obuke[0].prisutnih}/${s.obuke[0].upisanih}` : 'Obuka još nije upisana'],
+    [potvrdjeno, '3 · Brojke iz HACCP plana',
+     potvrdjeno ? 'Sve granice su potvrđene' : `${s.nepotv.length} pitanja čeka potvrdu klijenta`],
+    [otvoren || mjereno, '4 · Termin provjere',
+     otvoren ? `Otvoreno: ${s.termini.filter(t=>t.otvoren).map(t=>t.oznaka).join(', ')}`
+             : mjereno ? 'Provjere postoje, svi termini zatvoreni' : 'Nijedan termin nije otvoren'],
+    [imaUcesnika, '5 · Ceduljice sa šiframa',
+     imaUcesnika ? `${s.ucesnici.length} šifri napravljeno` : 'Još nijedna šifra nije napravljena'],
   ];
   let prviNegotov = k.findIndex(x => !x[0]);
   $('koraci').innerHTML = k.map(([g,n,o],i) => `
@@ -458,7 +449,7 @@ function crtajObuke(){
   const o = stanje.obuke;
   if(o.length === 0){
     $('postojeceObuke').innerHTML =
-      '<div class="alarm">Nijedna obuka nije upisana. Bez tog zapisa provera znanja nema uz šta da stoji.</div>';
+      '<div class="alarm">Nijedna obuka nije upisana. Bez tog zapisa provjera znanja nema uz šta da stoji.</div>';
     return;
   }
   $('postojeceObuke').innerHTML = tabela(
@@ -608,7 +599,7 @@ async function crtajKorisnike(){
   const k = await uzmi('/api/korisnici');
   const naziv = u => u === 'izvodjac' ? 'izvođač' : u === 'bzr' ? 'BZR / kvalitet' : 'uprava';
   $('spisakKorisnika').innerHTML = tabela(
-    [{n:'Ime'},{n:'E-mail'},{n:'Uloga'},{n:'Firma'},{n:'Poslednja prijava'},{n:'Stanje'},{n:''}],
+    [{n:'Ime'},{n:'E-mail'},{n:'Uloga'},{n:'Firma'},{n:'Posljednja prijava'},{n:'Stanje'},{n:''}],
     k.map(x => `<tr>
       <td><b>${x.ime}</b></td><td>${x.email}</td>
       <td><span class="znak ${x.uloga === 'uprava' ? 'z-tiho' : 'z-ok'}">${naziv(x.uloga)}</span></td>

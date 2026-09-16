@@ -87,6 +87,7 @@
   <h1>Prilozi za štampu i potpis</h1>
   <div class="kontrole nestampa">
     <select id="sta">
+      <option value="IMENOVANJE">Rješenje o imenovanju odgovornog lica</option>
       <option value="P13">Prilog 13 — Godišnji plan obuke</option>
       <option value="P14">Prilog 14 — Evidencija prisutnih na obuci</option>
       <option value="POTVRDA">Potvrda o osposobljenosti (po zaposlenom)</option>
@@ -110,6 +111,7 @@
   </div>
   <nav class="nav">
     <span id="koSam" style="color:#8FA6B2"></span>
+    <a data-samo="vodi" href="/tabla.html">Tabla</a>
     <a href="/podesavanje.html">Podešavanje</a>
     <a href="/promet.html">Prijem i isporuka</a>
     <a href="/zapisi.html">Zapisi</a>
@@ -195,7 +197,8 @@ async function pripremi() {
   $('#izlaz').replaceChildren(el('div', { class: 'prazno' }, 'Pripremam…'));
   $('#poruka').replaceChildren();
   try {
-    if (sta === 'P14')            await prilog14();
+    if (sta === 'IMENOVANJE')     imenovanje();
+    else if (sta === 'P14')       await prilog14();
     else if (sta === 'POTVRDA')   await potvrde();
     else if (sta === 'ODSTUPANJA') await odstupanja();
     else if (sta === 'ISPRAVKE')   await ispravke();
@@ -204,6 +207,79 @@ async function pripremi() {
     $('#izlaz').replaceChildren();
     poruka('alarm', 'Nije pripremljeno', e.message);
   }
+}
+
+// ------------------------------------------- Rješenje o imenovanju odgovornog lica
+// Interni akt subjekta. Zakon ne propisuje obrazac; njime se određuje ko u firmi
+// stvarno sprovodi postupke iz čl. 36 i ko javlja UBH po čl. 28.
+const crta = (sirina = '58%') => el('span', {
+  style: `display:inline-block;width:${sirina};border-bottom:1px solid #000;height:14px`,
+});
+
+function imenovanje() {
+  const stavka = (sta, kada) => el('tr', {},
+    el('td', {}, sta), el('td', { style: 'white-space:nowrap' }, kada));
+
+  $('#izlaz').replaceChildren(el('div', { class: 'list' },
+    ...zaglavlje('Rješenje o imenovanju odgovornog lica za bezbjednost hrane',
+      'Interni akt subjekta · osnov: čl. 27, 28, 35 i 36 Zakona o bezbjednosti hrane '
+      + '(„Sl. list CG", br. 59/2026) i HACCP plan subjekta',
+      { oznaka: 'RJEŠENJE' }),
+
+    el('p', { style: 'font-size:12px;line-height:1.7;margin:14px 0 4px' },
+      'Na osnovu obaveze subjekta u poslovanju hranom da uspostavi, primjenjuje i '
+      + 'kontinuirano održava postupke zasnovane na načelima HACCP-a i da na zahtjev '
+      + 'nadležnog organa dokaže usaglašenost, izvršni direktor donosi'),
+
+    el('div', { style: 'text-align:center;font-weight:700;letter-spacing:.06em;margin:10px 0 14px' },
+      'R J E Š E NJ E'),
+
+    el('p', { style: 'font-size:12px;line-height:2.2;margin:0 0 4px' },
+      '1. Za odgovorno lice za bezbjednost hrane imenuje se ', crta('48%'), ' ,',
+      el('br'),
+      'na radnom mjestu ', crta('40%'), ' , počev od ', crta('18%'), ' .'),
+
+    el('p', { style: 'font-size:12px;line-height:2.2;margin:6px 0 10px' },
+      '2. U odsustvu imenovanog lica poslove preuzima ', crta('44%'), ' .'),
+
+    el('p', { style: 'font-size:12px;margin:0 0 6px' },
+      '3. Imenovano lice obavlja sljedeće poslove i za njih odgovara:'),
+
+    el('table', { class: 'o', style: 'margin-bottom:12px' },
+      el('thead', {}, el('tr', {},
+        el('th', { style: 'width:74%' }, 'Posao'),
+        el('th', { style: 'width:26%' }, 'Kada'))),
+      el('tbody', {},
+        stavka('Provjerava da su dnevni zapisi o temperaturama, prijemu i isporuci uneseni', 'svakog radnog dana'),
+        stavka('Pregleda zapise, provjerava da svako odstupanje ima korektivnu mjeru i potpisuje ih', 'mjesečno'),
+        stavka('Održava listu odobrenih dobavljača i potvrđene kritične granice po artiklu', 'trajno'),
+        stavka('Obezbjeđuje sledljivost — korak nazad i korak naprijed, po broju serije (čl. 27)', 'trajno'),
+        stavka('Donosi pisanu odluku o povlačenju i obavještava UBH (čl. 28)', 'bez odlaganja'),
+        stavka('Sprovodi vježbu povlačenja nasumične serije i zapisuje trajanje (cilj ispod 4 sata)', 'najmanje godišnje'),
+        stavka('Organizuje upućivanje i obuku lica koja rukuju hranom i čuva evidenciju', 'najmanje godišnje'),
+        stavka('Prati važenje sanitarnih knjižica zaposlenih', 'trajno'),
+        stavka('Prisustvuje inspekcijskoj kontroli i predaje traženu evidenciju', 'po pozivu'))),
+
+    el('p', { style: 'font-size:12px;line-height:1.8;margin:0 0 6px' },
+      '4. Imenovano lice je ovlašćeno da zaustavi prijem ili isporuku pošiljke za koju '
+      + 'postoji sumnja u bezbjednost i da pokrene povlačenje, bez prethodne saglasnosti.'),
+
+    el('p', { style: 'font-size:12px;line-height:1.8;margin:0 0 6px' },
+      '5. Imenovanje ne oslobađa izvršnog direktora odgovornosti propisane zakonom.'),
+
+    el('p', { style: 'font-size:12px;line-height:1.8;margin:0 0 14px' },
+      '6. Rješenje stupa na snagu danom potpisivanja i čuva se uz HACCP plan.'),
+
+    el('div', { style: 'font-size:11px;color:#6B7A85;margin-bottom:10px' },
+      'Mjesto i datum: ', crta('26%')),
+
+    potpisi('Izvršni direktor', 'Imenovano lice — primio/la na znanje'),
+
+    el('div', { style: 'font-size:10px;color:#6B7A85;margin-top:16px;line-height:1.6' },
+      'Napomena: zakon ne propisuje obrazac ovog rješenja. Njime subjekt pisano određuje '
+      + 'ko sprovodi postupke iz čl. 36 i ko postupa po čl. 28. Bez pisanog akta '
+      + 'odgovornost ostaje na izvršnom direktoru. Kazne po čl. 82: pravno lice '
+      + '2.000–20.000 €, odgovorno lice u pravnom licu 500–2.000 €.')));
 }
 
 // --------------------------------------------------------------- Prilog 14

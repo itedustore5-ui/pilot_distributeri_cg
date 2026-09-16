@@ -135,11 +135,20 @@ async function api(put, opcije = {}) {
 /* ------------------------------------------------------- ko je prijavljen
    Vraća korisnika, ili null ako se ne može nastaviti.
    Na 401 vodi na prijavu. Na pad mreže OSTAJE na stranici i čeka. */
+/* Kako se uloga zove čovjeku, a ne bazi. */
+const IME_ULOGE = {
+  izvodjac: 'konsultant',
+  bzr: 'odgovorno lice za bezbjednost hrane',
+  uprava: 'direktor',
+  operater: 'magacin i prevoz',
+};
+
 async function ucitajJa() {
   try {
     const ja = await api('/api/ja');
     const e = document.querySelector('#koSam');
-    if (e) e.textContent = ja.ime ? `${ja.ime} · ${ja.uloga}` : '';
+    if (e) e.textContent = ja.ime
+      ? `${ja.ime} · ${IME_ULOGE[ja.uloga] || ja.uloga}` : '';
     return ja;
   } catch (e) {
     if (e.prijava) { location.href = '/prijava.html'; return null; }
