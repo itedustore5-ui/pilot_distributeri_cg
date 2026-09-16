@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prijava</title>
+<style>
+  :root{
+    --ink:#131A1F; --steel:#3A4A56; --muted:#6B7A85; --paper:#EFF2F3; --list:#FFF;
+    --linija:#CBD5D9; --cold:#0B6E8C; --alarm:#96161B;
+    --mono: ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans: system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:var(--paper);color:var(--ink);
+    font-family:var(--sans);font-size:15px;display:grid;place-items:center;padding:20px}
+  .oznaka{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted)}
+  .kutija{width:100%;max-width:400px;background:var(--list);border:1px solid var(--linija);
+    border-radius:4px;padding:32px 30px}
+  h1{font-size:23px;margin:6px 0 22px;letter-spacing:-.01em}
+  label{display:block;font-size:12px;color:var(--muted);margin:16px 0 5px}
+  input{width:100%;font-family:var(--sans);font-size:16px;padding:11px 13px;
+    border:1px solid var(--linija);border-radius:3px;background:var(--list);color:var(--ink)}
+  input:focus{outline:2px solid var(--cold);border-color:var(--cold)}
+  button{width:100%;margin-top:22px;font-family:var(--sans);font-size:16px;font-weight:600;
+    padding:13px;border-radius:3px;border:none;cursor:pointer;background:var(--cold);color:#fff}
+  button:disabled{background:#A9BAC2;cursor:not-allowed}
+  .greska{margin-top:16px;padding:12px 14px;border-left:3px solid var(--alarm);
+    background:#F7E3E4;color:#7A1E22;font-size:13.5px}
+  .sakriveno{display:none}
+  .pod{font-size:12.5px;color:var(--muted);margin-top:20px;line-height:1.55}
+  .pod a{color:var(--cold)}
+</style>
+</head>
+<body>
+<div class="kutija">
+  <span class="oznaka">Merenje osposobljenosti</span>
+
+  <div id="ekranPrijava">
+    <h1>Prijava</h1>
+    <label for="email">E-mail</label>
+    <input id="email" type="email" autocomplete="username" autocapitalize="off">
+    <label for="lozinka">Lozinka</label>
+    <input id="lozinka" type="password" autocomplete="current-password">
+    <button id="dugme" type="button">Prijavi se</button>
+    <div id="greska" class="greska sakriveno"></div>
+    <p class="pod">Zaposleni koji rade proveru se ne prijavljuju — oni imaju samo šifru
+      sa ceduljice. <a href="/">Otvori proveru →</a></p>
+  </div>
+
+  <div id="ekranLozinka" class="sakriveno">
+    <h1>Postavi novu lozinku</h1>
+    <p class="pod" style="margin:0 0 6px">Prva prijava. Postavi lozinku koju samo ti znaš —
+      najmanje 10 znakova.</p>
+    <label for="nova">Nova lozinka</label>
+    <input id="nova" type="password" autocomplete="new-password">
+    <label for="nova2">Ponovi lozinku</label>
+    <input id="nova2" type="password" autocomplete="new-password">
+    <button id="dugmeLozinka" type="button">Sačuvaj</button>
+    <div id="greska2" class="greska sakriveno"></div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const pokazi = (el, da) => el.classList.toggle('sakriveno', !da);
+const dalje = new URLSearchParams(location.search).get('dalje');
+const kuda = dalje || '/admin.html';
+
+// Svaka uloga ide na SVOJ prvi ekran. Operater na /admin.html dobija
+// samo poruku o zabrani pristupa i misli da aplikacija ne radi.
+function gde(uloga){
+  if (dalje) return dalje;
+  if (uloga === 'uprava')   return '/uprava.html';
+  if (uloga === 'operater') return '/promet.html';
+  return kuda;
+}
+
+$('dugme').onclick = async () => {
+  $('dugme').disabled = true; pokazi($('greska'), false);
+  try{
+    const o = await fetch('/api/prijava', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email: $('email').value.trim(), lozinka: $('lozinka').value })
+    });
+    const d = await o.json();
+    if(!o.ok) throw new Error(d.greska || 'Prijava nije uspela.');
+    if(d.mora_promeniti){
+      pokazi($('ekranPrijava'), false); pokazi($('ekranLozinka'), true);
+      window._uloga = d.uloga; $('nova').focus();
+    } else location.href = gde(d.uloga);
+  }catch(e){
+    $('greska').textContent = e.message; pokazi($('greska'), true); $('dugme').disabled = false;
+  }
+};
+
+$('dugmeLozinka').onclick = async () => {
+  pokazi($('greska2'), false);
+  if($('nova').value.length < 10)
+    { $('greska2').textContent = 'Najmanje 10 znakova.'; return pokazi($('greska2'), true); }
+  if($('nova').value !== $('nova2').value)
+    { $('greska2').textContent = 'Lozinke se ne poklapaju.'; return pokazi($('greska2'), true); }
+  try{
+    const o = await fetch('/api/lozinka', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ nova: $('nova').value }) });
+    const d = await o.json();
+    if(!o.ok) throw new Error(d.greska || 'Greška.');
+    location.href = gde(window._uloga);
+  }catch(e){ $('greska2').textContent = e.message; pokazi($('greska2'), true); }
+};
+
+['email','lozinka'].forEach(id =>
+  $(id).addEventListener('keydown', e => { if(e.key === 'Enter') $('dugme').click(); }));
+['nova','nova2'].forEach(id =>
+  $(id).addEventListener('keydown', e => { if(e.key === 'Enter') $('dugmeLozinka').click(); }));
+
+// već prijavljen?
+fetch('/api/ja').then(r => r.ok ? r.json() : null)
+  .then(d => { if(d && !d.mora_promeniti) location.href = gde(d.uloga); }).catch(()=>{});
+$('email').focus();
+</script>
+</body>
+</html>

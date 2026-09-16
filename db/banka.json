@@ -1,0 +1,1990 @@
+{
+  "_uputstvo": [
+    "Banka pitanja za ugostiteljstvo — HACCP i dobra higijenska praksa.",
+    "Stavke sa \"zahteva_potvrdu\": true sadrže brojku ili pravilo koje zavisi od objekta.",
+    "Zamenite ih vrednostima iz HACCP plana klijenta pre prvog merenja.",
+    "Dok je zahteva_potvrdu = true i potvrdio = null, stavka se NE servira.",
+    "Klijent ne ocenjuje pedagogiju — označava samo ono što je činjenično netačno kod njega."
+  ],
+  "firma": {
+    "naziv": "Hotel d.o.o.",
+    "delatnost": "Hotelijerstvo i ugostiteljstvo",
+    "standardi": [
+      "HACCP",
+      "Dobra higijenska praksa"
+    ],
+    "_napomena": "Zameniti nazivom stvarnog klijenta pre prvog merenja."
+  },
+  "program": {
+    "naziv": "Bezbednost hrane i higijena — sezonska ekipa",
+    "godina": 2027,
+    "pravni_osnov": "Zakon o bezbjednosti hrane · Vodič za dobru higijensku praksu u poslovanju hranom (PKCG) · propisi o zaštiti i zdravlju na radu"
+  },
+  "nacrt": {
+    "verzija": "1.0",
+    "ukupno_stavki": 22,
+    "prag_teme": 70,
+    "napomena": "Težina teme određena je nivoom rizika, ne vremenom na obuci. Svaka tema ima najmanje tri pitanja, pa je sud o pojedincu valjan za sve teme."
+  },
+  "grupa": {
+    "naziv": "Sezonska ekipa — kuhinja i restoran",
+    "lokacija": "Hotel",
+    "prefiks_sifre": "H",
+    "broj_planiranih": 80,
+    "_napomena": "prefiks: P proizvodnja · H hotelijerstvo · K konsalting"
+  },
+  "radna_mesta": [
+    {
+      "naziv": "Kuhinja — priprema",
+      "opis_poslova": "Priprema i termička obrada jela, rad nožem, friteza, štednjak, konvektomat",
+      "povecan_rizik": true,
+      "sifre_opasnosti": [
+        "01",
+        "07",
+        "10",
+        "25",
+        "27",
+        "32"
+      ],
+      "mere": "Zaštitna rukavica otporna na sečenje pri rasecanju; mašina se zaustavlja i obezbeđuje pre otklanjanja zastoja; kontrola temperature u centru proizvoda uz vreme zadržavanja",
+      "lzo": "Kecelja, kapa, obuća sa neklizajućim đonom, termootporne rukavice, rukavica otporna na sečenje",
+      "obavestenja": "HACCP plan objekta; plan čišćenja i dezinfekcije; plan upravljanja alergenima; uputstvo za rad sa toplom opremom",
+      "rukovodilac_prati": "Kuhinja — priprema, Kuhinja — hladna kuhinja"
+    },
+    {
+      "naziv": "Kuhinja — hladna kuhinja",
+      "opis_poslova": "Priprema salata, hladnih predjela i deserta, rad sa hranom koja se ne termički obrađuje",
+      "povecan_rizik": false,
+      "sifre_opasnosti": [
+        "07",
+        "10",
+        "27",
+        "33"
+      ],
+      "mere": "Razdvajanje pribora i površina od sirovog mesa; kontrola temperature hladne linije; posebna pažnja pri pripremi jela za goste sa alergijama",
+      "lzo": "Kecelja, kapa, obuća sa neklizajućim đonom, rukavice za jednokratnu upotrebu",
+      "obavestenja": "HACCP plan objekta; plan upravljanja alergenima; uputstvo za hladnu kuhinju",
+      "rukovodilac_prati": "Kuhinja — hladna kuhinja"
+    },
+    {
+      "naziv": "Restoran i šank",
+      "opis_poslova": "Usluživanje gostiju, izdavanje jela sa tople i hladne linije, informisanje gosta o sastavu jela",
+      "povecan_rizik": false,
+      "sifre_opasnosti": [
+        "03",
+        "10",
+        "27",
+        "33",
+        "36"
+      ],
+      "mere": "Provera podatka o alergenima pre potvrde gostu; kontrola temperature na toploj i hladnoj liniji pri izdavanju",
+      "lzo": "Radna odeća, obuća sa neklizajućim đonom",
+      "obavestenja": "Dokumentacija o sastavu jela i alergenima; uputstvo za rad na liniji izdavanja",
+      "rukovodilac_prati": "Restoran i šank"
+    },
+    {
+      "naziv": "Prijem i magacin",
+      "opis_poslova": "Prijem robe, merenje temperature, evidentiranje isporuka, skladištenje i praćenje rokova",
+      "povecan_rizik": false,
+      "sifre_opasnosti": [
+        "03",
+        "08",
+        "10",
+        "27",
+        "32"
+      ],
+      "mere": "Merenje temperature u centru najdebljeg dela komada; odbijanje prijema i evidentiranje odstupanja pri prekoračenju granice; razdvojeno skladištenje sirovog i gotovog",
+      "lzo": "Zaštitna jakna za rad u hladnom, rukavice, obuća sa neklizajućim đonom",
+      "obavestenja": "HACCP plan — kontrolna tačka prijema; plan kontrole dobavljača; uputstvo za skladištenje",
+      "rukovodilac_prati": "Prijem i magacin"
+    },
+    {
+      "naziv": "Pranje posuđa",
+      "opis_poslova": "Pranje crnog i belog posuđa, rukovanje mašinom za pranje i hemijskim sredstvima",
+      "povecan_rizik": true,
+      "sifre_opasnosti": [
+        "07",
+        "10",
+        "23",
+        "25",
+        "27"
+      ],
+      "mere": "Obavezne gumene zaštitne rukavice; sredstva se koriste u originalnom pakovanju i propisanoj koncentraciji; kontrola temperature ispiranja",
+      "lzo": "Gumene rukavice, vodootporna kecelja, obuća sa neklizajućim đonom",
+      "obavestenja": "Plan čišćenja i dezinfekcije; bezbednosni listovi hemijskih sredstava",
+      "rukovodilac_prati": "Pranje posuđa"
+    }
+  ],
+  "teme": [
+    {
+      "oznaka": "H1",
+      "naziv": "Prijem, hladan lanac i temperaturni režimi",
+      "nivo_rizika": "kritican",
+      "izvor": "HACCP plan — kontrolne tačke prijema, hlađenja i termičke obrade"
+    },
+    {
+      "oznaka": "H2",
+      "naziv": "Lična higijena i zdravstveno stanje",
+      "nivo_rizika": "visok",
+      "izvor": "Dobra higijenska praksa; pravila objekta"
+    },
+    {
+      "oznaka": "H3",
+      "naziv": "Unakrsna kontaminacija i rukovanje priborom",
+      "nivo_rizika": "visok",
+      "izvor": "Dobra higijenska praksa; plan rasporeda pribora"
+    },
+    {
+      "oznaka": "H4",
+      "naziv": "Odstupanja i korektivne mere",
+      "nivo_rizika": "kritican",
+      "izvor": "HACCP plan — korektivne mere"
+    },
+    {
+      "oznaka": "H5",
+      "naziv": "Alergeni i informisanje gosta",
+      "nivo_rizika": "kritican",
+      "izvor": "Plan upravljanja alergenima; dokumentacija o sastavu jela"
+    },
+    {
+      "oznaka": "H6",
+      "naziv": "Čišćenje, otpad i održavanje",
+      "nivo_rizika": "srednji",
+      "izvor": "Plan čišćenja i dezinfekcije; plan kontrole štetočina"
+    }
+  ],
+  "porodice": [
+    {
+      "oznaka": "F1.1",
+      "tema": "H1",
+      "kognitivni_nivo": "primena",
+      "je_sidro": false,
+      "konstrukt": "Postupanje pri prijemu namirnice iznad kritične granice",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": true,
+          "tekst": "Dostava svežeg mesa stiže na ulaz kuhinje. Meriš temperaturu i dobijaš vrednost iznad kritične granice iz vašeg plana. Šta radiš?",
+          "opcije": [
+            {
+              "tekst": "Odbijam prijem, evidentiram odstupanje i odmah obaveštavam odgovorno lice",
+              "tacna": true
+            },
+            {
+              "tekst": "Primam i odmah stavljam u komoru da se ohladi",
+              "tacna": false
+            },
+            {
+              "tekst": "Primam jer je dobavljač stalan i do sada nije bilo problema",
+              "tacna": false
+            },
+            {
+              "tekst": "Primam i skraćujem rok upotrebe za pola",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 2,
+          "zahteva_potvrdu": true,
+          "tekst": "Stiže sveža riba na ledu, ali temperatura je iznad propisane granice. Šta radiš?",
+          "opcije": [
+            {
+              "tekst": "Odbijam prijem, evidentiram odstupanje i obaveštavam odgovorno lice",
+              "tacna": true
+            },
+            {
+              "tekst": "Primam i dodajem led da se rashladi",
+              "tacna": false
+            },
+            {
+              "tekst": "Primam jer riba na dodir deluje sveže",
+              "tacna": false
+            },
+            {
+              "tekst": "Primam i planiram je za današnji meni",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 3,
+          "zahteva_potvrdu": true,
+          "tekst": "Isporuka smrznutog proizvoda stiže toplija od propisane granice. Šta radiš?",
+          "opcije": [
+            {
+              "tekst": "Odbijam prijem, evidentiram odstupanje i obaveštavam odgovorno lice",
+              "tacna": true
+            },
+            {
+              "tekst": "Primam i hitno stavljam u zamrzivač",
+              "tacna": false
+            },
+            {
+              "tekst": "Primam jer je proizvod još uvek tvrd na dodir",
+              "tacna": false
+            },
+            {
+              "tekst": "Primam i beležim napomenu na otpremnici",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 4,
+          "zahteva_potvrdu": true,
+          "tekst": "Dostava svežeg mleka i mlečnih proizvoda je iznad kritične granice. Šta radiš?",
+          "opcije": [
+            {
+              "tekst": "Odbijam prijem, evidentiram odstupanje i obaveštavam odgovorno lice",
+              "tacna": true
+            },
+            {
+              "tekst": "Primam i odmah prebacujem u rashladnu komoru",
+              "tacna": false
+            },
+            {
+              "tekst": "Primam jer nema vidljivih promena u proizvodu",
+              "tacna": false
+            },
+            {
+              "tekst": "Primam i koristim isti dan",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "F1.2",
+      "tema": "H1",
+      "kognitivni_nivo": "razumevanje",
+      "je_sidro": false,
+      "konstrukt": "Ispravna tehnika merenja temperature",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": false,
+          "tekst": "Gde se meri temperatura komada namirnice pri prijemu?",
+          "opcije": [
+            {
+              "tekst": "U centru najdebljeg dela komada",
+              "tacna": true
+            },
+            {
+              "tekst": "Na površini, jer se tako brže očitava",
+              "tacna": false
+            },
+            {
+              "tekst": "U vazduhu u prostoru za istovar",
+              "tacna": false
+            },
+            {
+              "tekst": "Na ambalaži, uz spoljnu foliju",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 2,
+          "zahteva_potvrdu": false,
+          "tekst": "Šta radiš sa ubodnim termometrom između dva merenja?",
+          "opcije": [
+            {
+              "tekst": "Očistim ga i dezinfikujem pre svakog sledećeg merenja",
+              "tacna": true
+            },
+            {
+              "tekst": "Obrišem ga rukavicom da ne gubim vreme",
+              "tacna": false
+            },
+            {
+              "tekst": "Ništa, ako je namirnica iz iste isporuke",
+              "tacna": false
+            },
+            {
+              "tekst": "Isperem ga hladnom vodom na kraju smene",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 3,
+          "zahteva_potvrdu": false,
+          "tekst": "Zašto merenje na površini komada nije prihvatljivo?",
+          "opcije": [
+            {
+              "tekst": "Površina se brzo prilagodi okolini i ne pokazuje stanje unutrašnjosti",
+              "tacna": true
+            },
+            {
+              "tekst": "Zato što se sonda tako brže tupi",
+              "tacna": false
+            },
+            {
+              "tekst": "Zato što je površina uvek toplija od granice",
+              "tacna": false
+            },
+            {
+              "tekst": "Nije tačno — površinsko merenje je dozvoljeno",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 4,
+          "zahteva_potvrdu": false,
+          "tekst": "Kada se proverava ispravnost termometra?",
+          "opcije": [
+            {
+              "tekst": "Po planu kalibracije, i uvek kad postoji sumnja u očitanje",
+              "tacna": true
+            },
+            {
+              "tekst": "Samo kad se termometar fizički ošteti",
+              "tacna": false
+            },
+            {
+              "tekst": "Jednom, pri nabavci",
+              "tacna": false
+            },
+            {
+              "tekst": "Ne proverava se, dovoljno je da pokazuje broj",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "F1.3",
+      "tema": "H1",
+      "kognitivni_nivo": "primena",
+      "je_sidro": false,
+      "konstrukt": "Postupanje pri prekidu hladnog lanca u objektu",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": false,
+          "tekst": "Vrata rashladne komore ostala su otvorena duže vreme i temperatura je porasla iznad granice. Šta radiš prvo?",
+          "opcije": [
+            {
+              "tekst": "Zatvaram vrata, izdvajam robu do procene i odmah prijavljujem odstupanje",
+              "tacna": true
+            },
+            {
+              "tekst": "Zatvaram vrata i čekam da temperatura padne, bez prijave",
+              "tacna": false
+            },
+            {
+              "tekst": "Premeštam robu u drugu komoru i nastavljam rad",
+              "tacna": false
+            },
+            {
+              "tekst": "Upisujem u dnevnik na kraju smene",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 2,
+          "zahteva_potvrdu": false,
+          "tekst": "U ponedeljak ujutru utvrđuješ da je rashladni uređaj stajao tokom vikenda. Šta radiš?",
+          "opcije": [
+            {
+              "tekst": "Izdvajam celu robu, ne puštam je u upotrebu i odmah prijavljujem",
+              "tacna": true
+            },
+            {
+              "tekst": "Proveravam miris i izgled pa odlučujem",
+              "tacna": false
+            },
+            {
+              "tekst": "Koristim je jer će ionako ići na termičku obradu",
+              "tacna": false
+            },
+            {
+              "tekst": "Uključujem uređaj i nastavljam po planu",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 3,
+          "zahteva_potvrdu": false,
+          "tekst": "Ujutru rashladna vitrina pokazuje temperaturu iznad propisane granice. Šta radiš?",
+          "opcije": [
+            {
+              "tekst": "Izdvajam proizvode, prijavljujem odstupanje i ne izlažem ih dok se ne odluči",
+              "tacna": true
+            },
+            {
+              "tekst": "Snižavam termostat i ostavljam robu izloženu",
+              "tacna": false
+            },
+            {
+              "tekst": "Prebacujem robu na kraj vitrine gde je hladnije",
+              "tacna": false
+            },
+            {
+              "tekst": "Zapisujem očitanje i nastavljam rad",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 4,
+          "zahteva_potvrdu": true,
+          "tekst": "Roba je ostala na ulazu duže od dozvoljenog pre unosa u komoru. Šta radiš?",
+          "opcije": [
+            {
+              "tekst": "Merim temperaturu, evidentiram odstupanje i postupam po korektivnoj meri",
+              "tacna": true
+            },
+            {
+              "tekst": "Odmah unosim u komoru i ne beležim ništa",
+              "tacna": false
+            },
+            {
+              "tekst": "Ostavljam još malo, jer je u kuhinji ionako hladno",
+              "tacna": false
+            },
+            {
+              "tekst": "Prijavljujem samo ako je roba topla na dodir",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "F1.4",
+      "tema": "H1",
+      "kognitivni_nivo": "primena",
+      "je_sidro": false,
+      "konstrukt": "Hlađenje termički obrađene hrane i čuvanje ostataka",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": true,
+          "tekst": "Kuvano jelo treba ohladiti za čuvanje. Kako se to radi?",
+          "opcije": [
+            {
+              "tekst": "Brzo, u plitkim posudama, u propisanom roku i uz merenje temperature",
+              "tacna": true
+            },
+            {
+              "tekst": "Ostavim da se hladi na radnom stolu do kraja smene",
+              "tacna": false
+            },
+            {
+              "tekst": "Stavljam vruć lonac direktno u komoru",
+              "tacna": false
+            },
+            {
+              "tekst": "Hladim ga na sobnoj temperaturi preko noći",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 2,
+          "zahteva_potvrdu": false,
+          "tekst": "Šta radiš sa hranom koja je bila izložena na toploj liniji, a nije poslužena?",
+          "opcije": [
+            {
+              "tekst": "Postupam po pravilu objekta o čuvanju ili odbacivanju, uz zapis",
+              "tacna": true
+            },
+            {
+              "tekst": "Vraćam je u komoru i koristim sutradan",
+              "tacna": false
+            },
+            {
+              "tekst": "Ostavljam je do sledeće smene na toploj liniji",
+              "tacna": false
+            },
+            {
+              "tekst": "Podgrevam je više puta dok se ne potroši",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 3,
+          "zahteva_potvrdu": false,
+          "tekst": "Koliko puta se termički obrađeno jelo sme podgrevati?",
+          "opcije": [
+            {
+              "tekst": "Po pravilu objekta — višekratno podgrevanje nije dozvoljeno",
+              "tacna": true
+            },
+            {
+              "tekst": "Neograničeno, dok god je vruće",
+              "tacna": false
+            },
+            {
+              "tekst": "Tri puta, ako se svaki put dobro provri",
+              "tacna": false
+            },
+            {
+              "tekst": "Dok gost ne primeti razliku u ukusu",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 4,
+          "zahteva_potvrdu": false,
+          "tekst": "Zašto se hrana hladi u plitkim posudama, a ne u dubokom loncu?",
+          "opcije": [
+            {
+              "tekst": "Zato što se tanji sloj brže ohladi i kraće ostaje u opasnom rasponu",
+              "tacna": true
+            },
+            {
+              "tekst": "Zbog lakšeg slaganja u komori",
+              "tacna": false
+            },
+            {
+              "tekst": "Zbog izgleda i porcionisanja",
+              "tacna": false
+            },
+            {
+              "tekst": "Nema razlike, bitno je samo da uđe u komoru",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "A1",
+      "tema": "H1",
+      "kognitivni_nivo": "prisecanje",
+      "je_sidro": true,
+      "konstrukt": "SIDRO — pojam kritične kontrolne tačke",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": false,
+          "tekst": "Šta je kritična kontrolna tačka?",
+          "opcije": [
+            {
+              "tekst": "Korak u procesu na kome se kontrolom sprečava ili svodi na prihvatljiv nivo opasnost po bezbednost hrane",
+              "tacna": true
+            },
+            {
+              "tekst": "Mesto u kuhinji na kome se najčešće kvari oprema",
+              "tacna": false
+            },
+            {
+              "tekst": "Tačka na kojoj se meri utrošak namirnica",
+              "tacna": false
+            },
+            {
+              "tekst": "Trenutak kada auditor ulazi u kuhinju",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "F2.1",
+      "tema": "H2",
+      "kognitivni_nivo": "primena",
+      "je_sidro": false,
+      "konstrukt": "Trenuci u kojima je pranje ruku obavezno",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": false,
+          "tekst": "Radiš na pripremi sirovog mesa i pozvan si da pomogneš na izdavanju gotovih jela. Šta radiš pre prelaska?",
+          "opcije": [
+            {
+              "tekst": "Perem i dezinfikujem ruke i menjam zaštitnu odeću po pravilima objekta",
+              "tacna": true
+            },
+            {
+              "tekst": "Menjam samo rukavice",
+              "tacna": false
+            },
+            {
+              "tekst": "Brišem ruke o čistu krpu i prelazim",
+              "tacna": false
+            },
+            {
+              "tekst": "Prelazim odmah jer je jelo već termički obrađeno",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 2,
+          "zahteva_potvrdu": false,
+          "tekst": "Vraćaš se sa pauze u kuhinju. Šta je obavezno?",
+          "opcije": [
+            {
+              "tekst": "Pranje i dezinfekcija ruku pre ulaska u radni prostor",
+              "tacna": true
+            },
+            {
+              "tekst": "Ništa, ako tokom pauze nisi ništa dodirivao",
+              "tacna": false
+            },
+            {
+              "tekst": "Samo navlačenje novih rukavica",
+              "tacna": false
+            },
+            {
+              "tekst": "Pranje ruku samo ako si bio u toaletu",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 3,
+          "zahteva_potvrdu": false,
+          "tekst": "Tokom rada popravljaš kapu i dodiruješ kosu. Šta radiš?",
+          "opcije": [
+            {
+              "tekst": "Perem i dezinfikujem ruke pre nastavka rada",
+              "tacna": true
+            },
+            {
+              "tekst": "Nastavljam, jer sam dodirnuo samo kapu",
+              "tacna": false
+            },
+            {
+              "tekst": "Brišem ruke o kecelju",
+              "tacna": false
+            },
+            {
+              "tekst": "Perem ruke na kraju te operacije",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 4,
+          "zahteva_potvrdu": false,
+          "tekst": "Izneo si otpad i praznu ambalažu iz kuhinje. Šta radiš pre povratka na radno mesto?",
+          "opcije": [
+            {
+              "tekst": "Perem i dezinfikujem ruke i menjam rukavice",
+              "tacna": true
+            },
+            {
+              "tekst": "Nastavljam rad, jer sam nosio rukavice",
+              "tacna": false
+            },
+            {
+              "tekst": "Ispiram rukavice vodom i vraćam se",
+              "tacna": false
+            },
+            {
+              "tekst": "Perem ruke samo ako je ambalaža bila mokra",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "F2.2",
+      "tema": "H2",
+      "kognitivni_nivo": "razumevanje",
+      "je_sidro": false,
+      "konstrukt": "Rukavice, radna odeća i zabranjeni predmeti",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": false,
+          "tekst": "Da li nošenje rukavica zamenjuje pranje ruku?",
+          "opcije": [
+            {
+              "tekst": "Ne — ruke se peru pre navlačenja rukavica i pri svakoj njihovoj zameni",
+              "tacna": true
+            },
+            {
+              "tekst": "Da, dok god su rukavice neoštećene",
+              "tacna": false
+            },
+            {
+              "tekst": "Da, ako se rukavice dezinfikuju u toku rada",
+              "tacna": false
+            },
+            {
+              "tekst": "Zavisi da li se radi sa sirovom ili gotovom hranom",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 2,
+          "zahteva_potvrdu": false,
+          "tekst": "Šta od navedenog se ne unosi u kuhinju?",
+          "opcije": [
+            {
+              "tekst": "Nakit, sat, mobilni telefon i lična hrana i piće",
+              "tacna": true
+            },
+            {
+              "tekst": "Samo mobilni telefon",
+              "tacna": false
+            },
+            {
+              "tekst": "Samo hrana i piće",
+              "tacna": false
+            },
+            {
+              "tekst": "Ništa od navedenog nije zabranjeno ako se drži u džepu",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 3,
+          "zahteva_potvrdu": false,
+          "tekst": "Gde se sme pušiti i jesti?",
+          "opcije": [
+            {
+              "tekst": "Isključivo u prostorima predviđenim za to, van kuhinje i pripadajućih prostorija",
+              "tacna": true
+            },
+            {
+              "tekst": "U kuhinji, ako nema gostiju",
+              "tacna": false
+            },
+            {
+              "tekst": "Pored ulaza u kuhinju",
+              "tacna": false
+            },
+            {
+              "tekst": "Bilo gde tokom pauze",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 4,
+          "zahteva_potvrdu": false,
+          "tekst": "Radna odeća se menja:",
+          "opcije": [
+            {
+              "tekst": "Po pravilima objekta, a obavezno kad se zaprlja",
+              "tacna": true
+            },
+            {
+              "tekst": "Jednom nedeljno",
+              "tacna": false
+            },
+            {
+              "tekst": "Kad se primeti neprijatan miris",
+              "tacna": false
+            },
+            {
+              "tekst": "Na kraju sezone",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "F2.3",
+      "tema": "H2",
+      "kognitivni_nivo": "primena",
+      "je_sidro": false,
+      "konstrukt": "Prijava bolesti i postupanje sa povredama",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": false,
+          "tekst": "Posekao si se po prstu tokom smene. Posekotina je mala. Šta radiš?",
+          "opcije": [
+            {
+              "tekst": "Prekidam rad, prijavljujem, ranu zaštitim vodootpornim obojenim flasterom i nosim rukavicu do zarastanja",
+              "tacna": true
+            },
+            {
+              "tekst": "Navlačim rukavicu preko rane i nastavljam",
+              "tacna": false
+            },
+            {
+              "tekst": "Perem ruku i nastavljam jer je posekotina mala",
+              "tacna": false
+            },
+            {
+              "tekst": "Prijavljujem na kraju smene",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 2,
+          "zahteva_potvrdu": false,
+          "tekst": "Imao si stomačne tegobe i proliv preko noći. Ujutru se osećaš bolje. Šta radiš?",
+          "opcije": [
+            {
+              "tekst": "Prijavljujem stanje pretpostavljenom pre ulaska u smenu i postupam po njegovoj odluci",
+              "tacna": true
+            },
+            {
+              "tekst": "Ulazim u rad jer tegoba više nema",
+              "tacna": false
+            },
+            {
+              "tekst": "Radim, ali samo na izdavanju",
+              "tacna": false
+            },
+            {
+              "tekst": "Ne prijavljujem, jer nemam temperaturu",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 3,
+          "zahteva_potvrdu": false,
+          "tekst": "Tokom rada osećaš potrebu da kineš. Šta radiš?",
+          "opcije": [
+            {
+              "tekst": "Okrećem se od hrane, izlazim iz radnog prostora, perem i dezinfikujem ruke pre povratka",
+              "tacna": true
+            },
+            {
+              "tekst": "Kinem u rukav i nastavljam rad",
+              "tacna": false
+            },
+            {
+              "tekst": "Kinem u rukavicu pa je menjam",
+              "tacna": false
+            },
+            {
+              "tekst": "Nastavljam rad jer nosim masku",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 4,
+          "zahteva_potvrdu": false,
+          "tekst": "Kolega ima gnojnu ranu na ruci i radi sa hranom. Šta je ispravno?",
+          "opcije": [
+            {
+              "tekst": "Prijavljuje se pretpostavljenom — takva rana ne dozvoljava rad sa hranom",
+              "tacna": true
+            },
+            {
+              "tekst": "Neka radi, ako preko stavi rukavicu",
+              "tacna": false
+            },
+            {
+              "tekst": "Neka radi samo na pranju posuđa",
+              "tacna": false
+            },
+            {
+              "tekst": "Nije moja stvar, on odgovara za sebe",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "A2",
+      "tema": "H2",
+      "kognitivni_nivo": "prisecanje",
+      "je_sidro": true,
+      "konstrukt": "SIDRO — prijava zdravstvenog stanja",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": false,
+          "tekst": "Kada se prijavljuje stomačna infekcija ili proliv?",
+          "opcije": [
+            {
+              "tekst": "Odmah, pre ulaska u smenu, pretpostavljenom",
+              "tacna": true
+            },
+            {
+              "tekst": "Samo ako traje duže od tri dana",
+              "tacna": false
+            },
+            {
+              "tekst": "Samo ako lekar tako odredi",
+              "tacna": false
+            },
+            {
+              "tekst": "Ne prijavljuje se ako se osećate bolje",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "F3.1",
+      "tema": "H3",
+      "kognitivni_nivo": "primena",
+      "je_sidro": false,
+      "konstrukt": "Razdvajanje sirovog i gotovog",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": false,
+          "tekst": "Ista daska je upravo korišćena za sirovo meso, a treba za povrće koje ide u salatu. Šta radiš?",
+          "opcije": [
+            {
+              "tekst": "Uzimam dasku namenjenu toj nameni, a korišćenu šaljem na pranje i dezinfekciju",
+              "tacna": true
+            },
+            {
+              "tekst": "Brišem je krpom i koristim",
+              "tacna": false
+            },
+            {
+              "tekst": "Okrećem je na drugu stranu",
+              "tacna": false
+            },
+            {
+              "tekst": "Koristim je jer će salata biti oprana",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 2,
+          "zahteva_potvrdu": false,
+          "tekst": "U komori se nalazi sirovo meso. Gde se odlaže gotovo jelo?",
+          "opcije": [
+            {
+              "tekst": "U prostor namenjen gotovim jelima, fizički odvojen od sirovine",
+              "tacna": true
+            },
+            {
+              "tekst": "Na isti regal, ali na gornju policu",
+              "tacna": false
+            },
+            {
+              "tekst": "Pored sirovog mesa, ako je pokriveno folijom",
+              "tacna": false
+            },
+            {
+              "tekst": "Bilo gde, jer je komora jedinstven prostor",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 3,
+          "zahteva_potvrdu": false,
+          "tekst": "Nož kojim je sečeno sirovo pile treba upotrebiti na kuvanom mesu. Šta je ispravno?",
+          "opcije": [
+            {
+              "tekst": "Ne prenosi se — koristi se pribor za tu namenu, a nož ide na pranje i dezinfekciju",
+              "tacna": true
+            },
+            {
+              "tekst": "Ispere se toplom vodom i koristi",
+              "tacna": false
+            },
+            {
+              "tekst": "Obriše se papirnim ubrusom i koristi",
+              "tacna": false
+            },
+            {
+              "tekst": "Sme, jer se kuvano meso dalje ne zagreva",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 4,
+          "zahteva_potvrdu": false,
+          "tekst": "Kondenzat kaplje iznad radnog stola u kuhinji. Šta radiš?",
+          "opcije": [
+            {
+              "tekst": "Sklanjam hranu, prijavljujem i ne koristim to mesto dok se ne otkloni",
+              "tacna": true
+            },
+            {
+              "tekst": "Postavljam posudu ispod i nastavljam rad",
+              "tacna": false
+            },
+            {
+              "tekst": "Pomeram sto pola metra i nastavljam",
+              "tacna": false
+            },
+            {
+              "tekst": "Prekrivam hranu folijom i nastavljam",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "F3.2",
+      "tema": "H3",
+      "kognitivni_nivo": "razumevanje",
+      "je_sidro": false,
+      "konstrukt": "Označavanje pribora i kretanje kroz kuhinju",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": false,
+          "tekst": "Čemu služi obeležavanje dasaka i pribora bojama?",
+          "opcije": [
+            {
+              "tekst": "Da se pribor ne prenosi između namena i tako spreči unakrsna kontaminacija",
+              "tacna": true
+            },
+            {
+              "tekst": "Da se lakše zaduži po zaposlenom",
+              "tacna": false
+            },
+            {
+              "tekst": "Da se prati koliko je pribora nabavljeno",
+              "tacna": false
+            },
+            {
+              "tekst": "Da se razlikuje nova od stare opreme",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 2,
+          "zahteva_potvrdu": false,
+          "tekst": "Zašto se prati kretanje od prljavih ka čistim delovima kuhinje, a ne obrnuto?",
+          "opcije": [
+            {
+              "tekst": "Da se prljavo ne unosi u prostor gde se priprema gotova hrana",
+              "tacna": true
+            },
+            {
+              "tekst": "Zbog uštede vremena",
+              "tacna": false
+            },
+            {
+              "tekst": "Zbog rasporeda opreme",
+              "tacna": false
+            },
+            {
+              "tekst": "Nije bitno, važno je samo prati ruke",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 3,
+          "zahteva_potvrdu": false,
+          "tekst": "Pronašao si dasku pogrešne boje u zoni pripreme salate. Šta radiš?",
+          "opcije": [
+            {
+              "tekst": "Izuzimam je iz upotrebe, prijavljujem i vraćam u namenu kojoj pripada",
+              "tacna": true
+            },
+            {
+              "tekst": "Koristim je jer je čista",
+              "tacna": false
+            },
+            {
+              "tekst": "Ostavljam je sa strane i nastavljam rad",
+              "tacna": false
+            },
+            {
+              "tekst": "Prebojavam je u odgovarajuću boju",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 4,
+          "zahteva_potvrdu": false,
+          "tekst": "Dobavljač želi da uđe u kuhinju da ostavi robu. Šta je ispravno?",
+          "opcije": [
+            {
+              "tekst": "Roba se preuzima na predviđenom mestu — dobavljači ne ulaze u kuhinjski prostor",
+              "tacna": true
+            },
+            {
+              "tekst": "Neka uđe ako nosi kapu",
+              "tacna": false
+            },
+            {
+              "tekst": "Neka uđe ako je kratko",
+              "tacna": false
+            },
+            {
+              "tekst": "Neka uđe ako ga poznajem",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "F3.3",
+      "tema": "H3",
+      "kognitivni_nivo": "primena",
+      "je_sidro": false,
+      "konstrukt": "Odmrzavanje i priprema",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": false,
+          "tekst": "Kako se pravilno odmrzava smrznuto meso?",
+          "opcije": [
+            {
+              "tekst": "U rashladnom uređaju, na predviđenom mestu, odvojeno i pokriveno",
+              "tacna": true
+            },
+            {
+              "tekst": "Na radnom stolu u kuhinji, preko dana",
+              "tacna": false
+            },
+            {
+              "tekst": "U toploj vodi u sudoperi",
+              "tacna": false
+            },
+            {
+              "tekst": "Na prozoru, da se brže odmrzne",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 2,
+          "zahteva_potvrdu": false,
+          "tekst": "Šta radiš sa tečnošću koja iscuri prilikom odmrzavanja?",
+          "opcije": [
+            {
+              "tekst": "Uklanjam je i čistim površinu, pazeći da ne dođe u dodir sa drugom hranom",
+              "tacna": true
+            },
+            {
+              "tekst": "Ostavljam je, ispariće",
+              "tacna": false
+            },
+            {
+              "tekst": "Koristim je za sos",
+              "tacna": false
+            },
+            {
+              "tekst": "Prosipam je na susednu radnu površinu",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 3,
+          "zahteva_potvrdu": false,
+          "tekst": "Sme li se jednom odmrznuta namirnica ponovo zamrznuti?",
+          "opcije": [
+            {
+              "tekst": "Ne, osim ako je u međuvremenu termički obrađena",
+              "tacna": true
+            },
+            {
+              "tekst": "Da, ako je bila odmrznuta kratko",
+              "tacna": false
+            },
+            {
+              "tekst": "Da, ako je i dalje hladna",
+              "tacna": false
+            },
+            {
+              "tekst": "Da, ako se odmah stavi u zamrzivač",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 4,
+          "zahteva_potvrdu": false,
+          "tekst": "Oprano povrće se odlaže:",
+          "opcije": [
+            {
+              "tekst": "Na čistu površinu ili u čistu posudu namenjenu toj nameni",
+              "tacna": true
+            },
+            {
+              "tekst": "Nazad u istu gajbu u kojoj je stiglo",
+              "tacna": false
+            },
+            {
+              "tekst": "Na radni sto gde se rasecalo meso",
+              "tacna": false
+            },
+            {
+              "tekst": "U sudoperu do upotrebe",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "A3",
+      "tema": "H3",
+      "kognitivni_nivo": "prisecanje",
+      "je_sidro": true,
+      "konstrukt": "SIDRO — pojam unakrsne kontaminacije",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": false,
+          "tekst": "Šta je unakrsna kontaminacija?",
+          "opcije": [
+            {
+              "tekst": "Prenos opasnosti sa jedne namirnice, površine, pribora ili osobe na drugu namirnicu",
+              "tacna": true
+            },
+            {
+              "tekst": "Kvarenje hrane usled isteka roka upotrebe",
+              "tacna": false
+            },
+            {
+              "tekst": "Mešanje dva jela u istoj posudi",
+              "tacna": false
+            },
+            {
+              "tekst": "Greška u ceni na jelovniku",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "F4.1",
+      "tema": "H4",
+      "kognitivni_nivo": "primena",
+      "je_sidro": false,
+      "konstrukt": "Kome i kada se prijavljuje odstupanje",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": true,
+          "tekst": "Uočio si odstupanje na kritičnoj kontrolnoj tački. Kada se prijavljuje?",
+          "opcije": [
+            {
+              "tekst": "Odmah, odgovornom licu određenom planom, pre nastavka rada",
+              "tacna": true
+            },
+            {
+              "tekst": "Na kraju smene, uz predaju dnevnika",
+              "tacna": false
+            },
+            {
+              "tekst": "Na sledećem sastanku",
+              "tacna": false
+            },
+            {
+              "tekst": "Samo ako se odstupanje ponovi",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 2,
+          "zahteva_potvrdu": false,
+          "tekst": "Pretpostavljeni nije dostupan, a odstupanje je upravo uočeno. Šta radiš?",
+          "opcije": [
+            {
+              "tekst": "Postupam po zameni predviđenoj planom, evidentiram i zaustavljam dalji tok hrane",
+              "tacna": true
+            },
+            {
+              "tekst": "Čekam da se javi i nastavljam rad",
+              "tacna": false
+            },
+            {
+              "tekst": "Sam odlučujem da li je odstupanje značajno",
+              "tacna": false
+            },
+            {
+              "tekst": "Prosleđujem kolegi da on odluči",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 3,
+          "zahteva_potvrdu": false,
+          "tekst": "Odstupanje uočava zaposleni koji nije zadužen za tu tačku. Šta je ispravno?",
+          "opcije": [
+            {
+              "tekst": "Prijavljuje jednako kao i zaduženi — obaveza prijave nije vezana za zaduženje",
+              "tacna": true
+            },
+            {
+              "tekst": "Obaveštava kolegu i time je njegova obaveza ispunjena",
+              "tacna": false
+            },
+            {
+              "tekst": "Ne prijavljuje, jer nije nadležan",
+              "tacna": false
+            },
+            {
+              "tekst": "Prijavljuje samo ako hrana ide direktno gostu",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 4,
+          "zahteva_potvrdu": false,
+          "tekst": "Šta mora da sadrži zapis o odstupanju?",
+          "opcije": [
+            {
+              "tekst": "Šta je uočeno, kada, na kojoj hrani, ko je uočio i koja je mera preduzeta",
+              "tacna": true
+            },
+            {
+              "tekst": "Samo opis onoga što je uočeno",
+              "tacna": false
+            },
+            {
+              "tekst": "Samo ime osobe koja je uočila",
+              "tacna": false
+            },
+            {
+              "tekst": "Dovoljna je usmena prijava",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "F4.2",
+      "tema": "H4",
+      "kognitivni_nivo": "primena",
+      "je_sidro": false,
+      "konstrukt": "Postupanje sa hranom obuhvaćenom odstupanjem",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": false,
+          "tekst": "Šta se dešava sa hranom obuhvaćenom odstupanjem dok traje procena?",
+          "opcije": [
+            {
+              "tekst": "Označava se i drži odvojeno, i ne ide dalje u pripremu ni usluživanje",
+              "tacna": true
+            },
+            {
+              "tekst": "Nastavlja tok, a odluka se donosi pre usluživanja",
+              "tacna": false
+            },
+            {
+              "tekst": "Odmah se baca bez zapisa",
+              "tacna": false
+            },
+            {
+              "tekst": "Vraća se dobavljaču bez evidencije",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 2,
+          "zahteva_potvrdu": false,
+          "tekst": "Kako se određuje obim izdvajanja?",
+          "opcije": [
+            {
+              "tekst": "Obuhvata svu hranu od poslednje ispravne provere do trenutka uočavanja",
+              "tacna": true
+            },
+            {
+              "tekst": "Obuhvata samo komad na kome je odstupanje uočeno",
+              "tacna": false
+            },
+            {
+              "tekst": "Obuhvata celu dnevnu proizvodnju bez izuzetka",
+              "tacna": false
+            },
+            {
+              "tekst": "Određuje ga zaposleni po sopstvenoj proceni",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 3,
+          "zahteva_potvrdu": false,
+          "tekst": "Izdvojena hrana je hitno potrebna za servis. Šta radiš?",
+          "opcije": [
+            {
+              "tekst": "Ne puštam je — odluku donosi isključivo ovlašćeno lice, uz zapis",
+              "tacna": true
+            },
+            {
+              "tekst": "Puštam uz napomenu šefu sale",
+              "tacna": false
+            },
+            {
+              "tekst": "Puštam ako gost nije alergičan",
+              "tacna": false
+            },
+            {
+              "tekst": "Puštam deo koji izgleda ispravno",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 4,
+          "zahteva_potvrdu": false,
+          "tekst": "Zašto se izdvojena hrana fizički odvaja, a ne samo obeležava?",
+          "opcije": [
+            {
+              "tekst": "Da bi se sprečilo nenamerno puštanje u upotrebu pre odluke",
+              "tacna": true
+            },
+            {
+              "tekst": "Zbog lakšeg popisa",
+              "tacna": false
+            },
+            {
+              "tekst": "Zbog uštede prostora u komori",
+              "tacna": false
+            },
+            {
+              "tekst": "Nije potrebno ako se vodi elektronska evidencija",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "A4",
+      "tema": "H4",
+      "kognitivni_nivo": "prisecanje",
+      "je_sidro": true,
+      "konstrukt": "SIDRO — ko odlučuje o izdvojenoj hrani",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": false,
+          "tekst": "Ko sme da odluči da izdvojena hrana ipak ide u upotrebu?",
+          "opcije": [
+            {
+              "tekst": "Isključivo ovlašćeno lice, uz pisani zapis o odluci",
+              "tacna": true
+            },
+            {
+              "tekst": "Šef smene, usmeno",
+              "tacna": false
+            },
+            {
+              "tekst": "Zaposleni koji je odstupanje prijavio",
+              "tacna": false
+            },
+            {
+              "tekst": "Bilo ko, ako je odstupanje otklonjeno",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "F5.1",
+      "tema": "H5",
+      "kognitivni_nivo": "primena",
+      "je_sidro": false,
+      "konstrukt": "Informisanje gosta o alergenima",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": false,
+          "tekst": "Gost pita da li jelo sadrži orašaste plodove, a ti nisi siguran. Šta radiš?",
+          "opcije": [
+            {
+              "tekst": "Proveravam kod odgovornog lica ili u dokumentaciji pre nego što odgovorim",
+              "tacna": true
+            },
+            {
+              "tekst": "Kažem da verovatno ne sadrži",
+              "tacna": false
+            },
+            {
+              "tekst": "Kažem da ne sadrži, jer ih ne vidim u jelu",
+              "tacna": false
+            },
+            {
+              "tekst": "Kažem gostu da izabere nešto drugo",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 2,
+          "zahteva_potvrdu": false,
+          "tekst": "Gost navodi da je alergičan na gluten. Šta je ispravno?",
+          "opcije": [
+            {
+              "tekst": "Obaveštavam kuhinju o alergiji i proveravam sastav i način pripreme pre potvrde",
+              "tacna": true
+            },
+            {
+              "tekst": "Preporučujem jelo koje po izgledu nema testa",
+              "tacna": false
+            },
+            {
+              "tekst": "Kažem da se sve može prilagoditi",
+              "tacna": false
+            },
+            {
+              "tekst": "Skidam vidljive sastojke sa tanjira",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 3,
+          "zahteva_potvrdu": false,
+          "tekst": "Gde se nalazi podatak o alergenima u jelima?",
+          "opcije": [
+            {
+              "tekst": "U dokumentaciji objekta o sastavu jela, dostupnoj zaposlenima",
+              "tacna": true
+            },
+            {
+              "tekst": "Zna ga samo šef kuhinje",
+              "tacna": false
+            },
+            {
+              "tekst": "Nigde, procenjuje se po izgledu jela",
+              "tacna": false
+            },
+            {
+              "tekst": "Na deklaraciji sirovine u magacinu",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 4,
+          "zahteva_potvrdu": false,
+          "tekst": "Zašto je pogrešna informacija o alergenu opasnija od greške u ceni?",
+          "opcije": [
+            {
+              "tekst": "Zato što kod osetljive osobe može izazvati neposrednu i tešku reakciju",
+              "tacna": true
+            },
+            {
+              "tekst": "Zato što se za to izriču veće kazne",
+              "tacna": false
+            },
+            {
+              "tekst": "Zato što se teže ispravlja u dokumentaciji",
+              "tacna": false
+            },
+            {
+              "tekst": "Nije opasnija — obe greške su iste težine",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "F5.2",
+      "tema": "H5",
+      "kognitivni_nivo": "primena",
+      "je_sidro": false,
+      "konstrukt": "Sprečavanje prenosa alergena u kuhinji",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": false,
+          "tekst": "Pripremaš jelo za gosta sa alergijom. Šta je obavezno?",
+          "opcije": [
+            {
+              "tekst": "Čist pribor i površina, oprane ruke i pažnja da se alergen ne prenese sa drugog jela",
+              "tacna": true
+            },
+            {
+              "tekst": "Dovoljno je da jelo ne sadrži alergen u receptu",
+              "tacna": false
+            },
+            {
+              "tekst": "Dovoljno je da se posluži na posebnom tanjiru",
+              "tacna": false
+            },
+            {
+              "tekst": "Dovoljno je obavestiti konobara",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 2,
+          "zahteva_potvrdu": false,
+          "tekst": "Dobavljač je promenio sastav začinske mešavine. Šta je obavezno?",
+          "opcije": [
+            {
+              "tekst": "Provera da li novi sastojak sadrži alergen i izmena podatka o jelu pre upotrebe",
+              "tacna": true
+            },
+            {
+              "tekst": "Ništa, jer je isti dobavljač",
+              "tacna": false
+            },
+            {
+              "tekst": "Upotreba do isteka zaliha pa onda izmena",
+              "tacna": false
+            },
+            {
+              "tekst": "Obaveštavanje gostiju usmeno",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 3,
+          "zahteva_potvrdu": false,
+          "tekst": "Ulje u friteži korišćeno je za pohovanje ribe. Sme li se u njemu pržiti pomfrit za gosta alergičnog na ribu?",
+          "opcije": [
+            {
+              "tekst": "Ne — alergen prelazi u ulje i prenosi se na drugu hranu",
+              "tacna": true
+            },
+            {
+              "tekst": "Sme, jer se ulje zagreva na visoku temperaturu",
+              "tacna": false
+            },
+            {
+              "tekst": "Sme, ako se ulje procedi",
+              "tacna": false
+            },
+            {
+              "tekst": "Sme, ako se pomfrit prži kraće",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 4,
+          "zahteva_potvrdu": false,
+          "tekst": "Zašto se jela sa alergenima planiraju posle ostalih ili odvojeno?",
+          "opcije": [
+            {
+              "tekst": "Da bi se smanjio rizik prenosa alergena na jela koja ga ne sadrže",
+              "tacna": true
+            },
+            {
+              "tekst": "Zato što se takva jela sporije hlade",
+              "tacna": false
+            },
+            {
+              "tekst": "Zbog lakšeg planiranja servisa",
+              "tacna": false
+            },
+            {
+              "tekst": "Zato što se alergeni razgrade tokom dana",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "A5",
+      "tema": "H5",
+      "kognitivni_nivo": "prisecanje",
+      "je_sidro": true,
+      "konstrukt": "SIDRO — postupanje kod nesigurne informacije o alergenu",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": false,
+          "tekst": "Šta radiš kada nisi siguran da li jelo sadrži alergen?",
+          "opcije": [
+            {
+              "tekst": "Proveravam pre nego što odgovorim gostu — nikada ne pretpostavljam",
+              "tacna": true
+            },
+            {
+              "tekst": "Kažem gostu da verovatno ne sadrži",
+              "tacna": false
+            },
+            {
+              "tekst": "Pitam kolegu iz sale za mišljenje",
+              "tacna": false
+            },
+            {
+              "tekst": "Preporučujem drugo jelo bez objašnjenja",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "F6.1",
+      "tema": "H6",
+      "kognitivni_nivo": "razumevanje",
+      "je_sidro": false,
+      "konstrukt": "Plan čišćenja i upotreba sredstava",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": false,
+          "tekst": "Šta određuje čime se, kada i kako čisti pojedina površina ili oprema?",
+          "opcije": [
+            {
+              "tekst": "Plan čišćenja objekta, uz zapis o izvršenom čišćenju",
+              "tacna": true
+            },
+            {
+              "tekst": "Procena zaposlenog na smeni",
+              "tacna": false
+            },
+            {
+              "tekst": "Uputstvo na pakovanju sredstva",
+              "tacna": false
+            },
+            {
+              "tekst": "Dogovor unutar smene",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 2,
+          "zahteva_potvrdu": false,
+          "tekst": "Sredstvo za dezinfekciju mora da deluje određeno vreme. Šta to znači?",
+          "opcije": [
+            {
+              "tekst": "Da se ne sme obrisati odmah — mora da odstoji propisano vreme da bi delovalo",
+              "tacna": true
+            },
+            {
+              "tekst": "Da se nanosi u dvostrukoj količini",
+              "tacna": false
+            },
+            {
+              "tekst": "Da se koristi samo na kraju smene",
+              "tacna": false
+            },
+            {
+              "tekst": "Da se meša sa deterdžentom radi bržeg dejstva",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 3,
+          "zahteva_potvrdu": false,
+          "tekst": "Gde se čuvaju sredstva za čišćenje i dezinfekciju?",
+          "opcije": [
+            {
+              "tekst": "Odvojeno od hrane, u originalnom i označenom pakovanju",
+              "tacna": true
+            },
+            {
+              "tekst": "U kuhinji, radi lakše dostupnosti",
+              "tacna": false
+            },
+            {
+              "tekst": "U bilo kojoj praznoj ambalaži",
+              "tacna": false
+            },
+            {
+              "tekst": "Pored radnog stola za pripremu",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 4,
+          "zahteva_potvrdu": false,
+          "tekst": "Zašto se pre dezinfekcije površina prvo opere?",
+          "opcije": [
+            {
+              "tekst": "Zato što dezinfekciono sredstvo ne deluje kroz sloj prljavštine i masnoće",
+              "tacna": true
+            },
+            {
+              "tekst": "Zbog uštede sredstva",
+              "tacna": false
+            },
+            {
+              "tekst": "Zbog izgleda površine",
+              "tacna": false
+            },
+            {
+              "tekst": "Nije potrebno prati ako se dezinfikuje",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "F6.2",
+      "tema": "H6",
+      "kognitivni_nivo": "primena",
+      "je_sidro": false,
+      "konstrukt": "Otpad, štetočine i održavanje prostora",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": false,
+          "tekst": "Primetio si tragove prisustva glodara u magacinu. Šta radiš?",
+          "opcije": [
+            {
+              "tekst": "Odmah prijavljujem odgovornom licu i evidentiram nalaz",
+              "tacna": true
+            },
+            {
+              "tekst": "Postavljam sam otrov koji nađem",
+              "tacna": false
+            },
+            {
+              "tekst": "Čistim tragove i ne pominjem",
+              "tacna": false
+            },
+            {
+              "tekst": "Prijavljujem na kraju sezone",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 2,
+          "zahteva_potvrdu": false,
+          "tekst": "Kanta za otpad u kuhinji je puna. Šta je ispravno?",
+          "opcije": [
+            {
+              "tekst": "Iznosim otpad po pravilima objekta, pa perem ruke pre povratka na rad",
+              "tacna": true
+            },
+            {
+              "tekst": "Nabijam otpad da stane još",
+              "tacna": false
+            },
+            {
+              "tekst": "Ostavljam do kraja smene",
+              "tacna": false
+            },
+            {
+              "tekst": "Prebacujem u susednu kantu za ambalažu",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 3,
+          "zahteva_potvrdu": false,
+          "tekst": "Mrežica na prozoru kuhinje je pocepana. Šta radiš?",
+          "opcije": [
+            {
+              "tekst": "Prijavljujem kvar — mrežica sprečava ulazak insekata",
+              "tacna": true
+            },
+            {
+              "tekst": "Zatvaram prozor i ništa ne prijavljujem",
+              "tacna": false
+            },
+            {
+              "tekst": "Lepim je lepljivom trakom",
+              "tacna": false
+            },
+            {
+              "tekst": "Nije bitno ako se prozor retko otvara",
+              "tacna": false
+            }
+          ]
+        },
+        {
+          "varijanta": 4,
+          "zahteva_potvrdu": false,
+          "tekst": "Pod u kuhinji je mokar i klizav. Šta je ispravno?",
+          "opcije": [
+            {
+              "tekst": "Obeležavam mesto, obrišem ili prijavljujem da se očisti pre nastavka rada",
+              "tacna": true
+            },
+            {
+              "tekst": "Prolazim opreznije i nastavljam rad",
+              "tacna": false
+            },
+            {
+              "tekst": "Prekrivam mesto kartonom",
+              "tacna": false
+            },
+            {
+              "tekst": "Prijavljujem na kraju smene",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oznaka": "A6",
+      "tema": "H6",
+      "kognitivni_nivo": "prisecanje",
+      "je_sidro": true,
+      "konstrukt": "SIDRO — čuvanje sredstava za čišćenje",
+      "stavke": [
+        {
+          "varijanta": 1,
+          "zahteva_potvrdu": false,
+          "tekst": "Gde se čuvaju sredstva za čišćenje i dezinfekciju?",
+          "opcije": [
+            {
+              "tekst": "Odvojeno od hrane, u originalnom i označenom pakovanju",
+              "tacna": true
+            },
+            {
+              "tekst": "U kuhinji, uz radni sto",
+              "tacna": false
+            },
+            {
+              "tekst": "U bilo kojoj praznoj ambalaži",
+              "tacna": false
+            },
+            {
+              "tekst": "U komori, da budu na hladnom",
+              "tacna": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "raspored_forme": [
+    "F1.1",
+    "A1",
+    "F2.1",
+    "F3.1",
+    "F5.1",
+    "F1.2",
+    "F4.1",
+    "A2",
+    "F2.2",
+    "F3.2",
+    "F6.1",
+    "F1.3",
+    "A3",
+    "F5.2",
+    "F2.3",
+    "F4.2",
+    "A4",
+    "F3.3",
+    "F6.2",
+    "A5",
+    "F1.4",
+    "A6"
+  ]
+}

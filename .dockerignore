@@ -1,0 +1,14 @@
+node_modules
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+bekap
+lokalno
+alati
+db/banka*.json
+*.log
+test_*.mjs
+README.md
+STANJE-PROJEKTA.md

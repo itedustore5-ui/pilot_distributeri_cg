@@ -1,0 +1,225 @@
+{
+  "_uputstvo": [
+    "Definicije obrazaca za DHP/HACCP zapise — distribucija hrane, Crna Gora.",
+    "Oznake P1–P14 preuzete su iz Vodiča za dobru higijensku praksu (UBH, v1.0, 03.05.2023).",
+    "Oznake D1–D5 su dopune za distribuciju — Vodič ih nema jer pokriva ugostiteljstvo.",
+    "Novi obrazac se dodaje ovdje. Baza se NE mijenja — polja idu u zapis.podaci (JSONB).",
+    "tip: tekst | broj | temp | datum | vrijeme | izbor | da_ne | potpis",
+    "kljucno: true znači da polje ulazi u prikaz odstupanja i u štampu zaglavlja."
+  ],
+
+  "obrasci": [
+    {
+      "oznaka": "P1",
+      "naziv": "Plan i rezultati uzorkovanja vode",
+      "osnov": "PRP-3 · Uredba o higijeni hrane",
+      "ucestalost": "po planu",
+      "ko": "odgovorno lice",
+      "polja": [
+        { "id": "mjesto", "naziv": "Mjesto uzorkovanja", "tip": "tekst", "kljucno": true },
+        { "id": "laboratorija", "naziv": "Laboratorija", "tip": "tekst" },
+        { "id": "parametri", "naziv": "Ispitivani parametri", "tip": "tekst" },
+        { "id": "rezultat", "naziv": "Rezultat", "tip": "izbor", "opcije": ["odgovara", "ne odgovara"], "kljucno": true },
+        { "id": "broj_izvjestaja", "naziv": "Broj izvještaja", "tip": "tekst" }
+      ],
+      "odstupanje_kad": "rezultat == 'ne odgovara'"
+    },
+    {
+      "oznaka": "P2",
+      "naziv": "Program čišćenja i dezinfekcije",
+      "osnov": "PRP-4 · Vodič UBH, Prilog 2",
+      "ucestalost": "trajno, mijenja se po potrebi",
+      "ko": "odgovorno lice",
+      "polja": [
+        { "id": "prostor", "naziv": "Prostorija / oprema", "tip": "tekst", "kljucno": true },
+        { "id": "sredstvo", "naziv": "Sredstvo", "tip": "tekst" },
+        { "id": "koncentracija", "naziv": "Koncentracija i vrijeme djelovanja", "tip": "tekst" },
+        { "id": "vrsta", "naziv": "Vrsta", "tip": "izbor", "opcije": ["mehaničko čišćenje", "pranje", "dezinfekcija", "pranje + dezinfekcija"] },
+        { "id": "ucestalost", "naziv": "Učestalost", "tip": "izbor", "opcije": ["nakon svake upotrebe", "dnevno", "sedmično", "mjesečno", "kvartalno"] },
+        { "id": "odgovoran", "naziv": "Odgovorno lice", "tip": "tekst" },
+        { "id": "kontrola", "naziv": "Način kontrole", "tip": "izbor", "opcije": ["vizuelno", "bris", "oboje"] }
+      ]
+    },
+    {
+      "oznaka": "P3",
+      "naziv": "Evidencija čišćenja",
+      "osnov": "PRP-4 · Vodič UBH, Prilog 3",
+      "ucestalost": "dnevno",
+      "ko": "izvršilac",
+      "polja": [
+        { "id": "prostor", "naziv": "Šta je očišćeno", "tip": "tekst", "kljucno": true },
+        { "id": "sredstvo", "naziv": "Sredstvo", "tip": "tekst" },
+        { "id": "nalaz", "naziv": "Vizuelni nalaz", "tip": "izbor", "opcije": ["zadovoljava", "ne zadovoljava"], "kljucno": true }
+      ],
+      "odstupanje_kad": "nalaz == 'ne zadovoljava'"
+    },
+    {
+      "oznaka": "P5",
+      "naziv": "Kontrola temperature pri prijemu",
+      "osnov": "KKT 1 · Vodič UBH, Prilog 5",
+      "ucestalost": "svaka pošiljka rizične robe",
+      "ko": "kontrolor prijema",
+      "_napomena": "Ovaj obrazac se NE popunjava ručno — puni ga modul prijema (tabela prijem), da bi lot i sledljivost ostali povezani. Ovdje stoji samo radi štampe.",
+      "generisan": true
+    },
+    {
+      "oznaka": "P6",
+      "naziv": "Provjera referentnog termometra",
+      "osnov": "PRP-10 · Vodič UBH, Prilog 6",
+      "ucestalost": "po planu, preporučeno na 6 mjeseci",
+      "ko": "odgovorno lice",
+      "polja": [
+        { "id": "termometar", "naziv": "Oznaka termometra", "tip": "tekst", "kljucno": true },
+        { "id": "metod", "naziv": "Metod provjere", "tip": "izbor", "opcije": ["ledena kupka 0 °C", "ključala voda 100 °C", "poređenje sa referentnim", "kalibracija u laboratoriji"] },
+        { "id": "ocitano", "naziv": "Očitana vrijednost (°C)", "tip": "temp", "kljucno": true },
+        { "id": "referentno", "naziv": "Referentna vrijednost (°C)", "tip": "temp" },
+        { "id": "odstupanje_c", "naziv": "Odstupanje (°C)", "tip": "temp" },
+        { "id": "prihvatljivo", "naziv": "Prihvatljivo", "tip": "da_ne", "kljucno": true }
+      ],
+      "odstupanje_kad": "prihvatljivo == false"
+    },
+    {
+      "oznaka": "P7",
+      "naziv": "Kontrola temperature rashladnih uređaja",
+      "osnov": "KKT 2 · Vodič UBH, Prilog 7",
+      "ucestalost": "najmanje jednom dnevno po komori",
+      "ko": "vođa skladišta",
+      "polja": [
+        { "id": "komora", "naziv": "Komora / uređaj", "tip": "tekst", "kljucno": true },
+        { "id": "temperatura", "naziv": "Izmjerena temperatura (°C)", "tip": "temp", "kljucno": true },
+        { "id": "granica_min", "naziv": "Donja granica (°C)", "tip": "temp", "podrazumevano": 0 },
+        { "id": "granica_max", "naziv": "Gornja granica (°C)", "tip": "temp", "podrazumevano": 4 }
+      ],
+      "odstupanje_kad": "temperatura < granica_min || temperatura > granica_max"
+    },
+    {
+      "oznaka": "P8",
+      "naziv": "Kontrola temperature zamrzivača",
+      "osnov": "KKT 2 · Vodič UBH, Prilog 8",
+      "ucestalost": "najmanje jednom dnevno po komori",
+      "ko": "vođa skladišta",
+      "polja": [
+        { "id": "komora", "naziv": "Komora / zamrzivač", "tip": "tekst", "kljucno": true },
+        { "id": "temperatura", "naziv": "Izmjerena temperatura (°C)", "tip": "temp", "kljucno": true },
+        { "id": "granica_max", "naziv": "Gornja granica (°C)", "tip": "temp", "podrazumevano": -18 }
+      ],
+      "odstupanje_kad": "temperatura > granica_max"
+    },
+    {
+      "oznaka": "P11",
+      "naziv": "Kontrola dezinsekcije",
+      "osnov": "PRP-5 · Vodič UBH, Prilog 11",
+      "ucestalost": "po ugovoru sa ovlašćenom organizacijom",
+      "ko": "odgovorno lice",
+      "polja": [
+        { "id": "prostorija", "naziv": "Prostorija", "tip": "tekst", "kljucno": true },
+        { "id": "organizacija", "naziv": "Ovlašćena organizacija", "tip": "tekst" },
+        { "id": "sredstvo", "naziv": "Sredstvo", "tip": "tekst" },
+        { "id": "nalaz", "naziv": "Nalaz", "tip": "izbor", "opcije": ["bez prisustva", "pojedinačno prisustvo", "povećano prisustvo"], "kljucno": true },
+        { "id": "broj_potvrde", "naziv": "Broj potvrde", "tip": "tekst" }
+      ],
+      "odstupanje_kad": "nalaz == 'povećano prisustvo'"
+    },
+    {
+      "oznaka": "P12",
+      "naziv": "Kontrola deratizacije",
+      "osnov": "PRP-5 · Vodič UBH, Prilog 12",
+      "ucestalost": "redovno, obično jednom godišnje, i vanredno",
+      "ko": "odgovorno lice",
+      "polja": [
+        { "id": "mamac_br", "naziv": "Broj mamca", "tip": "tekst", "kljucno": true },
+        { "id": "lokacija", "naziv": "Lokacija po tlocrtu", "tip": "tekst" },
+        { "id": "organizacija", "naziv": "Registrovana organizacija", "tip": "tekst" },
+        { "id": "nalaz", "naziv": "Nalaz", "tip": "izbor", "opcije": ["negativan", "mamac načet", "pozitivan nalaz"], "kljucno": true },
+        { "id": "broj_potvrde", "naziv": "Broj potvrde", "tip": "tekst" }
+      ],
+      "odstupanje_kad": "nalaz == 'pozitivan nalaz'"
+    },
+    {
+      "oznaka": "P13",
+      "naziv": "Godišnji plan obuke",
+      "osnov": "PRP-7 · čl. 35 Zakona · Vodič UBH, Prilog 13",
+      "ucestalost": "godišnje",
+      "ko": "odgovorno lice",
+      "polja": [
+        { "id": "ciljna_grupa", "naziv": "Ciljna grupa", "tip": "tekst", "kljucno": true },
+        { "id": "tema", "naziv": "Tema", "tip": "tekst", "kljucno": true },
+        { "id": "oblik", "naziv": "Oblik", "tip": "izbor", "opcije": ["teorijska", "praktična", "teorijska + praktična"] },
+        { "id": "termin", "naziv": "Planirani termin", "tip": "datum" },
+        { "id": "trajanje", "naziv": "Trajanje (sati)", "tip": "broj" },
+        { "id": "izvodjac", "naziv": "Izvođač", "tip": "tekst" },
+        { "id": "odgovoran", "naziv": "Odgovorno lice", "tip": "tekst" }
+      ]
+    },
+    {
+      "oznaka": "P14",
+      "naziv": "Evidencija prisutnih na obuci",
+      "osnov": "PRP-7 · Vodič UBH, Prilog 14",
+      "ucestalost": "po svakoj obuci",
+      "ko": "izvođač obuke",
+      "_napomena": "Puni se iz modula obuke (tabela prisustvo). Štampa se sa praznom kolonom za svojeručni potpis — potpis se ne digitalizuje.",
+      "generisan": true
+    },
+
+    {
+      "oznaka": "D1",
+      "naziv": "Kontrola vozila prije utovara",
+      "osnov": "KKT 3 · čl. 35 Zakona (prevoz) — dopuna, Vodič nema ovaj obrazac",
+      "ucestalost": "prije svakog utovara",
+      "ko": "vozač ili vođa voznog parka",
+      "polja": [
+        { "id": "vozilo", "naziv": "Registracija vozila", "tip": "tekst", "kljucno": true },
+        { "id": "cistoca", "naziv": "Komora čista i bez stranih mirisa", "tip": "da_ne", "kljucno": true },
+        { "id": "ostecenja", "naziv": "Komora bez oštećenja", "tip": "da_ne" },
+        { "id": "rashlada_radi", "naziv": "Rashladni uređaj ispravan", "tip": "da_ne", "kljucno": true },
+        { "id": "predrashladeno", "naziv": "Komora predrashlađena prije utovara", "tip": "da_ne", "kljucno": true },
+        { "id": "temp_komore", "naziv": "Temperatura komore prije utovara (°C)", "tip": "temp", "kljucno": true },
+        { "id": "odvajanje", "naziv": "Obezbijeđeno odvajanje grupa robe", "tip": "da_ne" },
+        { "id": "termometar", "naziv": "Vozač ima ispravan termometar", "tip": "da_ne" }
+      ],
+      "odstupanje_kad": "cistoca == false || rashlada_radi == false || predrashladeno == false",
+      "pravilo": "Bilo koje NE na ključnom polju znači zabranu utovara dok se ne otkloni."
+    },
+    {
+      "oznaka": "D3",
+      "naziv": "Zapis o povlačenju / opozivu",
+      "osnov": "čl. 28 Zakona o bezbjednosti hrane",
+      "ucestalost": "po događaju i jednom godišnje kao vježba",
+      "ko": "odgovorno lice",
+      "polja": [
+        { "id": "vrsta", "naziv": "Vrsta", "tip": "izbor", "opcije": ["povlačenje", "opoziv", "vježba"], "kljucno": true },
+        { "id": "lot", "naziv": "Serija / lot", "tip": "tekst", "kljucno": true },
+        { "id": "artikal", "naziv": "Artikal", "tip": "tekst", "kljucno": true },
+        { "id": "razlog", "naziv": "Razlog", "tip": "tekst" },
+        { "id": "saznanje_izvor", "naziv": "Izvor saznanja", "tip": "izbor", "opcije": ["reklamacija kupca", "nalaz inspekcije", "obavještenje dobavljača", "sopstveni nalaz", "vježba"] },
+        { "id": "vrijeme_saznanja", "naziv": "Vrijeme saznanja", "tip": "vrijeme", "kljucno": true },
+        { "id": "vrijeme_liste", "naziv": "Vrijeme kad je lista kupaca bila kompletna", "tip": "vrijeme", "kljucno": true },
+        { "id": "broj_kupaca", "naziv": "Broj obaviještenih kupaca", "tip": "broj" },
+        { "id": "kolicina_vracena", "naziv": "Vraćena količina", "tip": "broj" },
+        { "id": "ubh_obavijesten", "naziv": "UBH obaviješten", "tip": "da_ne", "kljucno": true },
+        { "id": "ubh_datum", "naziv": "Datum obavještenja UBH", "tip": "datum" },
+        { "id": "postupanje", "naziv": "Postupanje sa robom", "tip": "izbor", "opcije": ["vraćeno dobavljaču", "uništeno uz zapisnik", "u karantinu"] },
+        { "id": "uzrok", "naziv": "Utvrđen uzrok", "tip": "tekst" }
+      ],
+      "odstupanje_kad": "vrsta != 'vježba'",
+      "pravilo": "Cilj na vježbi: kompletna lista kupaca u roku od 4 sata od saznanja."
+    },
+    {
+      "oznaka": "D4",
+      "naziv": "Reklamacija i neusaglašen proizvod",
+      "osnov": "ulazna tačka za povlačenje · PRP-9",
+      "ucestalost": "po događaju",
+      "ko": "odgovorno lice",
+      "polja": [
+        { "id": "podnosilac", "naziv": "Ko je prijavio", "tip": "tekst", "kljucno": true },
+        { "id": "artikal", "naziv": "Artikal", "tip": "tekst", "kljucno": true },
+        { "id": "lot", "naziv": "Serija / lot", "tip": "tekst", "kljucno": true },
+        { "id": "opis", "naziv": "Opis neusaglašenosti", "tip": "tekst", "kljucno": true },
+        { "id": "tip", "naziv": "Tip", "tip": "izbor", "opcije": ["senzorska promjena", "oštećena ambalaža", "strano tijelo", "istekao rok", "temperaturno odstupanje", "pogrešna deklaracija", "drugo"] },
+        { "id": "odluka", "naziv": "Odluka", "tip": "izbor", "opcije": ["zamjena", "povrat dobavljaču", "uništenje", "pokrenuto povlačenje", "odbijena reklamacija"], "kljucno": true },
+        { "id": "pokrenuto_povlacenje", "naziv": "Pokrenuto povlačenje", "tip": "da_ne" }
+      ],
+      "odstupanje_kad": "true"
+    }
+  ]
+}

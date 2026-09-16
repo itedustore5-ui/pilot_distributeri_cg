@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="sr-Latn-ME">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Podešavanje — dobavljači, kupci, vozila, artikli</title>
+<style>
+  :root{
+    --ink:#131A1F; --steel:#3A4A56; --muted:#6B7A85;
+    --paper:#EFF2F3; --list:#FFF; --linija:#CBD5D9;
+    --cold:#0B6E8C; --signal:#B4410E; --ok:#2C6B47; --alarm:#96161B;
+    --mono: ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+    --sans: system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+  .oznaka{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+  header{background:var(--ink);color:#fff;padding:16px}
+  header h1{margin:5px 0 0;font-size:19px;font-weight:600}
+  header .oznaka{color:#8FA6B2}
+  .nav{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;padding-top:10px;
+    border-top:1px solid #2C3A44;font-size:13px}
+  .nav a{color:#8FA6B2;text-decoration:none}
+  .nav a:hover,.nav a.tu{color:#fff}
+  .nav a.tu{font-weight:600}
+
+  main{max-width:1000px;margin:18px auto;padding:0 14px 90px}
+
+  .jezicci{display:flex;gap:0;border-bottom:2px solid var(--linija);margin-bottom:18px;flex-wrap:wrap}
+  .jezicci button{font-family:var(--sans);font-size:14.5px;font-weight:600;padding:11px 18px;
+    border:none;background:transparent;color:var(--muted);cursor:pointer;
+    border-bottom:2px solid transparent;margin-bottom:-2px}
+  .jezicci button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--cold)}
+  .jezicci button:focus-visible{outline:2px solid var(--cold);outline-offset:-2px}
+
+  .traka{padding:12px 14px;font-size:13.5px;line-height:1.55;margin-bottom:16px;border-left:3px solid}
+  .traka.info{border-color:var(--cold);background:#E6EEF1;color:#08536B}
+  .traka.ok{border-color:var(--ok);background:#E4EFE8;color:#1C4A30}
+  .traka.pazi{border-color:var(--signal);background:#F7E9E3;color:#7A2C07}
+  .traka.alarm{border-color:var(--alarm);background:#F6E3E4;color:#6E1013}
+  .traka b{display:block;margin-bottom:2px}
+
+  .kartica{background:var(--list);border:1px solid var(--linija);padding:16px 17px;margin-bottom:16px}
+  .kartica h2{margin:0 0 4px;font-size:16px}
+  .kartica .sta{font-size:13px;color:var(--muted);margin-bottom:14px}
+
+  label{display:block;font-size:13px;font-weight:600;margin:11px 0 4px}
+  label .sitno{font-weight:400;color:var(--muted)}
+  input,select,textarea{width:100%;font-family:var(--sans);font-size:15.5px;padding:10px 11px;
+    border:1px solid var(--linija);border-radius:3px;background:#FCFDFD;color:var(--ink)}
+  input[type=number]{font-family:var(--mono)}
+  .par{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .par3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  @media(max-width:620px){.par,.par3{grid-template-columns:1fr}}
+  .kvadratic{display:flex;align-items:center;gap:9px;margin-top:12px;font-size:14.5px}
+  .kvadratic input{width:19px;height:19px;flex:0 0 auto}
+
+  .dugme{padding:12px 22px;font-size:15px;font-weight:600;border:none;border-radius:3px;
+    background:var(--cold);color:#fff;cursor:pointer;font-family:var(--sans);margin-top:16px}
+  .dugme:disabled{background:var(--muted);cursor:default}
+  .dugme.tiho{background:transparent;color:var(--steel);border:1px solid var(--linija)}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
+  th,td{border-bottom:1px solid var(--linija);padding:8px 9px;text-align:left;vertical-align:top}
+  th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);font-weight:600}
+  td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
+  td.tel{font-family:var(--mono);white-space:nowrap}
+  tr.pazi td{background:#FBF4EF}
+  .znak{font-family:var(--mono);font-size:10px;letter-spacing:.08em;padding:2px 6px;
+    border-radius:2px;text-transform:uppercase;white-space:nowrap}
+  .znak.ok{background:#D9E9DF;color:#1C4A30}
+  .znak.pazi{background:#F4DFD5;color:#7A2C07}
+  .prazno{color:var(--muted);padding:22px 0;text-align:center}
+  .veza{background:none;border:none;color:var(--cold);cursor:pointer;font-size:13px;
+    font-family:var(--sans);padding:0;text-decoration:underline}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="oznaka">Podešavanje prije prvog dana rada</span>
+  <h1>Dobavljači, kupci, vozila, artikli</h1>
+  <nav class="nav">
+    <span id="koSam" style="color:#8FA6B2"></span>
+    <a class="tu" href="/podesavanje.html">Podešavanje</a>
+    <a href="/promet.html">Prijem i isporuka</a>
+    <a href="/zapisi.html">Dnevni zapisi</a>
+    <a href="/sledljivost.html">Sledljivost</a>
+    <a href="/prilozi.html">Štampa priloga</a>
+    <a href="/izvoz.html">Izvoz</a>
+  </nav>
+</header>
+
+<main>
+  <div class="jezicci" role="tablist" id="jezicci"></div>
+  <div id="poruka"></div>
+  <div id="sadrzaj"></div>
+</main>
+
+<script src="/veza.js"></script>
+<script>
+const FIRMA = 1;
+let JA = null, AKTIVAN = 'dobavljaci';
+
+const $  = s => document.querySelector(s);
+const el = (t, a = {}, ...d) => {
+  const n = document.createElement(t);
+  for (const [k, v] of Object.entries(a)) {
+    if (k === 'class') n.className = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else if (v !== null && v !== undefined && v !== false) n.setAttribute(k, v);
+  }
+  d.flat().forEach(x => n.append(x?.nodeType ? x : document.createTextNode(x ?? '')));
+  return n;
+};
+const poruka = (v, n, t) => { $('#poruka').replaceChildren(
+  el('div', { class: 'traka ' + v }, el('b', {}, n), t || ''));
+  window.scrollTo({ top: 0, behavior: 'smooth' }); };
+
+const val = id => ($('#' + id)?.value ?? '').trim();
+const num = id => { const v = val(id); return v === '' ? null : Number(v); };
+
+// =====================================================================
+//  Definicije četiri kartice. Sve četiri rade po istom kalupu.
+// =====================================================================
+const KARTICE = {
+  dobavljaci: {
+    ime: 'Dobavljači',
+    naslov: 'Od koga primate robu',
+    sta: 'Ovo je Prilog 4 iz Vodiča — lista odobrenih dobavljača (PRP-9). '
+       + 'Dobavljač se odobrava PRIJE prve isporuke, a ne poslije.',
+    put: '/api/cg/dobavljaci',
+    polja: [
+      { id: 'naziv', naziv: 'Naziv firme', obavezno: true },
+      { id: 'adresa', naziv: 'Adresa' },
+      { id: 'kontakt_osoba', naziv: 'Kontakt osoba' },
+      { id: 'telefon', naziv: 'Telefon' },
+      { id: 'email', naziv: 'E-mail' },
+      { id: 'vrsta_hrane', naziv: 'Šta isporučuje', sirina: 2 },
+      { id: 'broj_objekta', naziv: 'Kontrolni broj objekta',
+        pomoc: 'iz rješenja UBH dobavljača — ostavi prazno ako ga nemaš' },
+      { id: 'odobren', naziv: 'Dobavljač je odobren — dokumentacija provjerena', tip: 'kvadratic' },
+    ],
+    kolone: [
+      ['naziv', 'Dobavljač'], ['vrsta_hrane', 'Isporučuje'],
+      ['telefon', 'Telefon', 'tel'], ['broj_objekta', 'Br. objekta', 'n'],
+    ],
+    stanje: r => r.odobren
+      ? { klasa: 'ok', tekst: 'odobren' }
+      : { klasa: 'pazi', tekst: 'nije odobren' },
+  },
+
+  kupci: {
+    ime: 'Kupci',
+    naslov: 'Kome isporučujete',
+    sta: 'Telefon je OBAVEZAN. Bez njega povlačenje robe po članu 28 nije izvodljivo — '
+       + 'aplikacija namjerno neće primiti kupca bez telefona.',
+    put: '/api/cg/kupci',
+    polja: [
+      { id: 'naziv', naziv: 'Naziv kupca', obavezno: true },
+      { id: 'telefon', naziv: 'Telefon', obavezno: true,
+        pomoc: 'broj na koji se javlja neko ko odlučuje, ne centrala' },
+      { id: 'adresa', naziv: 'Adresa / mjesto' },
+      { id: 'kontakt_osoba', naziv: 'Kontakt osoba' },
+      { id: 'email', naziv: 'E-mail', sirina: 2 },
+    ],
+    kolone: [
+      ['naziv', 'Kupac'], ['adresa', 'Mjesto'],
+      ['telefon', 'Telefon', 'tel'], ['kontakt_osoba', 'Kontakt'],
+    ],
+    stanje: r => r.telefon
+      ? { klasa: 'ok', tekst: 'spreman' }
+      : { klasa: 'pazi', tekst: 'bez telefona' },
+  },
+
+  vozila: {
+    ime: 'Vozila',
+    naslov: 'Čime razvozite',
+    sta: 'Za svako vozilo kojim ide hrana. Vozila bez rashlade smiju nositi samo '
+       + 'ambijentalnu robu (grupa G1).',
+    put: '/api/cg/vozila',
+    kljuc: 'registracija',
+    polja: [
+      { id: 'registracija', naziv: 'Registracija', obavezno: true },
+      { id: 'opis', naziv: 'Opis vozila' },
+      { id: 'ima_rashladu', naziv: 'Ima ispravan rashladni uređaj', tip: 'kvadratic', sirina: 2 },
+      { id: 'rezim_min', naziv: 'Najniža temperatura koju drži (°C)', tip: 'broj' },
+      { id: 'rezim_max', naziv: 'Najviša temperatura koju drži (°C)', tip: 'broj' },
+      { id: 'poslednji_servis', naziv: 'Posljednji servis rashlade', tip: 'datum' },
+    ],
+    kolone: [
+      ['registracija', 'Registracija', 'n'], ['opis', 'Opis'],
+      ['rezim_min', 'Od °C', 'n'], ['rezim_max', 'Do °C', 'n'],
+      ['poslednji_servis', 'Servis', 'n'],
+    ],
+    stanje: r => r.ima_rashladu
+      ? { klasa: 'ok', tekst: 'rashlada' }
+      : { klasa: 'pazi', tekst: 'samo G1' },
+  },
+
+  artikli: {
+    ime: 'Artikli',
+    naslov: 'Šta prometujete — i na kojoj temperaturi',
+    sta: 'Ovdje se upisuju KRITIČNE GRANICE. Dok granicu ne potvrdi klijent iz deklaracije '
+       + 'proizvođača, aplikacija po njoj NE ocjenjuje odstupanje automatski — namjerno, '
+       + 'da ne braniš svoju pretpostavku umjesto njegovog podatka.',
+    put: '/api/cg/artikli',
+    polja: [
+      { id: 'naziv', naziv: 'Naziv artikla', obavezno: true },
+      { id: 'grupa', naziv: 'Grupa', tip: 'izbor', obavezno: true, opcije: [
+        ['G1', 'G1 — ambijentalno (bez temperaturnog režima)'],
+        ['G2', 'G2 — rashlađeno'],
+        ['G3', 'G3 — zamrznuto'],
+        ['G4', 'G4 — nehrana u istom skladištu'],
+      ]},
+      { id: 'jedinica', naziv: 'Jedinica mjere', podrazumevano: 'kg' },
+      { id: 'granica_min', naziv: 'Donja granica (°C)', tip: 'broj',
+        pomoc: 'prazno za G1 i G3' },
+      { id: 'granica_max', naziv: 'Gornja granica (°C)', tip: 'broj',
+        pomoc: 'G3: upiši −18' },
+      { id: 'tolerancija', naziv: 'Tolerancija (°C)', tip: 'broj', podrazumevano: 4,
+        pomoc: 'preko ove razlike roba se NE prima' },
+      { id: 'granica_izvor', naziv: 'Odakle granica', sirina: 2,
+        podrazumevano: 'deklaracija proizvođača' },
+      { id: 'granica_potvrdio', naziv: 'Ko je potvrdio granicu',
+        pomoc: 'ime odgovornog lica kod klijenta — ostavi prazno dok ne potvrdi' },
+      { id: 'granica_potvrdjeno', naziv: 'Datum potvrde', tip: 'datum' },
+    ],
+    kolone: [
+      ['naziv', 'Artikal'], ['grupa', 'Grupa', 'n'],
+      ['granica_min', 'Od °C', 'n'], ['granica_max', 'Do °C', 'n'],
+      ['tolerancija', 'Tol. °C', 'n'], ['granica_izvor', 'Izvor granice'],
+    ],
+    stanje: r => (r.grupa === 'G1' || r.granica_potvrdio)
+      ? { klasa: 'ok', tekst: r.grupa === 'G1' ? 'ne mjeri se' : 'potvrđeno' }
+      : { klasa: 'pazi', tekst: 'nije potvrđeno' },
+  },
+};
+
+// =====================================================================
+(async function start() {
+  try {
+    JA = await ucitajJa();
+    if (!JA) return;            // nema veze — traka dolje, čeka se
+  } catch (e) { poruka('alarm', 'Ne mogu da učitam stranicu', e.message); return; }
+
+  $('#jezicci').replaceChildren(...Object.entries(KARTICE).map(([k, d]) =>
+    el('button', { type: 'button', role: 'tab', id: 'tab_' + k,
+      'aria-selected': String(k === AKTIVAN),
+      onclick: () => { AKTIVAN = k; osvjezi(); } }, d.ime)));
+  osvjezi();
+})();
+
+function osvjezi() {
+  document.querySelectorAll('#jezicci button').forEach(b =>
+    b.setAttribute('aria-selected', String(b.id === 'tab_' + AKTIVAN)));
+  $('#poruka').replaceChildren();
+  nacrtaj();
+  ucitajSpisak();
+}
+
+// --------------------------------------------------------------- forma
+function nacrtaj(vrijednosti = {}) {
+  const d = KARTICE[AKTIVAN];
+  const k = el('div', { class: 'kartica' },
+    el('h2', {}, d.naslov),
+    el('div', { class: 'sta' }, d.sta));
+
+  const mreza = el('div', { class: 'par' });
+  for (const p of d.polja) {
+    const omot = el('div', {}, el('label', { for: p.id }, p.naziv,
+      p.obavezno ? el('span', { class: 'sitno' }, ' · obavezno') : '',
+      p.pomoc ? el('span', { class: 'sitno' }, ' — ' + p.pomoc) : ''));
+
+    let polje;
+    if (p.tip === 'kvadratic') {
+      polje = el('div', { class: 'kvadratic' },
+        el('input', { id: p.id, type: 'checkbox',
+          checked: vrijednosti[p.id] ? 'checked' : false }),
+        el('span', {}, 'da'));
+      omot.replaceChildren(el('label', { for: p.id, style: 'margin-bottom:0' }, p.naziv), polje);
+    } else if (p.tip === 'izbor') {
+      polje = el('select', { id: p.id },
+        ...p.opcije.map(([v, t]) =>
+          el('option', { value: v, selected: vrijednosti[p.id] === v ? 'selected' : false }, t)));
+      omot.append(polje);
+    } else {
+      polje = el('input', { id: p.id,
+        type: p.tip === 'broj' ? 'number' : p.tip === 'datum' ? 'date' : 'text',
+        step: p.tip === 'broj' ? '0.1' : null,
+        value: vrijednosti[p.id] ?? p.podrazumevano ?? '' });
+      omot.append(polje);
+    }
+    if (p.sirina === 2) omot.style.gridColumn = '1 / -1';
+    mreza.append(omot);
+  }
+  k.append(mreza);
+
+  k.append(el('button', { class: 'dugme', type: 'button', id: 'snimi', onclick: snimi },
+    vrijednosti.id ? 'Sačuvaj izmjenu' : 'Dodaj'));
+  if (vrijednosti.id) k.append(el('button',
+    { class: 'dugme tiho', type: 'button', style: 'margin-left:8px',
+      onclick: () => nacrtaj() }, 'Odustani'));
+
+  $('#sadrzaj').replaceChildren(k, el('div', { id: 'spisak' }));
+}
+
+async function snimi() {
+  const d = KARTICE[AKTIVAN];
+  const telo = { firma_id: FIRMA };
+  for (const p of d.polja) {
+    const n = document.getElementById(p.id);
+    if (!n) continue;
+    telo[p.id] = p.tip === 'kvadratic' ? n.checked
+      : p.tip === 'broj' ? num(p.id)
+      : val(p.id) || null;
+  }
+
+  const nedostaje = d.polja.filter(p => p.obavezno && !telo[p.id]);
+  if (nedostaje.length)
+    return poruka('pazi', 'Nedostaju obavezna polja', nedostaje.map(p => p.naziv).join(' · '));
+
+  const b = $('#snimi'); b.disabled = true; b.textContent = 'Snimam…';
+  try {
+    await api(d.put, { method: 'POST', body: JSON.stringify(telo) });
+    poruka('ok', 'Sačuvano', 'Unos je u bazi. Isti naziv ponovo unesen — postojeći se dopunjuje, ne duplira.');
+    nacrtaj();
+    ucitajSpisak();
+  } catch (e) {
+    poruka('alarm', 'Nije sačuvano', e.message);
+  } finally { b.disabled = false; b.textContent = 'Dodaj'; }
+}
+
+// --------------------------------------------------------------- spisak
+async function ucitajSpisak() {
+  const d = KARTICE[AKTIVAN];
+  const cilj = $('#spisak');
+  if (!cilj) return;
+  try {
+    const r = await api(`${d.put}?firma=${FIRMA}&svi=1`);
+    if (!r.length) {
+      cilj.replaceChildren(el('div', { class: 'kartica' },
+        el('div', { class: 'prazno' }, 'Još nema unosa. Popuni formu iznad.')));
+      return;
+    }
+    const pazi = r.filter(x => d.stanje(x).klasa === 'pazi').length;
+    const k = el('div', { class: 'kartica' },
+      el('h2', {}, `Uneseno — ${r.length}`));
+    if (pazi) k.append(el('div', { class: 'traka pazi' },
+      el('b', {}, `${pazi} sa nedostatkom`),
+      'Ove stavke ekran spremnosti prijavljuje kao nalaz. Klikni na red da dopuniš.'));
+    k.append(el('table', {},
+      el('thead', {}, el('tr', {},
+        ...d.kolone.map(([, ime]) => el('th', {}, ime)),
+        el('th', {}, 'Stanje'), el('th', {}, ''))),
+      el('tbody', {}, ...r.map(x => {
+        const st = d.stanje(x);
+        return el('tr', { class: st.klasa === 'pazi' ? 'pazi' : '' },
+          ...d.kolone.map(([polje, , klasa]) => el('td', { class: klasa || '' },
+            String(x[polje] ?? '—').slice(0, 40))),
+          el('td', {}, el('span', { class: 'znak ' + st.klasa }, st.tekst)),
+          el('td', {}, el('button', { class: 'veza', type: 'button',
+            onclick: () => { nacrtaj(x); window.scrollTo({ top: 0, behavior: 'smooth' }); } },
+            'izmijeni')));
+      }))));
+    cilj.replaceChildren(k);
+  } catch (e) {
+    cilj.replaceChildren(el('div', { class: 'traka alarm' }, el('b', {}, 'Greška'), e.message));
+  }
+}
+</script>
+</body>
+</html>

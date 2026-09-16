@@ -1,0 +1,56 @@
+# =====================================================================
+#  Instalacija kod klijenta, na njegovom serveru.
+#  Pokretanje:  docker compose up -d
+#  Zaustavljanje: docker compose down     (podaci ostaju)
+#
+#  Koristi se SAMO kad klijent izričito traži da podaci ne izlaze
+#  iz njegove mreže. Za sve ostalo je jednostavnije da baza bude
+#  u njegovom Supabase nalogu, a aplikacija kod izvođača.
+# =====================================================================
+services:
+
+  baza:
+    image: postgres:16-alpine
+    container_name: merenje-baza
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: merenje
+      POSTGRES_USER: merenje
+      POSTGRES_PASSWORD: ${LOZINKA_BAZE:?Postavi LOZINKA_BAZE u .env}
+      # srpska abeceda i sortiranje
+      LANG: sr_RS.UTF-8
+    volumes:
+      - podaci:/var/lib/postgresql/data
+      - ./bekap:/bekap
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U merenje -d merenje"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Baza se NE izlaže mreži — pristupa joj samo aplikacija.
+    # Za povremeni pristup alatom, odkomentariši:
+    # ports: ["127.0.0.1:5432:5432"]
+
+  aplikacija:
+    build: ..
+    container_name: merenje-app
+    restart: unless-stopped
+    depends_on:
+      baza:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://merenje:${LOZINKA_BAZE}@baza:5432/merenje
+      ADMIN_TOKEN: ${ADMIN_TOKEN:?Postavi ADMIN_TOKEN u .env}
+      PORT: 3000
+      NODE_ENV: production
+    ports:
+      - "${PORT_NA_SERVERU:-3000}:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3000/api/zdravlje').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  podaci:
+    name: merenje-podaci

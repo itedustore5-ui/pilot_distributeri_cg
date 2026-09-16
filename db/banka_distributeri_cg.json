@@ -1,0 +1,1985 @@
+{
+ "_uputstvo": [
+  "Banka pitanja za DISTRIBUCIJU HRANE — Crna Gora.",
+  "Pravni osnov: Zakon o bezbjednosti hrane („Sl. list CG“ 59/2026), Uredba o higijeni hrane,",
+  "Zakon o zaštiti stanovništva od zaraznih bolesti („Sl. list CG“ 12/18, 64/20), Vodič UBH v1.0.",
+  "Jezik je ijekavica — ne mijenjati u ekavicu za crnogorske klijente.",
+  "Stavke sa \"zahteva_potvrdu\": true sadrže pravilo koje zavisi od HACCP plana klijenta.",
+  "Dok je zahteva_potvrdu = true i potvrdio = null, stavka se NE servira.",
+  "Klijent ne ocjenjuje pedagogiju — označava samo ono što je činjenično netačno kod njega."
+ ],
+ "firma": {
+  "naziv": "Distributer d.o.o.",
+  "delatnost": "Skladištenje i distribucija hrane — veleprodaja",
+  "standardi": [
+   "HACCP",
+   "Dobra higijenska praksa"
+  ],
+  "_napomena": "Zamijeniti nazivom stvarnog klijenta prije prvog mjerenja."
+ },
+ "program": {
+  "naziv": "Bezbjednost hrane u distribuciji — godišnja obuka",
+  "godina": 2026,
+  "pravni_osnov": "Zakon o bezbjednosti hrane („Sl. list CG“ 59/2026), čl. 35 i 36 · Uredba o higijeni hrane · Vodič za dobru higijensku praksu (UBH, v1.0, 03.05.2023)"
+ },
+ "nacrt": {
+  "verzija": "1.0",
+  "ukupno_stavki": 22,
+  "prag_teme": 70,
+  "napomena": "Svaka tema ima najmanje dvije porodice i svoje sidro. Težina teme određena je nivoom rizika iz analize opasnosti, ne vremenom na obuci."
+ },
+ "grupa": {
+  "naziv": "Skladište i vozni park — godišnja obuka",
+  "lokacija": "Skladište",
+  "prefiks_sifre": "D",
+  "broj_planiranih": 30,
+  "_napomena": "prefiks: P proizvodnja · H hotelijerstvo · K konsalting · D distribucija"
+ },
+ "teme": [
+  {
+   "oznaka": "D1",
+   "naziv": "Prijem robe i hladni lanac",
+   "nivo_rizika": "kritican",
+   "izvor": "HACCP plan — KKT 1 prijem"
+  },
+  {
+   "oznaka": "D2",
+   "naziv": "Skladištenje, FIFO/FEFO i odvajanje",
+   "nivo_rizika": "kritican",
+   "izvor": "HACCP plan — KKT 2 skladištenje"
+  },
+  {
+   "oznaka": "D3",
+   "naziv": "Vozila, utovar i isporuka",
+   "nivo_rizika": "kritican",
+   "izvor": "HACCP plan — KKT 3 utovar i prevoz"
+  },
+  {
+   "oznaka": "D4",
+   "naziv": "Sledljivost, lot i povlačenje",
+   "nivo_rizika": "kritican",
+   "izvor": "čl. 27 i 42 Zakona o bezbjednosti hrane; Pravilnik o sledljivosti 48/16"
+  },
+  {
+   "oznaka": "D5",
+   "naziv": "Lična higijena i zdravstvena sposobnost",
+   "nivo_rizika": "visok",
+   "izvor": "PRP-6; Zakon o zaštiti stanovništva od zaraznih bolesti, čl. 31"
+  },
+  {
+   "oznaka": "D6",
+   "naziv": "Čišćenje, dezinfekcija i kontrola štetočina",
+   "nivo_rizika": "srednji",
+   "izvor": "PRP-4 i PRP-5; Vodič UBH, Prilozi 2, 3, 11, 12"
+  }
+ ],
+ "radna_mesta": [
+  {
+   "naziv": "Kontrolor prijema",
+   "povecan_rizik": true,
+   "opis_poslova": "Prijem robe, mjerenje temperature, provjera dokumentacije, roka i ambalaže, odluka o prijemu ili odbijanju pošiljke",
+   "sifre_opasnosti": [
+    "01",
+    "05",
+    "15",
+    "25"
+   ],
+   "mere": "Mjerenje temperature svake pošiljke rizične robe ubodnim ili infracrvenim termometrom prije istovara; odbijanje pošiljke izvan tolerancije; upis odstupanja i korektivne mjere u Prilog 5",
+   "lzo": "Radna odjeća, kapa, zaštitna obuća sa neklizajućim đonom, rukavice za rad na hladnom",
+   "obavestenja": "HACCP plan — KKT 1; lista odobrenih dobavljača; tabela kritičnih granica po artiklu",
+   "rukovodilac_prati": "Kontrolor prijema, Magacioner"
+  },
+  {
+   "naziv": "Magacioner",
+   "povecan_rizik": true,
+   "opis_poslova": "Smještaj robe po zonama i režimima, FIFO/FEFO, dnevno očitavanje temperatura komora, komisioniranje narudžbina, održavanje reda i higijene skladišta",
+   "sifre_opasnosti": [
+    "01",
+    "03",
+    "15",
+    "25",
+    "30"
+   ],
+   "mere": "Dnevno očitavanje i upis temperatura svake komore; odvajanje grupa robe; roba odignuta od poda; prijava odstupanja odmah po uočavanju",
+   "lzo": "Radna odjeća, zaštitna obuća sa kapom, rukavice, jakna za rad u rashladnoj komori",
+   "obavestenja": "HACCP plan — KKT 2; program čišćenja; tlocrt sa mjestima mamaca",
+   "rukovodilac_prati": "Magacioner, Komisionar"
+  },
+  {
+   "naziv": "Vozač — dostavljač",
+   "povecan_rizik": true,
+   "opis_poslova": "Kontrola i priprema vozila, utovar, prevoz i isporuka hrane kupcima, mjerenje temperature pri utovaru i isporuci, predaja dokumentacije kupcu",
+   "sifre_opasnosti": [
+    "01",
+    "05",
+    "15",
+    "20",
+    "25"
+   ],
+   "mere": "Kontrola vozila prije svakog utovara (Prilog D1); predrashlađivanje komore; mjerenje temperature pri utovaru i isporuci (Prilog D2); zabrana predaje robe izvan granice",
+   "lzo": "Radna odjeća, zaštitna obuća, rukavice, jakna za rad na hladnom",
+   "obavestenja": "HACCP plan — KKT 3; uputstvo za slaganje robe u komori; redoslijed ture",
+   "rukovodilac_prati": "Vozač — dostavljač"
+  },
+  {
+   "naziv": "Komisionar",
+   "povecan_rizik": false,
+   "opis_poslova": "Priprema narudžbina po nalogu, provjera roka i oznake serije pri komisioniranju, priprema robe za utovar",
+   "sifre_opasnosti": [
+    "01",
+    "15",
+    "25"
+   ],
+   "mere": "Provjera roka trajanja i oznake serije pri svakom uzimanju robe; primjena pravila FEFO; izdvajanje robe sa oštećenom ambalažom",
+   "lzo": "Radna odjeća, zaštitna obuća, rukavice",
+   "obavestenja": "Pravilo FEFO; uputstvo za komisioniranje; lista artikala sa temperaturnim režimom",
+   "rukovodilac_prati": "Komisionar"
+  },
+  {
+   "naziv": "Odgovorno lice za bezbjednost hrane",
+   "povecan_rizik": false,
+   "opis_poslova": "Održavanje HACCP sistema, verifikacija zapisa, odluka o upotrebljivosti robe nakon odstupanja, vođenje postupka povlačenja, komunikacija sa nadležnim organom",
+   "sifre_opasnosti": [
+    "25"
+   ],
+   "mere": "Mjesečni pregled zapisa i potpis; godišnja interna provjera; godišnja vježba povlačenja; preispitivanje plana pri svakoj izmjeni procesa",
+   "lzo": "Radna odjeća i obuća pri obilasku objekta",
+   "obavestenja": "Cjelokupan HACCP plan; rješenje o registraciji objekta; kontakt nadležnog organa",
+   "rukovodilac_prati": "Sva radna mjesta"
+  }
+ ],
+ "porodice": [
+  {
+   "oznaka": "F1.1",
+   "tema": "D1",
+   "kognitivni_nivo": "primena",
+   "je_sidro": false,
+   "konstrukt": "Postupanje kad je temperatura na prijemu iznad kritične granice",
+   "stavke": [
+    {
+     "zahteva_potvrdu": true,
+     "tekst": "Kamion sa rashlađenim mliječnim proizvodima stiže na rampu. Mjeriš temperaturu i dobijaš vrijednost iznad kritične granice iz vašeg plana, i to za više nego što tolerancija dozvoljava. Šta radiš?",
+     "opcije": [
+      {
+       "tekst": "Ne primam pošiljku, upisujem odstupanje u Prilog 5 i odmah obavještavam odgovorno lice",
+       "tacna": true
+      },
+      {
+       "tekst": "Primam i odmah guram u komoru da se rashladi",
+       "tacna": false
+      },
+      {
+       "tekst": "Primam jer je dobavljač stalan i do sada nije bilo problema",
+       "tacna": false
+      },
+      {
+       "tekst": "Primam i skraćujem rok upotrebe na pola",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    },
+    {
+     "zahteva_potvrdu": true,
+     "tekst": "Isporuka svježeg mesa stiže toplija od granice, iznad dozvoljene tolerancije. Šta radiš?",
+     "opcije": [
+      {
+       "tekst": "Ne primam, upisujem odstupanje i obavještavam odgovorno lice",
+       "tacna": true
+      },
+      {
+       "tekst": "Primam i odmah šaljem kupcu da se ne zadržava",
+       "tacna": false
+      },
+      {
+       "tekst": "Primam jer meso na izgled i miris djeluje ispravno",
+       "tacna": false
+      },
+      {
+       "tekst": "Primam i upisujem napomenu na otpremnicu",
+       "tacna": false
+      }
+     ],
+     "varijanta": 2
+    },
+    {
+     "zahteva_potvrdu": true,
+     "tekst": "Smrznuti program stiže na −12 °C umjesto na −18 °C. Šta radiš?",
+     "opcije": [
+      {
+       "tekst": "Ne primam, upisujem odstupanje i obavještavam odgovorno lice",
+       "tacna": true
+      },
+      {
+       "tekst": "Primam i hitno stavljam u zamrzivač da se vrati na −18 °C",
+       "tacna": false
+      },
+      {
+       "tekst": "Primam jer su paketi još uvijek tvrdi na dodir",
+       "tacna": false
+      },
+      {
+       "tekst": "Primam i odmah izdajem kupcu koji ionako ima svoj zamrzivač",
+       "tacna": false
+      }
+     ],
+     "varijanta": 3
+    },
+    {
+     "zahteva_potvrdu": true,
+     "tekst": "Svježa riba stiže na ledu, ali izmjerena temperatura je iznad granice, preko tolerancije. Šta radiš?",
+     "opcije": [
+      {
+       "tekst": "Ne primam, upisujem odstupanje i obavještavam odgovorno lice",
+       "tacna": true
+      },
+      {
+       "tekst": "Primam i dodajem led u gajbu",
+       "tacna": false
+      },
+      {
+       "tekst": "Primam jer riba miriše svježe i oči su bistre",
+       "tacna": false
+      },
+      {
+       "tekst": "Primam i smanjujem cijenu kupcu",
+       "tacna": false
+      }
+     ],
+     "varijanta": 4
+    }
+   ]
+  },
+  {
+   "oznaka": "F1.2",
+   "tema": "D1",
+   "kognitivni_nivo": "razumevanje",
+   "je_sidro": false,
+   "konstrukt": "Šta se provjerava na prijemu osim temperature",
+   "stavke": [
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Osim temperature, šta se obavezno provjerava pri prijemu svake pošiljke?",
+     "opcije": [
+      {
+       "tekst": "Broj serije ili lota, rok trajanja, stanje ambalaže i prateća dokumentacija",
+       "tacna": true
+      },
+      {
+       "tekst": "Samo količina, jer ostalo stoji na fakturi",
+       "tacna": false
+      },
+      {
+       "tekst": "Samo rok trajanja, ostalo je stvar dobavljača",
+       "tacna": false
+      },
+      {
+       "tekst": "Samo da li se roba slaže sa narudžbinom",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Zašto se broj serije upisuje već na prijemu, a ne kasnije?",
+     "opcije": [
+      {
+       "tekst": "Jer bez lota nema sledljivosti — ne može se utvrditi kome je roba otišla",
+       "tacna": true
+      },
+      {
+       "tekst": "Jer se tako lakše slaže roba u komori",
+       "tacna": false
+      },
+      {
+       "tekst": "Jer to traži knjigovodstvo zbog PDV-a",
+       "tacna": false
+      },
+      {
+       "tekst": "Jer se po lotu određuje cijena",
+       "tacna": false
+      }
+     ],
+     "varijanta": 2
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Roba stiže sa ispravnom temperaturom, ali je jedan karton pokisao i ambalaža je oštećena. Šta radiš?",
+     "opcije": [
+      {
+       "tekst": "Odvajam oštećeni dio, ne primam ga i upisujem odstupanje; ostatak primam",
+       "tacna": true
+      },
+      {
+       "tekst": "Primam sve, oštećeno ću izdvojiti kasnije u komori",
+       "tacna": false
+      },
+      {
+       "tekst": "Primam sve jer je temperatura ispravna",
+       "tacna": false
+      },
+      {
+       "tekst": "Vraćam cijelu pošiljku jer je dio oštećen",
+       "tacna": false
+      }
+     ],
+     "varijanta": 3
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Na prijemu vidiš da proizvod ima rok trajanja koji ističe za tri dana, a vaš kupac naručuje jednom sedmično. Šta radiš?",
+     "opcije": [
+      {
+       "tekst": "Ne primam bez odobrenja odgovornog lica i bilježim razlog",
+       "tacna": true
+      },
+      {
+       "tekst": "Primam, pa ću ga staviti naprijed u komori da se brže proda",
+       "tacna": false
+      },
+      {
+       "tekst": "Primam jer rok još nije istekao",
+       "tacna": false
+      },
+      {
+       "tekst": "Primam i sam produžavam rok jer je roba dobro čuvana",
+       "tacna": false
+      }
+     ],
+     "varijanta": 4
+    }
+   ]
+  },
+  {
+   "oznaka": "F1.3",
+   "tema": "D1",
+   "kognitivni_nivo": "primena",
+   "je_sidro": false,
+   "konstrukt": "Dobavljač koji nije na listi odobrenih",
+   "stavke": [
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Stiže pošiljka od dobavljača koji nije na listi odobrenih dobavljača. Šta je ispravno?",
+     "opcije": [
+      {
+       "tekst": "Zaustavljam prijem i tražim odluku odgovornog lica prije istovara",
+       "tacna": true
+      },
+      {
+       "tekst": "Primam, pa ću dobavljača dodati na listu poslije",
+       "tacna": false
+      },
+      {
+       "tekst": "Primam jer je nabavka već naručila robu",
+       "tacna": false
+      },
+      {
+       "tekst": "Primam ako roba ima ispravnu deklaraciju",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Zašto uopšte postoji lista odobrenih dobavljača?",
+     "opcije": [
+      {
+       "tekst": "Jer subjekt odgovara za bezbjednost hrane koju stavlja u promet, pa dobavljača provjerava unaprijed",
+       "tacna": true
+      },
+      {
+       "tekst": "Jer to traži poreska uprava",
+       "tacna": false
+      },
+      {
+       "tekst": "Da bi se dobili bolji uslovi plaćanja",
+       "tacna": false
+      },
+      {
+       "tekst": "Da bi se smanjio broj faktura",
+       "tacna": false
+      }
+     ],
+     "varijanta": 2
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Dobavljač je odobren, ali je promijenio objekat iz kojeg isporučuje. Šta to znači?",
+     "opcije": [
+      {
+       "tekst": "Provjerava se podatak o novom objektu prije nastavka isporuka",
+       "tacna": true
+      },
+      {
+       "tekst": "Ništa, firma je ista",
+       "tacna": false
+      },
+      {
+       "tekst": "Automatski se briše sa liste",
+       "tacna": false
+      },
+      {
+       "tekst": "To se rješava tek na godišnjoj provjeri",
+       "tacna": false
+      }
+     ],
+     "varijanta": 3
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Vozač dobavljača nema otpremnicu, kaže da će je poslati mejlom sutra. Šta radiš?",
+     "opcije": [
+      {
+       "tekst": "Ne primam robu bez prateće dokumentacije i bilježim razlog",
+       "tacna": true
+      },
+      {
+       "tekst": "Primam i čekam mejl",
+       "tacna": false
+      },
+      {
+       "tekst": "Primam i sam pišem internu otpremnicu",
+       "tacna": false
+      },
+      {
+       "tekst": "Primam jer je važno da roba stigne na vrijeme",
+       "tacna": false
+      }
+     ],
+     "varijanta": 4
+    }
+   ]
+  },
+  {
+   "oznaka": "A1",
+   "tema": "D1",
+   "kognitivni_nivo": "prisecanje",
+   "je_sidro": true,
+   "konstrukt": "SIDRO — pojam kritične kontrolne tačke",
+   "stavke": [
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Šta je kritična kontrolna tačka?",
+     "opcije": [
+      {
+       "tekst": "Korak u procesu na kojem se kontrolom sprečava ili svodi na prihvatljiv nivo opasnost po bezbjednost hrane",
+       "tacna": true
+      },
+      {
+       "tekst": "Mjesto u skladištu na kojem se najčešće kvari oprema",
+       "tacna": false
+      },
+      {
+       "tekst": "Tačka na kojoj se mjeri utrošak robe",
+       "tacna": false
+      },
+      {
+       "tekst": "Trenutak kada inspektor ulazi u objekat",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    }
+   ]
+  },
+  {
+   "oznaka": "F2.1",
+   "tema": "D2",
+   "kognitivni_nivo": "primena",
+   "je_sidro": false,
+   "konstrukt": "Redoslijed izdavanja robe iz skladišta",
+   "stavke": [
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "U komori imaš dvije palete istog artikla: jedna je primljena ranije sa rokom do 30. maja, druga kasnije sa rokom do 10. maja. Koju izdaješ prvu?",
+     "opcije": [
+      {
+       "tekst": "Onu sa rokom do 10. maja — prvo ističe, prvo izlazi",
+       "tacna": true
+      },
+      {
+       "tekst": "Onu koja je ranije primljena, jer je prvo ušla",
+       "tacna": false
+      },
+      {
+       "tekst": "Onu koja je bliže vratima, da se ne pretovaruje",
+       "tacna": false
+      },
+      {
+       "tekst": "Svejedno, obje su u roku",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Šta znači pravilo FEFO?",
+     "opcije": [
+      {
+       "tekst": "Prvo izlazi ono čiji rok trajanja prvi ističe",
+       "tacna": true
+      },
+      {
+       "tekst": "Prvo izlazi ono što je prvo ušlo, bez obzira na rok",
+       "tacna": false
+      },
+      {
+       "tekst": "Prvo izlazi ono što je najskuplje",
+       "tacna": false
+      },
+      {
+       "tekst": "Prvo izlazi ono što zauzima najviše mjesta",
+       "tacna": false
+      }
+     ],
+     "varijanta": 2
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Zašto se roba u skladištu drži odignuta od poda?",
+     "opcije": [
+      {
+       "tekst": "Zbog čišćenja, cirkulacije vazduha i kontrole štetočina",
+       "tacna": true
+      },
+      {
+       "tekst": "Da se ne bi oštetila ambalaža pri pomjeranju",
+       "tacna": false
+      },
+      {
+       "tekst": "Zato što to traži protivpožarni propis",
+       "tacna": false
+      },
+      {
+       "tekst": "Da bi se lakše brojala pri popisu",
+       "tacna": false
+      }
+     ],
+     "varijanta": 3
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Primljena je nova paleta istog artikla, a u komori je još pola stare. Kako se slaže?",
+     "opcije": [
+      {
+       "tekst": "Nova se stavlja iza stare, tako da se stara izdaje prva",
+       "tacna": true
+      },
+      {
+       "tekst": "Nova se stavlja ispred, jer je svježija",
+       "tacna": false
+      },
+      {
+       "tekst": "Miješa se, jer je isti artikal",
+       "tacna": false
+      },
+      {
+       "tekst": "Stara se odvaja i vraća dobavljaču",
+       "tacna": false
+      }
+     ],
+     "varijanta": 4
+    }
+   ]
+  },
+  {
+   "oznaka": "F2.2",
+   "tema": "D2",
+   "kognitivni_nivo": "primena",
+   "je_sidro": false,
+   "konstrukt": "Odvajanje i unakrsna kontaminacija u skladištu",
+   "stavke": [
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "U istoj rashladnoj komori treba da stoje sirovo meso u zatvorenim kutijama i pakovani sirevi. Kako se slaže?",
+     "opcije": [
+      {
+       "tekst": "Odvojeno, sa sirovim mesom na nižim policama tako da ništa ne može da kaplje na ostalu robu",
+       "tacna": true
+      },
+      {
+       "tekst": "Svejedno, sve je u zatvorenoj ambalaži",
+       "tacna": false
+      },
+      {
+       "tekst": "Sirevi dolje jer su teži",
+       "tacna": false
+      },
+      {
+       "tekst": "Naizmjenično, da se komora ravnomjerno puni",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Gdje se drže sredstva za čišćenje i dezinfekciju?",
+     "opcije": [
+      {
+       "tekst": "U odvojenom, označenom prostoru, u originalnoj ambalaži, izvan prostora sa hranom",
+       "tacna": true
+      },
+      {
+       "tekst": "U uglu komore, da budu pri ruci",
+       "tacna": false
+      },
+      {
+       "tekst": "Na polici iznad robe, jer tamo ne smeta",
+       "tacna": false
+      },
+      {
+       "tekst": "Bilo gdje, ako su dobro zatvorena",
+       "tacna": false
+      }
+     ],
+     "varijanta": 2
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Nađeš robu bez deklaracije i bez oznake serije u uglu skladišta. Šta radiš?",
+     "opcije": [
+      {
+       "tekst": "Izdvajam je i označavam kao zadržanu, pa tražim odluku odgovornog lica",
+       "tacna": true
+      },
+      {
+       "tekst": "Vraćam je na policu, neko će se sjetiti šta je",
+       "tacna": false
+      },
+      {
+       "tekst": "Izdajem je prvom kupcu da se ne pokvari",
+       "tacna": false
+      },
+      {
+       "tekst": "Bacam je odmah, bez zapisa",
+       "tacna": false
+      }
+     ],
+     "varijanta": 3
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Zašto se transportna ambalaža sa spoljnim palete-folijama uklanja pri ulasku u skladište kad god je moguće?",
+     "opcije": [
+      {
+       "tekst": "Jer nosi prljavštinu i štetočine sa transporta u prostor sa hranom",
+       "tacna": true
+      },
+      {
+       "tekst": "Jer zauzima mjesto na paleti",
+       "tacna": false
+      },
+      {
+       "tekst": "Jer se folija reciklira",
+       "tacna": false
+      },
+      {
+       "tekst": "Jer se tako lakše čita deklaracija",
+       "tacna": false
+      }
+     ],
+     "varijanta": 4
+    }
+   ]
+  },
+  {
+   "oznaka": "F2.3",
+   "tema": "D2",
+   "kognitivni_nivo": "primena",
+   "je_sidro": false,
+   "konstrukt": "Odstupanje temperature komore",
+   "stavke": [
+    {
+     "zahteva_potvrdu": true,
+     "tekst": "Ujutru očitavaš komoru i vidiš +9 °C umjesto propisanog režima do +4 °C. Ne znaš koliko dugo je tako. Šta radiš?",
+     "opcije": [
+      {
+       "tekst": "Prebacujem robu u ispravnu komoru, zovem servis, zapisujem odstupanje i tražim odluku odgovornog lica o upotrebljivosti robe",
+       "tacna": true
+      },
+      {
+       "tekst": "Spuštam termostat i nastavljam rad",
+       "tacna": false
+      },
+      {
+       "tekst": "Čekam sat vremena da vidim hoće li se vratiti pa tek onda zapisujem",
+       "tacna": false
+      },
+      {
+       "tekst": "Izdajem robu odmah kupcima da se ne kvari dalje",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Ko odlučuje da li je roba nakon temperaturnog odstupanja upotrebljiva?",
+     "opcije": [
+      {
+       "tekst": "Odgovorno lice za bezbjednost hrane, na osnovu trajanja i visine odstupanja",
+       "tacna": true
+      },
+      {
+       "tekst": "Magacioner koji je odstupanje primijetio",
+       "tacna": false
+      },
+      {
+       "tekst": "Vozač koji tu robu treba da nosi",
+       "tacna": false
+      },
+      {
+       "tekst": "Kupac kojem roba ide",
+       "tacna": false
+      }
+     ],
+     "varijanta": 2
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Koliko se najmanje puta dnevno očitava temperatura rashladne komore?",
+     "opcije": [
+      {
+       "tekst": "Najmanje jednom dnevno po komori, uz zapis",
+       "tacna": true
+      },
+      {
+       "tekst": "Jednom sedmično je dovoljno ako uređaj ima alarm",
+       "tacna": false
+      },
+      {
+       "tekst": "Samo kada se primijeti da nešto nije u redu",
+       "tacna": false
+      },
+      {
+       "tekst": "Jednom mjesečno, pri verifikaciji",
+       "tacna": false
+      }
+     ],
+     "varijanta": 3
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Zamrznuta roba se djelimično odmrzla u komori koja je otkazala. Smije li se ponovo zamrznuti?",
+     "opcije": [
+      {
+       "tekst": "Ne — jednom odmrznuta hrana ne smije se ponovo zamrzavati",
+       "tacna": true
+      },
+      {
+       "tekst": "Smije ako se odmah vrati na −18 °C",
+       "tacna": false
+      },
+      {
+       "tekst": "Smije ako nije bila odmrznuta duže od dva sata",
+       "tacna": false
+      },
+      {
+       "tekst": "Smije ako se rok trajanja skrati",
+       "tacna": false
+      }
+     ],
+     "varijanta": 4
+    }
+   ]
+  },
+  {
+   "oznaka": "A2",
+   "tema": "D2",
+   "kognitivni_nivo": "prisecanje",
+   "je_sidro": true,
+   "konstrukt": "SIDRO — svrha zapisa o temperaturi",
+   "stavke": [
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Čemu služi dnevni zapis o temperaturi komore?",
+     "opcije": [
+      {
+       "tekst": "Da se dokaže da je hladni lanac držan i da se odstupanje vidi na vrijeme",
+       "tacna": true
+      },
+      {
+       "tekst": "Da se prati potrošnja struje",
+       "tacna": false
+      },
+      {
+       "tekst": "Da se zna kada treba servis uređaja",
+       "tacna": false
+      },
+      {
+       "tekst": "Da se opravda cijena robe prema kupcu",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    }
+   ]
+  },
+  {
+   "oznaka": "F3.1",
+   "tema": "D3",
+   "kognitivni_nivo": "primena",
+   "je_sidro": false,
+   "konstrukt": "Priprema vozila prije utovara",
+   "stavke": [
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Prije utovara rashlađene robe otvaraš komoru vozila i ona je na temperaturi spoljašnjeg vazduha. Šta radiš?",
+     "opcije": [
+      {
+       "tekst": "Ne utovarujem dok se komora ne predrashladi na režim robe, i to bilježim",
+       "tacna": true
+      },
+      {
+       "tekst": "Utovarujem i palim rashladu, ohladiće se u vožnji",
+       "tacna": false
+      },
+      {
+       "tekst": "Utovarujem jer je vožnja kratka",
+       "tacna": false
+      },
+      {
+       "tekst": "Utovarujem i pokrivam robu ćebadima",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "U komori vozila osjeća se jak strani miris od prethodne ture. Šta radiš?",
+     "opcije": [
+      {
+       "tekst": "Ne utovarujem dok se komora ne opere i provjeri, i to bilježim",
+       "tacna": true
+      },
+      {
+       "tekst": "Utovarujem jer je roba u zatvorenoj ambalaži",
+       "tacna": false
+      },
+      {
+       "tekst": "Utovarujem i ostavljam vrata otvorena da se provjetri u vožnji",
+       "tacna": false
+      },
+      {
+       "tekst": "Utovarujem i prskam osvježivač",
+       "tacna": false
+      }
+     ],
+     "varijanta": 2
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Šta sve ulazi u kontrolu vozila prije utovara?",
+     "opcije": [
+      {
+       "tekst": "Čistoća komore, ispravnost rashladnog uređaja, predrashlađenost, mogućnost odvajanja robe i ispravan termometar",
+       "tacna": true
+      },
+      {
+       "tekst": "Samo da li rashlada radi",
+       "tacna": false
+      },
+      {
+       "tekst": "Samo nivo goriva i pritisak u gumama",
+       "tacna": false
+      },
+      {
+       "tekst": "Samo da li je komora prazna",
+       "tacna": false
+      }
+     ],
+     "varijanta": 3
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Rashladni uređaj na vozilu pokazuje grešku, ali još uvijek hladi. Šta radiš?",
+     "opcije": [
+      {
+       "tekst": "Prijavljujem i ne utovarujem rashlađenu robu dok se kvar ne otkloni",
+       "tacna": true
+      },
+      {
+       "tekst": "Utovarujem jer uređaj još radi",
+       "tacna": false
+      },
+      {
+       "tekst": "Utovarujem i pratim temperaturu češće",
+       "tacna": false
+      },
+      {
+       "tekst": "Utovarujem samo robu sa dužim rokom",
+       "tacna": false
+      }
+     ],
+     "varijanta": 4
+    }
+   ]
+  },
+  {
+   "oznaka": "F3.2",
+   "tema": "D3",
+   "kognitivni_nivo": "primena",
+   "je_sidro": false,
+   "konstrukt": "Hladni lanac tokom vožnje i isporuke",
+   "stavke": [
+    {
+     "zahteva_potvrdu": true,
+     "tekst": "Na trećoj adresi u turi mjeriš temperaturu rashlađene robe i ona je iznad granice. Šta radiš?",
+     "opcije": [
+      {
+       "tekst": "Ne predajem robu kupcu, bilježim odstupanje i zovem odgovorno lice",
+       "tacna": true
+      },
+      {
+       "tekst": "Predajem je jer kupac ima svoju komoru",
+       "tacna": false
+      },
+      {
+       "tekst": "Predajem je uz usmenu napomenu kupcu",
+       "tacna": false
+      },
+      {
+       "tekst": "Vraćam je u skladište bez zapisa",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Zašto se izbjegava dugo držanje vrata komore otvorenim na svakoj adresi?",
+     "opcije": [
+      {
+       "tekst": "Jer pri svakom otvaranju temperatura u komori raste i hladni lanac se približava granici",
+       "tacna": true
+      },
+      {
+       "tekst": "Jer se troši više goriva",
+       "tacna": false
+      },
+      {
+       "tekst": "Jer se time gubi vrijeme na turi",
+       "tacna": false
+      },
+      {
+       "tekst": "Jer to smeta kupcu",
+       "tacna": false
+      }
+     ],
+     "varijanta": 2
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Kako se slaže roba u komori vozila za turu sa više adresa?",
+     "opcije": [
+      {
+       "tekst": "Redoslijedom isporuke i odvojeno po grupama, tako da se komora što manje preslaguje",
+       "tacna": true
+      },
+      {
+       "tekst": "Po težini, teže dolje",
+       "tacna": false
+      },
+      {
+       "tekst": "Kako stigne, jer se ionako sve vadi",
+       "tacna": false
+      },
+      {
+       "tekst": "Po vrijednosti, skuplje bliže vratima",
+       "tacna": false
+      }
+     ],
+     "varijanta": 3
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Ko upisuje temperaturu pri isporuci?",
+     "opcije": [
+      {
+       "tekst": "Vozač, na licu mjesta, u zapis o isporuci",
+       "tacna": true
+      },
+      {
+       "tekst": "Magacioner, kad se vozilo vrati",
+       "tacna": false
+      },
+      {
+       "tekst": "Kupac, na svojoj dokumentaciji",
+       "tacna": false
+      },
+      {
+       "tekst": "Odgovorno lice, na kraju sedmice",
+       "tacna": false
+      }
+     ],
+     "varijanta": 4
+    }
+   ]
+  },
+  {
+   "oznaka": "F3.3",
+   "tema": "D3",
+   "kognitivni_nivo": "razumevanje",
+   "je_sidro": false,
+   "konstrukt": "Vozač kao lice koje rukuje hranom",
+   "stavke": [
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Da li se vozač koji razvozi hranu smatra licem koje rukuje hranom?",
+     "opcije": [
+      {
+       "tekst": "Da — zakon obuhvata sve faze prometa i distribucije, pa vozaču trebaju obuka i sanitarna knjižica",
+       "tacna": true
+      },
+      {
+       "tekst": "Ne, jer ne otvara ambalažu",
+       "tacna": false
+      },
+      {
+       "tekst": "Ne, jer je zaposlen u transportu, a ne u skladištu",
+       "tacna": false
+      },
+      {
+       "tekst": "Samo ako prenosi neupakovanu hranu",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Gdje se čuva sanitarna knjižica zaposlenog?",
+     "opcije": [
+      {
+       "tekst": "Kod poslodavca, u poslovnim prostorijama objekta",
+       "tacna": true
+      },
+      {
+       "tekst": "Kod samog zaposlenog, u vozilu",
+       "tacna": false
+      },
+      {
+       "tekst": "U ambulanti koja je obavila pregled",
+       "tacna": false
+      },
+      {
+       "tekst": "U knjigovodstvu, uz radnu dokumentaciju",
+       "tacna": false
+      }
+     ],
+     "varijanta": 2
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Ko snosi trošak obaveznog zdravstvenog pregleda zaposlenog koji rukuje hranom?",
+     "opcije": [
+      {
+       "tekst": "Poslodavac",
+       "tacna": true
+      },
+      {
+       "tekst": "Zaposleni",
+       "tacna": false
+      },
+      {
+       "tekst": "Dijeli se pola-pola",
+       "tacna": false
+      },
+      {
+       "tekst": "Fond zdravstva u cijelosti",
+       "tacna": false
+      }
+     ],
+     "varijanta": 3
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Vozač se tokom ture osjeti loše i ima simptome stomačne infekcije. Šta je ispravno?",
+     "opcije": [
+      {
+       "tekst": "Prijavljuje odmah odgovornom licu i ne nastavlja rad sa hranom dok se stanje ne razjasni",
+       "tacna": true
+      },
+      {
+       "tekst": "Završava turu jer su kupci već naručili",
+       "tacna": false
+      },
+      {
+       "tekst": "Nastavlja rad uz rukavice i masku",
+       "tacna": false
+      },
+      {
+       "tekst": "Prijavljuje tek kada se vrati u firmu",
+       "tacna": false
+      }
+     ],
+     "varijanta": 4
+    }
+   ]
+  },
+  {
+   "oznaka": "A3",
+   "tema": "D3",
+   "kognitivni_nivo": "prisecanje",
+   "je_sidro": true,
+   "konstrukt": "SIDRO — gdje se hladni lanac najčešće prekida",
+   "stavke": [
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Na kom koraku se u distribuciji hladni lanac najčešće prekida?",
+     "opcije": [
+      {
+       "tekst": "U vozilu — pri utovaru i tokom ture, jer tamo nema stalnog nadzora",
+       "tacna": true
+      },
+      {
+       "tekst": "U rashladnoj komori skladišta, jer se stalno otvara",
+       "tacna": false
+      },
+      {
+       "tekst": "Kod dobavljača, prije nego što roba krene",
+       "tacna": false
+      },
+      {
+       "tekst": "Kod kupca, poslije isporuke",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    }
+   ]
+  },
+  {
+   "oznaka": "F4.1",
+   "tema": "D4",
+   "kognitivni_nivo": "razumevanje",
+   "je_sidro": false,
+   "konstrukt": "Korak nazad i korak naprijed",
+   "stavke": [
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Šta znači „korak naprijed“ u sledljivosti?",
+     "opcije": [
+      {
+       "tekst": "Znati kojim je kupcima otišla svaka serija robe",
+       "tacna": true
+      },
+      {
+       "tekst": "Znati koji je sljedeći proizvod na redu za izdavanje",
+       "tacna": false
+      },
+      {
+       "tekst": "Znati koliko robe ostaje na zalihama",
+       "tacna": false
+      },
+      {
+       "tekst": "Znati kada stiže sljedeća isporuka dobavljača",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Šta znači „korak nazad“ u sledljivosti?",
+     "opcije": [
+      {
+       "tekst": "Znati od kog dobavljača i pod kojom serijom je roba primljena",
+       "tacna": true
+      },
+      {
+       "tekst": "Znati koliko je robe vraćeno kao reklamacija",
+       "tacna": false
+      },
+      {
+       "tekst": "Znati koja je prethodna cijena bila",
+       "tacna": false
+      },
+      {
+       "tekst": "Znati koji je radnik robu primio",
+       "tacna": false
+      }
+     ],
+     "varijanta": 2
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Koji je podatak neophodan da bi sledljivost uopšte radila?",
+     "opcije": [
+      {
+       "tekst": "Broj serije ili lota, upisan i na prijemu i na isporuci",
+       "tacna": true
+      },
+      {
+       "tekst": "Broj fakture dobavljača",
+       "tacna": false
+      },
+      {
+       "tekst": "Ime vozača koji je robu dovezao",
+       "tacna": false
+      },
+      {
+       "tekst": "Registracija vozila",
+       "tacna": false
+      }
+     ],
+     "varijanta": 3
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Kupac je fizičko lice koje kupuje u vašoj veleprodaji za sopstvenu upotrebu. Da li je i za njega potreban korak naprijed?",
+     "opcije": [
+      {
+       "tekst": "Prema krajnjem potrošaču korak naprijed se ne zahtijeva, ali se prema pravnim licima zahtijeva u punom obimu",
+       "tacna": true
+      },
+      {
+       "tekst": "Zahtijeva se jednako za sve kupce",
+       "tacna": false
+      },
+      {
+       "tekst": "Ne zahtijeva se ni za koga jer ste vi samo posrednik",
+       "tacna": false
+      },
+      {
+       "tekst": "Zahtijeva se samo za robu koja ide u inostranstvo",
+       "tacna": false
+      }
+     ],
+     "varijanta": 4
+    }
+   ]
+  },
+  {
+   "oznaka": "F4.2",
+   "tema": "D4",
+   "kognitivni_nivo": "primena",
+   "je_sidro": false,
+   "konstrukt": "Postupanje pri saznanju o nebezbjednoj robi",
+   "stavke": [
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Dobavljač te obavijesti da je serija koju si primio prije pet dana nebezbjedna. Koji je prvi korak?",
+     "opcije": [
+      {
+       "tekst": "Fizički izdvajam svu robu te serije sa zaliha i označavam je kao zadržanu, pa obavještavam odgovorno lice",
+       "tacna": true
+      },
+      {
+       "tekst": "Prvo zovem sve kupce, roba na zalihama može da čeka",
+       "tacna": false
+      },
+      {
+       "tekst": "Prvo pišem izvještaj za inspekciju",
+       "tacna": false
+      },
+      {
+       "tekst": "Prvo tražim od dobavljača pisanu potvrdu prije bilo kakve radnje",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Kada se obavještava nadležni organ o povlačenju robe?",
+     "opcije": [
+      {
+       "tekst": "Bez odlaganja, čim se utvrdi da hrana ne ispunjava zahtjeve bezbjednosti",
+       "tacna": true
+      },
+      {
+       "tekst": "Tek ako kupci vrate robu",
+       "tacna": false
+      },
+      {
+       "tekst": "Na kraju mjeseca, zajedno sa ostalim izvještajima",
+       "tacna": false
+      },
+      {
+       "tekst": "Samo ako je neko obolio",
+       "tacna": false
+      }
+     ],
+     "varijanta": 2
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Roba koja je povučena od kupaca vraća se u vaše skladište. Gdje ide?",
+     "opcije": [
+      {
+       "tekst": "U odvojen, označen prostor — karantin, nikako u redovne zalihe",
+       "tacna": true
+      },
+      {
+       "tekst": "Nazad na svoje mjesto u komori, dok se ne odluči šta dalje",
+       "tacna": false
+      },
+      {
+       "tekst": "Odmah u kontejner",
+       "tacna": false
+      },
+      {
+       "tekst": "Kod dobavljača na rampu, bez zapisa",
+       "tacna": false
+      }
+     ],
+     "varijanta": 3
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Kupac prijavljuje da je u proizvodu našao strano tijelo. Šta je prvo?",
+     "opcije": [
+      {
+       "tekst": "Bilježim reklamaciju sa serijom i artiklom, izdvajam tu seriju sa zaliha i obavještavam odgovorno lice",
+       "tacna": true
+      },
+      {
+       "tekst": "Šaljem mu zamjenski proizvod i time je stvar riješena",
+       "tacna": false
+      },
+      {
+       "tekst": "Tražim da vrati proizvod pa ćemo vidjeti",
+       "tacna": false
+      },
+      {
+       "tekst": "Upućujem ga na proizvođača",
+       "tacna": false
+      }
+     ],
+     "varijanta": 4
+    }
+   ]
+  },
+  {
+   "oznaka": "F4.3",
+   "tema": "D4",
+   "kognitivni_nivo": "primena",
+   "je_sidro": false,
+   "konstrukt": "Dokumentacija i rokovi u sledljivosti",
+   "stavke": [
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Koliko dugo se čuvaju zapisi o sledljivosti?",
+     "opcije": [
+      {
+       "tekst": "Najmanje dok traje rok trajanja proizvoda, i neko vrijeme nakon toga",
+       "tacna": true
+      },
+      {
+       "tekst": "Do kraja kalendarske godine",
+       "tacna": false
+      },
+      {
+       "tekst": "Mjesec dana od isporuke",
+       "tacna": false
+      },
+      {
+       "tekst": "Dok se roba ne naplati",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Zašto telefon kupca mora biti upisan u sistemu, a ne samo mejl?",
+     "opcije": [
+      {
+       "tekst": "Jer se pri povlačenju kupci obavještavaju odmah, telefonom, a tek onda pisano",
+       "tacna": true
+      },
+      {
+       "tekst": "Zbog knjigovodstva i naplate",
+       "tacna": false
+      },
+      {
+       "tekst": "Da bi se dogovarale isporuke",
+       "tacna": false
+      },
+      {
+       "tekst": "Zbog marketinga",
+       "tacna": false
+      }
+     ],
+     "varijanta": 2
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "U kom roku bi odgovorno lice trebalo da ima kompletnu listu kupaca kojima je sporna serija otišla?",
+     "opcije": [
+      {
+       "tekst": "U roku od nekoliko sati — to se provjerava godišnjom vježbom povlačenja",
+       "tacna": true
+      },
+      {
+       "tekst": "U roku od sedam dana",
+       "tacna": false
+      },
+      {
+       "tekst": "Do kraja tekućeg mjeseca",
+       "tacna": false
+      },
+      {
+       "tekst": "Onoliko koliko treba, rok nije bitan",
+       "tacna": false
+      }
+     ],
+     "varijanta": 3
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Šta je vježba povlačenja?",
+     "opcije": [
+      {
+       "tekst": "Provjera sistema na nasumično izabranoj seriji, bez stvarnog problema, da se izmjeri koliko brzo se dolazi do liste kupaca",
+       "tacna": true
+      },
+      {
+       "tekst": "Obuka za rukovanje viljuškarom",
+       "tacna": false
+      },
+      {
+       "tekst": "Godišnji popis zaliha",
+       "tacna": false
+      },
+      {
+       "tekst": "Test rashladnih uređaja",
+       "tacna": false
+      }
+     ],
+     "varijanta": 4
+    }
+   ]
+  },
+  {
+   "oznaka": "A4",
+   "tema": "D4",
+   "kognitivni_nivo": "prisecanje",
+   "je_sidro": true,
+   "konstrukt": "SIDRO — šta je serija (lot)",
+   "stavke": [
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Šta je serija (lot) robe?",
+     "opcije": [
+      {
+       "tekst": "Količina proizvoda proizvedena ili pakovana pod praktično istim uslovima, označena zajedničkom oznakom",
+       "tacna": true
+      },
+      {
+       "tekst": "Količina robe koja stane na jednu paletu",
+       "tacna": false
+      },
+      {
+       "tekst": "Količina koju jedan kupac naruči odjednom",
+       "tacna": false
+      },
+      {
+       "tekst": "Količina koja se isporučuje jednim vozilom",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    }
+   ]
+  },
+  {
+   "oznaka": "F5.1",
+   "tema": "D5",
+   "kognitivni_nivo": "primena",
+   "je_sidro": false,
+   "konstrukt": "Pranje ruku i lična higijena u prometu hrane",
+   "stavke": [
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Kada se obavezno peru ruke u radu sa hranom?",
+     "opcije": [
+      {
+       "tekst": "Prije početka rada, poslije toaleta, poslije rukovanja otpadom ili prljavom ambalažom i poslije svake prekinute radnje",
+       "tacna": true
+      },
+      {
+       "tekst": "Samo prije početka smjene",
+       "tacna": false
+      },
+      {
+       "tekst": "Samo kada su ruke vidno prljave",
+       "tacna": false
+      },
+      {
+       "tekst": "Na kraju smjene, prije odlaska kući",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Radnik nosi rukavice cijelu smjenu bez mijenjanja. Da li je to ispravno?",
+     "opcije": [
+      {
+       "tekst": "Nije — rukavice se mijenjaju i ruke peru kao i bez njih; rukavice nisu zamjena za pranje ruku",
+       "tacna": true
+      },
+      {
+       "tekst": "Jeste, rukavice su čistije od ruku",
+       "tacna": false
+      },
+      {
+       "tekst": "Jeste, ako su rukavice jednokratne",
+       "tacna": false
+      },
+      {
+       "tekst": "Jeste, ako se rukavice povremeno operu",
+       "tacna": false
+      }
+     ],
+     "varijanta": 2
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Šta se radi sa radnom odjećom?",
+     "opcije": [
+      {
+       "tekst": "Drži se odvojeno od civilne, čista je i mijenja se redovno",
+       "tacna": true
+      },
+      {
+       "tekst": "Nosi se od kuće da se uštedi vrijeme",
+       "tacna": false
+      },
+      {
+       "tekst": "Pere se jednom mjesečno",
+       "tacna": false
+      },
+      {
+       "tekst": "Koristi se i za druge poslove u firmi",
+       "tacna": false
+      }
+     ],
+     "varijanta": 3
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Radnik ima posjekotinu na ruci. Šta je ispravno?",
+     "opcije": [
+      {
+       "tekst": "Rana se pokrije vodootpornim zavojem i, gdje je potrebno, rukavicom; prijavljuje se nadređenom",
+       "tacna": true
+      },
+      {
+       "tekst": "Nastavlja rad, rana je mala",
+       "tacna": false
+      },
+      {
+       "tekst": "Stavlja običan flaster i nastavlja",
+       "tacna": false
+      },
+      {
+       "tekst": "Odlazi kući do zarastanja, bez izuzetka",
+       "tacna": false
+      }
+     ],
+     "varijanta": 4
+    }
+   ]
+  },
+  {
+   "oznaka": "F5.2",
+   "tema": "D5",
+   "kognitivni_nivo": "razumevanje",
+   "je_sidro": false,
+   "konstrukt": "Zdravstvena sposobnost i prijava simptoma",
+   "stavke": [
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Zaposleni ima proliv i povraćanje. Šta propis traži?",
+     "opcije": [
+      {
+       "tekst": "Da odmah prijavi stanje i da ne radi sa hranom dok se stanje ne razjasni",
+       "tacna": true
+      },
+      {
+       "tekst": "Da radi uz pojačanu higijenu ruku",
+       "tacna": false
+      },
+      {
+       "tekst": "Da radi samo na pakovanoj robi",
+       "tacna": false
+      },
+      {
+       "tekst": "Da sam odluči da li je sposoban za rad",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Koji dokument potvrđuje da je zaposleni prošao obavezni zdravstveni pregled za rad sa hranom?",
+     "opcije": [
+      {
+       "tekst": "Sanitarna knjižica",
+       "tacna": true
+      },
+      {
+       "tekst": "Ljekarsko uvjerenje za vozačku dozvolu",
+       "tacna": false
+      },
+      {
+       "tekst": "Uvjerenje o bezbjednosti na radu",
+       "tacna": false
+      },
+      {
+       "tekst": "Ugovor o radu",
+       "tacna": false
+      }
+     ],
+     "varijanta": 2
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Na koga se odnosi obaveza zdravstvenog pregleda u distribuciji hrane?",
+     "opcije": [
+      {
+       "tekst": "Na sve koji rukuju hranom u fazama proizvodnje, prometa i distribucije, uključujući magacionere i vozače",
+       "tacna": true
+      },
+      {
+       "tekst": "Samo na one koji rade sa neupakovanom hranom",
+       "tacna": false
+      },
+      {
+       "tekst": "Samo na rukovodioce",
+       "tacna": false
+      },
+      {
+       "tekst": "Samo na zaposlene u proizvodnji",
+       "tacna": false
+      }
+     ],
+     "varijanta": 3
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Inspektor traži sanitarne knjižice zaposlenih. Gdje treba da budu?",
+     "opcije": [
+      {
+       "tekst": "U poslovnim prostorijama objekta, kod poslodavca",
+       "tacna": true
+      },
+      {
+       "tekst": "Kod svakog zaposlenog lično",
+       "tacna": false
+      },
+      {
+       "tekst": "U arhivi u drugom gradu",
+       "tacna": false
+      },
+      {
+       "tekst": "U elektronskoj formi na mejlu",
+       "tacna": false
+      }
+     ],
+     "varijanta": 4
+    }
+   ]
+  },
+  {
+   "oznaka": "A5",
+   "tema": "D5",
+   "kognitivni_nivo": "prisecanje",
+   "je_sidro": true,
+   "konstrukt": "SIDRO — zašto je lična higijena mjera bezbjednosti hrane",
+   "stavke": [
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Zašto je lična higijena zaposlenog mjera bezbjednosti hrane, a ne samo pitanje urednosti?",
+     "opcije": [
+      {
+       "tekst": "Jer čovjek može prenijeti mikroorganizme na hranu i tako je učiniti nebezbjednom",
+       "tacna": true
+      },
+      {
+       "tekst": "Jer tako izgleda bolje pred kupcem",
+       "tacna": false
+      },
+      {
+       "tekst": "Jer to traži kolektivni ugovor",
+       "tacna": false
+      },
+      {
+       "tekst": "Jer se tako čuva radna odjeća",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    }
+   ]
+  },
+  {
+   "oznaka": "F6.1",
+   "tema": "D6",
+   "kognitivni_nivo": "primena",
+   "je_sidro": false,
+   "konstrukt": "Program i evidencija čišćenja",
+   "stavke": [
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Šta mora da sadrži pisani program čišćenja?",
+     "opcije": [
+      {
+       "tekst": "Šta se čisti, čime, kojom koncentracijom, koliko često, ko to radi i kako se provjerava",
+       "tacna": true
+      },
+      {
+       "tekst": "Samo spisak sredstava koja se koriste",
+       "tacna": false
+      },
+      {
+       "tekst": "Samo raspored smjena",
+       "tacna": false
+      },
+      {
+       "tekst": "Samo ime firme koja održava higijenu",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Očistio si komoru, ali evidenciju nisi popunio. Da li je posao završen?",
+     "opcije": [
+      {
+       "tekst": "Nije — neevidentirano čišćenje se pred inspekcijom tretira kao da nije ni urađeno",
+       "tacna": true
+      },
+      {
+       "tekst": "Jeste, važno je da je očišćeno",
+       "tacna": false
+      },
+      {
+       "tekst": "Jeste, evidencija se popunjava zbirno na kraju sedmice",
+       "tacna": false
+      },
+      {
+       "tekst": "Jeste, ako je nadređeni vidio da je očišćeno",
+       "tacna": false
+      }
+     ],
+     "varijanta": 2
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Zašto se koriste krpe različitih boja za različite zone?",
+     "opcije": [
+      {
+       "tekst": "Da se spriječi prenošenje prljavštine i mikroorganizama iz jedne zone u drugu",
+       "tacna": true
+      },
+      {
+       "tekst": "Da se lakše prati potrošnja",
+       "tacna": false
+      },
+      {
+       "tekst": "Zbog izgleda objekta",
+       "tacna": false
+      },
+      {
+       "tekst": "Da svaki radnik ima svoju",
+       "tacna": false
+      }
+     ],
+     "varijanta": 3
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Sredstvo za dezinfekciju je preliveno u neobilježenu plastičnu flašu jer je original potrošen. Šta je ispravno?",
+     "opcije": [
+      {
+       "tekst": "Sredstvo se drži isključivo u originalnoj ili jasno označenoj ambalaži, nikada u neobilježenoj",
+       "tacna": true
+      },
+      {
+       "tekst": "U redu je ako svi znaju šta je unutra",
+       "tacna": false
+      },
+      {
+       "tekst": "U redu je ako flaša nije bila za hranu",
+       "tacna": false
+      },
+      {
+       "tekst": "U redu je dok se ne nabavi nova originalna ambalaža",
+       "tacna": false
+      }
+     ],
+     "varijanta": 4
+    }
+   ]
+  },
+  {
+   "oznaka": "F6.2",
+   "tema": "D6",
+   "kognitivni_nivo": "primena",
+   "je_sidro": false,
+   "konstrukt": "Kontrola štetočina",
+   "stavke": [
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Primijetiš izmet glodara iza palete u suvom skladištu. Šta radiš?",
+     "opcije": [
+      {
+       "tekst": "Prijavljujem odmah, bilježim nalaz i tražim vanrednu intervenciju ovlašćene organizacije",
+       "tacna": true
+      },
+      {
+       "tekst": "Čistim i ne pravim pitanje, dešava se",
+       "tacna": false
+      },
+      {
+       "tekst": "Čekam redovnu deratizaciju",
+       "tacna": false
+      },
+      {
+       "tekst": "Sam postavljam mamce koje imam kod kuće",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Ko smije da postavlja mamce za glodare u objektu?",
+     "opcije": [
+      {
+       "tekst": "Registrovana, ovlašćena organizacija, po tlocrtu sa označenim mjestima",
+       "tacna": true
+      },
+      {
+       "tekst": "Bilo koji zaposleni, ako zna gdje su rupe",
+       "tacna": false
+      },
+      {
+       "tekst": "Vlasnik objekta lično",
+       "tacna": false
+      },
+      {
+       "tekst": "Firma koja čisti objekat",
+       "tacna": false
+      }
+     ],
+     "varijanta": 2
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Zašto se vodi tlocrt objekta sa numerisanim mamcima?",
+     "opcije": [
+      {
+       "tekst": "Da se svaki mamac može provjeriti, a nalaz upisati uz tačno mjesto",
+       "tacna": true
+      },
+      {
+       "tekst": "Zbog osiguranja objekta",
+       "tacna": false
+      },
+      {
+       "tekst": "Zbog protivpožarne zaštite",
+       "tacna": false
+      },
+      {
+       "tekst": "Da se zna koliko je mamaca kupljeno",
+       "tacna": false
+      }
+     ],
+     "varijanta": 3
+    },
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Šta je prvi korak kontrole štetočina, prije bilo kakvog sredstva?",
+     "opcije": [
+      {
+       "tekst": "Sprečavanje ulaska — zatvaranje otvora, mreže, redovno uklanjanje otpada i održavanje reda",
+       "tacna": true
+      },
+      {
+       "tekst": "Postavljanje što više mamaca",
+       "tacna": false
+      },
+      {
+       "tekst": "Prskanje cijelog skladišta",
+       "tacna": false
+      },
+      {
+       "tekst": "Zamjena rasvjete",
+       "tacna": false
+      }
+     ],
+     "varijanta": 4
+    }
+   ]
+  },
+  {
+   "oznaka": "A6",
+   "tema": "D6",
+   "kognitivni_nivo": "prisecanje",
+   "je_sidro": true,
+   "konstrukt": "SIDRO — svrha preduslovnih programa",
+   "stavke": [
+    {
+     "zahteva_potvrdu": false,
+     "tekst": "Čemu služe preduslovni programi kao što su čišćenje i kontrola štetočina?",
+     "opcije": [
+      {
+       "tekst": "Da stvore uslove u kojima HACCP uopšte može da radi — bez njih kritične kontrolne tačke ne drže",
+       "tacna": true
+      },
+      {
+       "tekst": "Da se ispuni formalnost pred inspekciju",
+       "tacna": false
+      },
+      {
+       "tekst": "Da se smanje troškovi održavanja",
+       "tacna": false
+      },
+      {
+       "tekst": "Da se produži rok trajanja robe",
+       "tacna": false
+      }
+     ],
+     "varijanta": 1
+    }
+   ]
+  }
+ ],
+ "raspored_forme": [
+  "F1.1",
+  "F1.2",
+  "A1",
+  "F1.3",
+  "F2.1",
+  "A2",
+  "F2.2",
+  "F2.3",
+  "F3.1",
+  "F3.2",
+  "A3",
+  "F3.3",
+  "F4.1",
+  "F4.2",
+  "A4",
+  "F4.3",
+  "F5.1",
+  "A5",
+  "F5.2",
+  "F6.1",
+  "A6",
+  "F6.2"
+ ]
+}

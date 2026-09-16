@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: merenje-osposobljenosti
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/zdravlje
+    envVars:
+      - key: DATABASE_URL
+        sync: false          # unosi se rucno u Render → Environment
+      - key: ADMIN_TOKEN
+        sync: false
+      - key: NODE_VERSION
+        value: "22"

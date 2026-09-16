@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Komandna tabla</title>
+<style>
+  :root{
+    --ink:#131A1F; --steel:#3A4A56; --muted:#6B7A85;
+    --paper:#EFF2F3; --list:#FFF; --linija:#CBD5D9;
+    --cold:#0B6E8C; --cold-tamno:#08536B; --signal:#B4410E; --ok:#2C6B47; --alarm:#96161B;
+    --mono: ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+    --sans: system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+  .oznaka{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+  header{background:var(--ink);color:#fff;padding:20px 26px}
+  header h1{margin:6px 0 0;font-size:22px;font-weight:600;letter-spacing:-.01em}
+  header .oznaka{color:#8FA6B2}
+  .vrh{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:15px}
+  .vrh input,.vrh select{font-family:var(--mono);font-size:14px;padding:9px 12px;border-radius:3px;
+    border:1px solid #2C3A44;background:#1C262D;color:#fff;min-width:150px}
+  .vrh select{font-family:var(--sans)}
+  .vrh button{font-family:var(--sans);font-size:14px;font-weight:600;padding:9px 18px;
+    border-radius:3px;border:none;cursor:pointer;background:var(--cold);color:#fff}
+  .vrh .stanje{margin-left:auto;font-family:var(--mono);font-size:12px;color:#8FA6B2}
+
+  main{max-width:1080px;margin:22px auto;padding:0 20px 70px}
+  section{background:var(--list);border:1px solid var(--linija);border-radius:4px;padding:20px;margin-bottom:18px}
+  h2{font-size:16.5px;margin:2px 0 4px;font-weight:600}
+  .pod{color:var(--muted);font-size:13px;margin:0 0 16px;max-width:84ch;line-height:1.55}
+
+  /* --- pločice za stranice --- */
+  .plocice{display:grid;grid-template-columns:repeat(auto-fit,minmax(226px,1fr));gap:12px}
+  .plocica{display:block;text-decoration:none;color:inherit;border:1px solid var(--linija);
+    border-left:3px solid var(--cold);border-radius:3px;padding:15px 16px;background:var(--list)}
+  .plocica:hover{border-color:var(--steel);border-left-color:var(--cold-tamno);background:#F8FAFB}
+  .plocica h3{margin:5px 0 6px;font-size:15px;font-weight:600}
+  .plocica p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.5}
+  .plocica.prigusena{opacity:.5}
+  .plocica.radnik{border-left-color:var(--ok)}
+
+  /* --- koraci --- */
+  .korak{display:grid;grid-template-columns:34px 1fr;gap:14px;padding:13px 0;
+    border-bottom:1px solid var(--linija)}
+  .korak:last-child{border-bottom:none}
+  .krug{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;
+    font-family:var(--mono);font-size:12.5px;font-weight:700;
+    background:#EDEFF0;color:var(--muted);border:1.5px solid var(--linija)}
+  .korak.gotov .krug{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .korak.tekuci .krug{background:var(--cold);color:#fff;border-color:var(--cold)}
+  .korak h4{margin:2px 0 3px;font-size:14.5px;font-weight:600}
+  .korak p{margin:0;font-size:13px;color:var(--muted)}
+  .korak .radnja{margin-top:8px}
+
+  /* --- forme --- */
+  .polja{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px 16px;margin-bottom:14px}
+  label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+  input,select,textarea{width:100%;font-family:var(--sans);font-size:14px;padding:9px 11px;
+    border:1px solid var(--linija);border-radius:3px;background:var(--list);color:var(--ink)}
+  textarea{min-height:62px;resize:vertical;line-height:1.5}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--cold);outline-offset:0;border-color:var(--cold)}
+  .siroko{grid-column:1/-1}
+  button.glavno{font-family:var(--sans);font-size:14px;font-weight:600;padding:10px 20px;
+    border-radius:3px;border:none;cursor:pointer;background:var(--cold);color:#fff}
+  button.mali{font-family:var(--sans);font-size:12.5px;padding:7px 13px;border-radius:3px;
+    border:1px solid var(--linija);background:var(--list);color:var(--steel);cursor:pointer}
+  button.mali:hover{border-color:var(--steel)}
+  button.opasno{border-color:#96161B;color:#96161B}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .dugmad{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
+  th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--linija);vertical-align:middle}
+  thead th{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--muted);border-bottom:1.5px solid var(--steel);white-space:nowrap}
+  td.b,th.b{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+  tbody tr:hover{background:#F6F9F9}
+  .sifra{font-family:var(--mono);font-weight:700}
+  .znak{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.05em;
+    padding:2px 7px;border-radius:2px;text-transform:uppercase;white-space:nowrap}
+  .z-ok{background:#E3EFE8;color:var(--ok)}
+  .z-lose{background:#F7E3E4;color:var(--alarm)}
+  .z-pazi{background:#F7E9E3;color:var(--signal)}
+  .z-tiho{background:#EDEFF0;color:var(--muted)}
+  .prazno{color:var(--muted);text-align:center;padding:24px 0;font-size:13.5px}
+  .savet{border-left:3px solid var(--cold);background:#E6EEF1;padding:12px 14px;
+    font-size:13px;line-height:1.55;margin-top:14px}
+  .alarm{border-left:3px solid var(--signal);background:#F7E9E3;padding:12px 14px;
+    font-size:13px;line-height:1.55;margin-top:14px;color:#7A2C07}
+  .poruka{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:50;
+    background:var(--ink);color:#fff;padding:12px 20px;border-radius:4px;font-size:14px;
+    box-shadow:0 4px 14px rgba(0,0,0,.25);max-width:80vw}
+  .poruka.lose{background:var(--alarm)}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="oznaka">Merenje osposobljenosti zaposlenih</span>
+  <h1>Komandna tabla</h1>
+  <div class="vrh">
+    <input id="token" type="password" placeholder="pristupni token" aria-label="Token">
+    <select id="grupa" aria-label="Grupa"><option value="">— grupa —</option></select>
+    <button id="ucitaj" type="button">Otvori</button>
+    <span class="stanje" id="stanje"></span>
+    <span class="stanje" id="koSam"></span>
+    <button class="mali" type="button" onclick="odjava()"
+      style="background:transparent;color:#8FA6B2;border:1px solid #2C3A44">odjava</button>
+  </div>
+</header>
+
+<main>
+  <!-- ============ gde ide ko ============ -->
+  <section>
+    <span class="oznaka">Gde ide ko</span>
+    <h2>Stranice</h2>
+    <p class="pod">Svaka stranica je za drugu osobu. Adresu za zaposlene daj nadzorniku;
+      ostale zadrži za sebe i lice za BZR.</p>
+    <div class="plocice" id="plocice"></div>
+  </section>
+
+  <!-- ============ dokle si stigla ============ -->
+  <section>
+    <span class="oznaka">Redosled</span>
+    <h2>Dokle si stigla</h2>
+    <p class="pod">Koraci se popunjavaju sami. Zeleni krug znači gotovo.</p>
+    <div id="koraci"><div class="prazno">Upiši token i izaberi grupu.</div></div>
+  </section>
+
+  <!-- ============ korisnici ============ -->
+  <section id="sekKorisnici" style="display:none">
+    <span class="oznaka">Samo izvođač</span>
+    <h2>Ko sme šta</h2>
+    <p class="pod">
+      <b>Lice za BZR / menadžer kvaliteta</b> vidi imena, štampa Obrazac 6, vodi merenje i
+      evidenciju. <b>Uprava</b> vidi isključivo zbirni izveštaj — nijedno ime i nijednu šifru,
+      ni preko adrese ni preko izvoza. <b>Izvođač</b> dodatno pravi korisnike.
+    </p>
+    <div class="polja">
+      <div><label for="kEmail">E-mail</label><input id="kEmail" type="email" placeholder="ime@firma.rs"></div>
+      <div><label for="kIme">Ime i prezime</label><input id="kIme" placeholder="Ime Prezime"></div>
+      <div><label for="kUloga">Uloga</label><select id="kUloga">
+        <option value="bzr">lice za BZR / menadžer kvaliteta</option>
+        <option value="uprava">uprava — samo zbirni izveštaj</option>
+        <option value="izvodjac">izvođač — sve</option></select></div>
+      <div style="display:flex;align-items:flex-end">
+        <button class="glavno" id="dodajKorisnika" type="button">Napravi korisnika</button></div>
+    </div>
+    <div id="novaLozinka"></div>
+    <div id="spisakKorisnika"></div>
+  </section>
+
+  <!-- ============ šifre ============ -->
+  <section id="sekSifre">
+    <span class="oznaka">Korak 1</span>
+    <h2>Šifre zaposlenih</h2>
+    <p class="pod">
+      Zaposleni nema nalog ni lozinku — ima samo šifru sa ceduljice. Tako merenje ostaje
+      anonimno: u bazi nema imena, a spisak šifra→ime drži poslodavac kod sebe.
+      Isti čovek koristi <b>istu šifru u svim terminima</b>.
+    </p>
+    <div class="polja">
+      <div><label for="rmNaziv">Radno mesto</label>
+        <input id="rmNaziv" list="rmLista" placeholder="npr. Rasecanje"></div>
+      <datalist id="rmLista"></datalist>
+      <div><label for="rmSmena">Smena</label>
+        <input id="rmSmena" placeholder="A" maxlength="8"></div>
+      <div><label for="rmBroj">Koliko ljudi</label>
+        <input id="rmBroj" type="number" min="1" max="200" value="10"></div>
+    </div>
+    <div class="dugmad">
+      <button class="glavno" id="dodajSifre" type="button">Napravi šifre</button>
+      <button class="mali" id="ceduljice" type="button">Odštampaj ceduljice</button>
+      <button class="mali" id="osveziSpisak" type="button">Osveži spisak</button>
+    </div>
+    <div id="spisakUcesnika"></div>
+  </section>
+
+  <!-- ============ obuka ============ -->
+  <section id="sekObuka">
+    <span class="oznaka">Korak 2</span>
+    <h2>Održana obuka</h2>
+    <p class="pod">
+      Zapis o tome da je obuka izvedena i ko joj je prisustvovao. <b>To je prvi dokument
+      koji inspektor traži</b> — provera znanja je tek druga kolona u evidenciji.
+    </p>
+    <div id="postojeceObuke"></div>
+    <div class="polja">
+      <div class="siroko"><label for="obNaziv">Naziv obuke</label>
+        <input id="obNaziv" placeholder="Godišnja obuka — higijena i HACCP"></div>
+      <div><label for="obRazlog">Razlog obuke</label><select id="obRazlog"></select></div>
+      <div><label for="obOblik">Oblik</label>
+        <select id="obOblik">
+          <option value="kombinovana">kombinovana</option>
+          <option value="teorijska">teorijska</option>
+          <option value="prakticna">praktična</option>
+        </select></div>
+      <div><label for="obDatum">Datum održavanja</label><input id="obDatum" type="date"></div>
+      <div><label for="obSati">Trajanje (sati)</label>
+        <input id="obSati" type="number" min="0.5" max="40" step="0.5" value="4"></div>
+      <div><label for="obPrakticna">Datum praktičnog dela</label><input id="obPrakticna" type="date"></div>
+      <div><label for="obLzo">Datum obuke za zaštitnu opremu</label><input id="obLzo" type="date"></div>
+      <div><label for="obMesto">Mesto</label><input id="obMesto" placeholder="Sala za obuku, pogon"></div>
+      <div><label for="obIzvodjac">Izvođač</label><input id="obIzvodjac" placeholder="Ime i prezime"></div>
+      <div><label for="obSvojstvo">U svojstvu</label>
+        <input id="obSvojstvo" placeholder="lice za BZR / spoljni izvođač"></div>
+      <div class="siroko"><label for="obMaterijal">Materijal na osnovu kog je obuka održana</label>
+        <textarea id="obMaterijal" placeholder="HACCP plan v3.2; Dobra higijenska praksa; Akt o proceni rizika"></textarea></div>
+      <div class="siroko"><label>Obuhvaćene teme</label>
+        <div id="obTeme" style="display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px"></div></div>
+    </div>
+    <div class="dugmad">
+      <button class="glavno" id="upisiObuku" type="button">Upiši obuku</button>
+      <button class="mali" id="sviPrisutni" type="button">Označi sve kao prisutne</button>
+    </div>
+    <div class="polja" style="margin-top:14px">
+      <div><label for="odsutni">Odsutni (šifre, razdvojene zarezom)</label>
+        <input id="odsutni" placeholder="P-007, P-012"></div>
+      <div><label for="odsutniRazlog">Razlog odsustva</label>
+        <input id="odsutniRazlog" placeholder="Bolovanje"></div>
+      <div style="display:flex;align-items:flex-end">
+        <button class="mali" id="oznaciOdsutne" type="button">Označi odsutne</button></div>
+    </div>
+  </section>
+
+  <!-- ============ pitanja ============ -->
+  <section id="sekPitanja">
+    <span class="oznaka">Korak 3</span>
+    <h2>Potvrda pitanja sa brojkama</h2>
+    <p class="pod">
+      Neka pitanja sadrže granične temperature i vremena iz HACCP plana poslodavca.
+      <b>Sistem ih neće servirati dok ih klijent ne potvrdi</b> — bolje da pukne kod tebe
+      nego da radnik dobije tuđu graničnu vrednost.
+    </p>
+    <div id="nepotvrdjene"></div>
+    <div class="polja" style="margin-top:12px">
+      <div class="siroko"><label for="potvrdio">Ko potvrđuje (ime i funkcija)</label>
+        <input id="potvrdio" placeholder="Ime Prezime, menadžer kvaliteta"></div>
+    </div>
+    <button class="glavno" id="potvrdiStavke" type="button">Potvrdi sve</button>
+  </section>
+
+  <!-- ============ termini ============ -->
+  <section id="sekTermini">
+    <span class="oznaka">Korak 4</span>
+    <h2>Termini merenja</h2>
+    <p class="pod">
+      Otvori samo termin koji je na redu i zatvori ga posle. Zatvoren termin se ne vidi
+      zaposlenima, pa niko ne može da uradi merenje van dogovorenog dana.
+    </p>
+    <div id="termini"></div>
+  </section>
+
+  <!-- ============ radna mesta ============ -->
+  <section id="sekRM">
+    <span class="oznaka">Korak 5</span>
+    <h2>Radna mesta iz Akta o proceni rizika</h2>
+    <p class="pod">
+      Opis poslova, šifre opasnosti i mere ne zavise od čoveka nego od radnog mesta.
+      Unose se jednom i posle se automatski uparuju sa svakim zaposlenim na tom mestu
+      prilikom štampe Obrasca 6.
+    </p>
+    <div id="radnaMesta"></div>
+    <div class="dugmad" style="margin-top:12px">
+      <button class="mali" id="povezi" type="button">Poveži zaposlene sa radnim mestima</button>
+    </div>
+    <div class="savet">
+      Sadržaj radnih mesta se uređuje u fajlu <b>db/banka.json</b>, blok <b>radna_mesta</b>,
+      pa se učita komandom <b>npm run seed:svez</b>. Ovde ih samo povezuješ sa zaposlenima.
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const dan = d => d ? new Date(d).toLocaleDateString('sr-RS') : '—';
+const pr = v => (v===null||v===undefined||v==='') ? '—' : Number(v).toFixed(1) + '%';
+let stanje = {};
+
+/* ---------------------------------------------------------------- osnovno */
+function poruka(t, lose){
+  const d = document.createElement('div');
+  d.className = 'poruka' + (lose ? ' lose' : '');
+  d.textContent = t; document.body.appendChild(d);
+  setTimeout(() => d.remove(), lose ? 6000 : 3200);
+}
+const tok = () => $('token').value.trim();
+
+async function uzmi(p){
+  const o = await fetch(p, { headers:{ 'x-admin-token': tok() } });
+  const d = await o.json().catch(() => ({}));
+  if(!o.ok) throw new Error(d.greska || (o.status === 401 ? 'Pogrešan token.' : 'Greška.'));
+  return d;
+}
+async function posalji(p, telo, metod = 'POST'){
+  const o = await fetch(p, { method: metod,
+    headers:{ 'x-admin-token': tok(), 'Content-Type':'application/json' },
+    body: telo ? JSON.stringify(telo) : undefined });
+  const d = await o.json().catch(() => ({}));
+  if(!o.ok) throw new Error(d.greska || 'Greška.');
+  return d;
+}
+function tabela(zaglavlja, redovi){
+  if(!redovi.length) return '<div class="prazno">Nema zapisa.</div>';
+  return `<table><thead><tr>${zaglavlja.map(h=>`<th class="${h.b?'b':''}">${h.n}</th>`).join('')}
+    </tr></thead><tbody>${redovi.join('')}</tbody></table>`;
+}
+
+// token se pamti do zatvaranja pregledača, da ga ne kucaš na svakoj stranici
+try{
+  const t = sessionStorage.getItem('token');
+  if(t) $('token').value = t;
+}catch(e){}
+$('token').addEventListener('change', () => {
+  try{ sessionStorage.setItem('token', tok()); }catch(e){}
+});
+
+/* ---------------------------------------------------------------- grupe */
+async function ucitajGrupe(){
+  const k = await uzmi('/api/grupe');
+  $('grupa').innerHTML = k.map(x =>
+    `<option value="${x.id}">${x.firma} — ${x.naziv}</option>`).join('');
+  return k;
+}
+
+$('token').addEventListener('keydown', e => { if(e.key === 'Enter') $('ucitaj').click(); });
+
+$('ucitaj').onclick = async () => {
+  if(!tok()) return poruka('Upiši pristupni token.', true);
+  try{
+    try{ sessionStorage.setItem('token', tok()); }catch(e){}
+    if($('grupa').options.length <= 1) await ucitajGrupe();
+    await osvezi();
+  }catch(e){ poruka(e.message, true); }
+};
+$('grupa').onchange = () => { if(tok()) osvezi().catch(e => poruka(e.message, true)); };
+
+/* ---------------------------------------------------------------- osvežavanje */
+async function osvezi(){
+  const K = $('grupa').value;
+  if(!K) return;
+  const [grupe, zag, ucesnici, obuke, termini, nepotv, rm, sifre, teme] = await Promise.all([
+    uzmi('/api/grupe'),
+    uzmi(`/api/izvestaj/${K}/zaglavlje`),
+    uzmi(`/api/izvestaj/${K}/spisak-ucesnika`),
+    uzmi(`/api/izvestaj/${K}/obuke`),
+    uzmi(`/api/izvestaj/${K}/termini`),
+    uzmi('/api/admin/nepotvrdjene'),
+    uzmi(`/api/izvestaj/${K}/radna-mesta-akt`),
+    uzmi('/api/sifre'),
+    uzmi(`/api/izvestaj/${K}/teme-programa`),
+  ]);
+  stanje = { K, grupe, zag, ucesnici, obuke, termini, nepotv, rm, sifre, teme };
+
+  $('stanje').textContent =
+    `${zag.paket === 'osnovno' ? 'osnovni' : 'prošireni'} paket · ${ucesnici.length} zaposlenih`;
+
+  crtajKorisnike().catch(()=>{});
+  crtajPlocice(); crtajKorake(); crtajUcesnike(); crtajObuke();
+  crtajNepotvrdjene(); crtajTermine(); crtajRadnaMesta(); popuniForme();
+}
+
+/* ---------------------------------------------------------------- pločice */
+function crtajPlocice(){
+  const osn = stanje.zag.paket === 'osnovno';
+  const p = [
+    ['/', 'Test za zaposlene', 'Ovu adresu daj nadzorniku. Otvara se na tabletu ili telefonu.', false, 'radnik'],
+    ['/obrazac6.html', 'Obrazac 6', 'Popunjen obrazac po zaposlenom, za štampu i potpis.', false, ''],
+    ['/evidencija.html', 'Evidencija', 'Ko je prisustvovao, ko je proveren, kome treba dopuna.', false, ''],
+    ['/izvestaj.html', 'Izveštaj za kvalitet', 'Rezultat po temama, analiza pitanja, raširene zablude.', osn, ''],
+    ['/uprava.html', 'Izveštaj za upravu', 'Jedna strana za direktora, bez imena, sa mestom za potpis.', false, ''],
+  ];
+  $('plocice').innerHTML = p.map(([a,n,o,prig,kl]) => `
+    <a class="plocica ${kl} ${prig ? 'prigusena' : ''}" href="${a}" target="_blank">
+      <span class="oznaka">${kl === 'radnik' ? 'zaposleni' : 'interno'}</span>
+      <h3>${n}</h3><p>${o}${prig ? '<br><b>Potpuno tek u proširenom paketu.</b>' : ''}</p>
+    </a>`).join('');
+}
+
+/* ---------------------------------------------------------------- koraci */
+function crtajKorake(){
+  const s = stanje;
+  const imaUcesnika = s.ucesnici.length > 0;
+  const imaObuku = s.obuke.length > 0;
+  const potvrdjeno = s.nepotv.length === 0;
+  const otvoren = s.termini.some(t => t.otvoren);
+  const povezano = s.ucesnici.some(u => u.povezano_radno_mesto);
+  const merено = s.termini.some(t => Number(t.predatih) > 0);
+
+  const k = [
+    [imaUcesnika, 'Šifre zaposlenih',
+     imaUcesnika ? `${s.ucesnici.length} šifri napravljeno` : 'Još nijedna šifra nije napravljena'],
+    [imaObuku, 'Zapis o održanoj obuci',
+     imaObuku ? `${s.obuke[0].naziv}, ${dan(s.obuke[0].datum_od)} — prisutnih ${s.obuke[0].prisutnih}/${s.obuke[0].upisanih}` : 'Obuka još nije upisana'],
+    [potvrdjeno, 'Potvrda pitanja sa brojkama',
+     potvrdjeno ? 'Sva pitanja su potvrđena' : `${s.nepotv.length} pitanja čeka potvrdu klijenta`],
+    [otvoren || merено, 'Termin merenja',
+     otvoren ? `Otvoreno: ${s.termini.filter(t=>t.otvoren).map(t=>t.oznaka).join(', ')}`
+             : merено ? 'Merenja postoje, svi termini zatvoreni' : 'Nijedan termin nije otvoren'],
+    [povezano, 'Radna mesta povezana',
+     povezano ? 'Zaposleni su povezani sa radnim mestima' : 'Obrazac 6 će izaći sa prazninama'],
+  ];
+  let prviNegotov = k.findIndex(x => !x[0]);
+  $('koraci').innerHTML = k.map(([g,n,o],i) => `
+    <div class="korak ${g ? 'gotov' : i === prviNegotov ? 'tekuci' : ''}">
+      <div class="krug">${g ? '✓' : i+1}</div>
+      <div><h4>${n}</h4><p>${o}</p></div>
+    </div>`).join('');
+}
+
+/* ---------------------------------------------------------------- učesnici */
+function crtajUcesnike(){
+  const u = stanje.ucesnici;
+  $('spisakUcesnika').innerHTML = tabela(
+    [{n:'Šifra'},{n:'Ime i prezime'},{n:'Radno mesto'},{n:'Smena'},
+     {n:'Uradio termina',b:1},{n:''}],
+    u.map(x => `<tr>
+      <td class="sifra">${x.sifra}</td>
+      <td>${x.ime_prezime ?? '<span class="oznaka">samo šifra</span>'}</td>
+      <td>${x.radno_mesto ?? '—'} ${x.povezano_radno_mesto
+        ? '<span class="znak z-ok">povezano</span>' : '<span class="znak z-pazi">nije povezano</span>'}</td>
+      <td>${x.smena ?? '—'}</td>
+      <td class="b">${x.uradjenih}</td>
+      <td>${Number(x.uradjenih) === 0
+        ? `<button class="mali opasno" onclick="obrisiUcesnika(${x.id},'${x.sifra}')">obriši</button>`
+        : ''}</td></tr>`));
+}
+
+window.obrisiUcesnika = async (id, sifra) => {
+  if(!confirm(`Obrisati šifru ${sifra}?`)) return;
+  try{ await posalji(`/api/admin/ucesnik/${id}`, null, 'DELETE');
+    poruka(`${sifra} obrisana`); await osvezi();
+  }catch(e){ poruka(e.message, true); }
+};
+
+$('dodajSifre').onclick = async () => {
+  const naziv = $('rmNaziv').value.trim();
+  const broj = Number($('rmBroj').value);
+  if(!naziv) return poruka('Upiši radno mesto.', true);
+  if(!broj || broj < 1) return poruka('Upiši koliko ljudi.', true);
+  try{
+    const d = await posalji('/api/admin/generisi-ucesnike', {
+      grupa_id: Number(stanje.K),
+      raspodela: [{ radno_mesto: naziv, smena: $('rmSmena').value.trim() || null, broj }],
+    });
+    poruka(`Napravljeno ${d.dodato} šifri: ${d.ucesnici.map(x=>x.sifra).join(', ')}`);
+    await osvezi();
+  }catch(e){ poruka(e.message, true); }
+};
+
+$('osveziSpisak').onclick = () => osvezi().catch(e => poruka(e.message, true));
+$('ceduljice').onclick = () => window.open(`/ceduljice.html?k=${stanje.K}`, '_blank');
+
+/* ---------------------------------------------------------------- obuka */
+function crtajObuke(){
+  const o = stanje.obuke;
+  if(o.length === 0){
+    $('postojeceObuke').innerHTML =
+      '<div class="alarm">Nijedna obuka nije upisana. Bez tog zapisa provera znanja nema uz šta da stoji.</div>';
+    return;
+  }
+  $('postojeceObuke').innerHTML = tabela(
+    [{n:'Obuka'},{n:'Datum'},{n:'Oblik'},{n:'Sati',b:1},{n:'Izvođač'},{n:'Prisutnih',b:1}],
+    o.map(x => `<tr>
+      <td><b>${x.naziv}</b></td><td>${dan(x.datum_od)}</td><td>${x.oblik}</td>
+      <td class="b">${x.trajanje_sati ?? '—'}</td>
+      <td>${x.izvodjac ?? '—'}</td>
+      <td class="b">${x.prisutnih} / ${x.upisanih}</td></tr>`));
+}
+
+function popuniForme(){
+  // razlozi obuke
+  if(!$('obRazlog').options.length)
+    $('obRazlog').innerHTML = stanje.sifre.razlozi
+      .map(r => `<option value="${r.sifra}"${r.sifra === '09' ? ' selected' : ''}>${r.sifra} — ${r.opis}</option>`).join('');
+  // teme iz nacrta — postoje i pre prvog merenja
+  $('obTeme').innerHTML = stanje.teme.map(t =>
+    `<label style="display:flex;gap:6px;align-items:center;color:var(--ink);font-size:13.5px">
+       <input type="checkbox" value="${t.oznaka}" checked style="width:auto">
+       ${t.oznaka} ${t.naziv}
+       <span class="oznaka">${t.pitanja_u_formi} pit.</span></label>`).join('')
+    || '<span class="oznaka">nema tema u nacrtu</span>';
+  if(!$('obDatum').value) $('obDatum').value = new Date().toISOString().slice(0,10);
+  // radna mesta u datalist
+  $('rmLista').innerHTML = stanje.rm.map(r => `<option value="${r.naziv}">`).join('');
+}
+
+$('upisiObuku').onclick = async () => {
+  const teme = [...$('obTeme').querySelectorAll('input:checked')].map(x => x.value);
+  if(!$('obNaziv').value.trim()) return poruka('Upiši naziv obuke.', true);
+  if(!$('obDatum').value) return poruka('Upiši datum održavanja.', true);
+  if(teme.length === 0) return poruka('Označi bar jednu temu.', true);
+  try{
+    const d = await posalji('/api/admin/obuka', {
+      grupa_id: Number(stanje.K),
+      naziv: $('obNaziv').value.trim(),
+      sifra_razloga: $('obRazlog').value,
+      oblik: $('obOblik').value,
+      datum_od: $('obDatum').value, datum_do: $('obDatum').value,
+      datum_prakticne: $('obPrakticna').value || null,
+      datum_obuke_lzo: $('obLzo').value || null,
+      trajanje_sati: Number($('obSati').value) || null,
+      mesto: $('obMesto').value.trim() || null,
+      izvodjac: $('obIzvodjac').value.trim() || null,
+      izvodjac_svojstvo: $('obSvojstvo').value.trim() || null,
+      materijal: $('obMaterijal').value.trim() || null,
+      teme,
+    });
+    poruka(`Obuka upisana (#${d.obuka_id}). Sada označi prisustvo.`);
+    await osvezi();
+  }catch(e){ poruka(e.message, true); }
+};
+
+$('sviPrisutni').onclick = async () => {
+  if(!stanje.obuke.length) return poruka('Prvo upiši obuku.', true);
+  try{
+    const d = await posalji(`/api/admin/obuka/${stanje.obuke[0].id}/prisustvo`, {});
+    poruka(`Označeno prisutnih: ${d.obradjeno}`); await osvezi();
+  }catch(e){ poruka(e.message, true); }
+};
+
+$('oznaciOdsutne').onclick = async () => {
+  if(!stanje.obuke.length) return poruka('Prvo upiši obuku.', true);
+  const sifre = $('odsutni').value.split(',').map(x => x.trim().toUpperCase()).filter(Boolean);
+  if(!sifre.length) return poruka('Upiši bar jednu šifru.', true);
+  try{
+    const d = await posalji(`/api/admin/obuka/${stanje.obuke[0].id}/prisustvo`, {
+      sifre, prisustvovao: false, napomena: $('odsutniRazlog').value.trim() || null });
+    poruka(`Označeno odsutnih: ${d.obradjeno}`); $('odsutni').value = ''; await osvezi();
+  }catch(e){ poruka(e.message, true); }
+};
+
+/* ---------------------------------------------------------------- pitanja */
+function crtajNepotvrdjene(){
+  const n = stanje.nepotv;
+  $('nepotvrdjene').innerHTML = n.length === 0
+    ? '<div class="savet">Sva pitanja su potvrđena — merenje može da počne.</div>'
+    : tabela([{n:'Tema'},{n:'Pitanje'},{n:'Varijanta',b:1}],
+        n.map(x => `<tr><td>${x.tema} · <span class="sifra">${x.porodica}</span></td>
+          <td style="max-width:58ch">${x.tekst}</td>
+          <td class="b">${x.varijanta}</td></tr>`))
+      + `<div class="alarm">Ovih ${n.length} pitanja sadrže brojke iz HACCP plana poslodavca.
+         Pošalji mu spisak, on označi šta se kod njega ne slaže, ti ispraviš u
+         <b>db/banka.json</b> i pokreneš <b>npm run seed:svez</b>. Tek onda potvrđuješ.</div>`;
+  $('potvrdiStavke').disabled = n.length === 0;
+}
+
+$('potvrdiStavke').onclick = async () => {
+  const ko = $('potvrdio').value.trim();
+  if(!ko) return poruka('Upiši ko potvrđuje — ime i funkcija ulaze u zapis.', true);
+  if(!confirm(`Potvrditi svih ${stanje.nepotv.length} pitanja u ime: ${ko}?`)) return;
+  try{
+    const d = await posalji('/api/admin/potvrdi', { oznake_porodica: null, potvrdio: ko });
+    poruka(`Potvrđeno pitanja: ${d.potvrdjeno}`); await osvezi();
+  }catch(e){ poruka(e.message, true); }
+};
+
+/* ---------------------------------------------------------------- termini */
+function crtajTermine(){
+  $('termini').innerHTML = tabela(
+    [{n:'Termin'},{n:'Opis'},{n:'Planiran'},{n:'Odziv',b:1},{n:'Stanje'},{n:''}],
+    stanje.termini.map(t => `<tr>
+      <td><b>${t.oznaka}</b></td><td>${t.opis ?? '—'}</td><td>${dan(t.planiran_datum)}</td>
+      <td class="b">${t.predatih} / ${t.upisanih}</td>
+      <td>${t.otvoren ? '<span class="znak z-ok">otvoren</span>'
+                      : '<span class="znak z-tiho">zatvoren</span>'}</td>
+      <td><button class="mali" onclick="prebaciTermin(${t.id}, ${!t.otvoren})">${
+        t.otvoren ? 'zatvori' : 'otvori'}</button></td></tr>`));
+}
+
+window.prebaciTermin = async (id, otvoren) => {
+  try{ await posalji(`/api/admin/talas/${id}/otvori`, { otvoren });
+    poruka(otvoren ? 'Termin otvoren' : 'Termin zatvoren'); await osvezi();
+  }catch(e){ poruka(e.message, true); }
+};
+
+/* ---------------------------------------------------------------- radna mesta */
+function crtajRadnaMesta(){
+  $('radnaMesta').innerHTML = tabela(
+    [{n:'Radno mesto'},{n:'Povećan rizik'},{n:'Opasnosti',b:1},{n:'Zaštitna oprema'},{n:'Zaposlenih',b:1}],
+    stanje.rm.map(r => `<tr>
+      <td><b>${r.naziv}</b></td>
+      <td>${r.povecan_rizik ? '<span class="znak z-lose">da</span>' : '<span class="znak z-tiho">ne</span>'}</td>
+      <td class="b">${r.sifre_opasnosti?.length ?? 0}</td>
+      <td style="max-width:40ch">${r.lzo ?? '—'}</td>
+      <td class="b">${r.zaposlenih}</td></tr>`));
+}
+
+$('povezi').onclick = async () => {
+  if(!stanje.rm.length) return poruka('Nema radnih mesta u banci.', true);
+  try{
+    const d = await posalji('/api/admin/radna-mesta', {
+      grupa_id: Number(stanje.K),
+      radna_mesta: stanje.rm.map(r => ({ naziv: r.naziv })),
+    });
+    poruka(`Povezano zaposlenih: ${d.povezano_radno_mesto ?? d.povezano_zaposlenih}`);
+    await osvezi();
+  }catch(e){ poruka(e.message, true); }
+};
+
+
+/* ---------------------------------------------------------------- korisnici */
+async function crtajKorisnike(){
+  if(!JA || JA.uloga !== 'izvodjac') return;
+  $('sekKorisnici').style.display = '';
+  const k = await uzmi('/api/korisnici');
+  const naziv = u => u === 'izvodjac' ? 'izvođač' : u === 'bzr' ? 'BZR / kvalitet' : 'uprava';
+  $('spisakKorisnika').innerHTML = tabela(
+    [{n:'Ime'},{n:'E-mail'},{n:'Uloga'},{n:'Firma'},{n:'Poslednja prijava'},{n:'Stanje'},{n:''}],
+    k.map(x => `<tr>
+      <td><b>${x.ime}</b></td><td>${x.email}</td>
+      <td><span class="znak ${x.uloga === 'uprava' ? 'z-tiho' : 'z-ok'}">${naziv(x.uloga)}</span></td>
+      <td>${x.firma ?? '—'}</td>
+      <td>${x.poslednja_prijava ? new Date(x.poslednja_prijava).toLocaleString('sr-RS') : 'nikad'}</td>
+      <td>${x.aktivan ? '<span class="znak z-ok">aktivan</span>'
+                      : '<span class="znak z-lose">ugašen</span>'}
+          ${x.mora_promeniti ? '<span class="znak z-pazi">čeka prvu prijavu</span>' : ''}</td>
+      <td><button class="mali" onclick="novaLozinka(${x.id},'${x.ime}')">nova lozinka</button>
+          <button class="mali ${x.aktivan ? 'opasno' : ''}"
+            onclick="prebaciKorisnika(${x.id}, ${!x.aktivan})">${x.aktivan ? 'ugasi' : 'uključi'}</button></td>
+    </tr>`));
+}
+
+$('dodajKorisnika').onclick = async () => {
+  const email = $('kEmail').value.trim(), ime = $('kIme').value.trim();
+  if(!email || !ime) return poruka('Upiši e-mail i ime.', true);
+  try{
+    const d = await posalji('/api/korisnici', {
+      email, ime, uloga: $('kUloga').value,
+      firma_id: stanje.grupe.find(x => x.id == stanje.K) ? undefined : undefined });
+    $('novaLozinka').innerHTML = `<div class="alarm">
+      <b>Zapiši lozinku sada — više se neće prikazati.</b><br>
+      ${email} · <span class="sifra" style="font-size:16px">${d.lozinka}</span><br>
+      Korisnik je menja pri prvoj prijavi na <b>/prijava.html</b>.</div>`;
+    $('kEmail').value = ''; $('kIme').value = '';
+    await crtajKorisnike();
+  }catch(e){ poruka(e.message, true); }
+};
+
+window.novaLozinka = async (id, ime) => {
+  if(!confirm(`Postaviti novu lozinku za ${ime}? Trenutna prestaje da važi.`)) return;
+  try{
+    const d = await posalji(`/api/korisnici/${id}/nova-lozinka`, {});
+    $('novaLozinka').innerHTML = `<div class="alarm">
+      <b>Nova lozinka za ${ime} — zapiši je sada.</b><br>
+      <span class="sifra" style="font-size:16px">${d.lozinka}</span></div>`;
+    await crtajKorisnike();
+  }catch(e){ poruka(e.message, true); }
+};
+
+window.prebaciKorisnika = async (id, aktivan) => {
+  try{ await posalji(`/api/korisnici/${id}/stanje`, { aktivan });
+    poruka(aktivan ? 'Korisnik uključen' : 'Korisnik ugašen'); await crtajKorisnike();
+  }catch(e){ poruka(e.message, true); }
+};
+
+/* ---------------------------------------------------------------- start */
+proveriPrijavu().then(j => { if(j) $('ucitaj').click(); });
+
+// ---------------------------------------------------------------- prijava
+// Stranice rade preko sesije iz kolačića. Token se više ne kuca.
+// Ako sesija nije važeća, vodi na prijavu.
+let JA = null;
+async function proveriPrijavu(){
+  try{
+    const o = await fetch('/api/ja');
+    if(!o.ok){ location.href = '/prijava.html?dalje=' + encodeURIComponent(location.pathname); return null; }
+    JA = await o.json();
+    const t = document.getElementById('token');
+    if(t){ const red = t.closest('div'); t.style.display = 'none'; }
+    const z = document.getElementById('koSam');
+    if(z) z.textContent = `${JA.ime} · ${
+      JA.uloga === 'izvodjac' ? 'izvođač' : JA.uloga === 'bzr' ? 'BZR / kvalitet' : 'uprava'}`;
+    return JA;
+  }catch(e){ return null; }
+}
+async function odjava(){
+  await fetch('/api/odjava', { method:'POST' });
+  location.href = '/prijava.html';
+}
+proveriPrijavu();
+</script>
+</body>
+</html>

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="sr-Latn-ME">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prijem i isporuka</title>
+<style>
+  :root{
+    --ink:#131A1F; --steel:#3A4A56; --muted:#6B7A85;
+    --paper:#EFF2F3; --list:#FFF; --linija:#CBD5D9;
+    --cold:#0B6E8C; --signal:#B4410E; --ok:#2C6B47; --alarm:#96161B;
+    --mono: ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+    --sans: system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+    font-size:16px;line-height:1.5;-webkit-text-size-adjust:100%}
+  .oznaka{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+  header{background:var(--ink);color:#fff;padding:14px 16px}
+  header h1{margin:5px 0 0;font-size:18px;font-weight:600}
+  header .oznaka{color:#8FA6B2}
+  .nav{display:flex;gap:13px;flex-wrap:wrap;margin-top:11px;padding-top:10px;
+    border-top:1px solid #2C3A44;font-size:13px}
+  .nav a{color:#8FA6B2;text-decoration:none}
+  .nav a:hover,.nav a.tu{color:#fff}
+  .nav a.tu{font-weight:600}
+
+  main{max-width:800px;margin:0 auto;padding:16px 14px 110px}
+
+  .jezicci{display:flex;border-bottom:2px solid var(--linija);margin-bottom:18px}
+  .jezicci button{flex:1;font-family:var(--sans);font-size:15px;font-weight:600;padding:13px 10px;
+    border:none;background:transparent;color:var(--muted);cursor:pointer;
+    border-bottom:2px solid transparent;margin-bottom:-2px}
+  .jezicci button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--cold)}
+  .jezicci button:focus-visible{outline:2px solid var(--cold);outline-offset:-2px}
+  .jezicci .kkt{display:block;font-family:var(--mono);font-size:10px;font-weight:400;
+    letter-spacing:.1em;color:var(--muted);margin-bottom:2px}
+
+  .kartica{background:var(--list);border:1px solid var(--linija);padding:16px 17px;margin-bottom:16px}
+  .kartica h2{margin:0 0 4px;font-size:16px}
+  .kartica .sta{font-size:13px;color:var(--muted);margin-bottom:12px}
+
+  label{display:block;font-size:13px;font-weight:600;margin:12px 0 4px}
+  label .sitno{font-weight:400;color:var(--muted)}
+  input,select,textarea{width:100%;font-family:var(--sans);font-size:16px;padding:11px 12px;
+    border:1px solid var(--linija);border-radius:3px;background:#FCFDFD;color:var(--ink)}
+  input[type=number],input.mono{font-family:var(--mono)}
+  textarea{min-height:66px;resize:vertical}
+  .par{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:560px){.par{grid-template-columns:1fr}}
+
+  .dugme{width:100%;padding:15px;font-size:16px;font-weight:600;border:none;border-radius:3px;
+    background:var(--cold);color:#fff;cursor:pointer;font-family:var(--sans);margin-top:18px}
+  .dugme:disabled{background:var(--muted);cursor:default}
+
+  .traka{padding:12px 14px;font-size:13.5px;line-height:1.55;margin-bottom:14px;border-left:3px solid}
+  .traka.info{border-color:var(--cold);background:#E6EEF1;color:#08536B}
+  .traka.ok{border-color:var(--ok);background:#E4EFE8;color:#1C4A30}
+  .traka.pazi{border-color:var(--signal);background:#F7E9E3;color:#7A2C07}
+  .traka.alarm{border-color:var(--alarm);background:#F6E3E4;color:#6E1013}
+  .traka b{display:block;margin-bottom:2px}
+
+  .presuda{padding:14px;margin-top:14px;border-left:3px solid;font-size:15px}
+  .presuda .veliko{font-family:var(--mono);font-size:20px;display:block;margin-bottom:3px}
+  .presuda b{display:block;margin-bottom:2px}
+  .presuda.ok{border-color:var(--ok);background:#E4EFE8;color:#1C4A30}
+  .presuda.pazi{border-color:var(--signal);background:#F7E9E3;color:#7A2C07}
+  .presuda.alarm{border-color:var(--alarm);background:#F6E3E4;color:#6E1013}
+  .presuda.tiho{border-color:var(--linija);background:#F4F7F8;color:var(--muted);font-size:13.5px}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+  th,td{border-bottom:1px solid var(--linija);padding:7px 8px;text-align:left;vertical-align:top}
+  th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);font-weight:600}
+  td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
+  tr.odst td{background:#FBF0EF}
+  .znak{font-family:var(--mono);font-size:10px;letter-spacing:.08em;padding:2px 6px;
+    border-radius:2px;text-transform:uppercase;white-space:nowrap}
+  .znak.ok{background:#D9E9DF;color:#1C4A30}
+  .znak.pazi{background:#F4DFD5;color:#7A2C07}
+  .znak.alarm{background:#EFD4D5;color:#6E1013}
+  .prazno{color:var(--muted);padding:22px 0;text-align:center;font-size:14px}
+  .ispravi{background:none;border:none;color:var(--cold);cursor:pointer;font-size:12.5px;
+    font-family:var(--sans);padding:0;text-decoration:underline}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="oznaka" id="osnov">Zakon o bezbjednosti hrane „Sl. list CG" 59/2026 · čl. 27</span>
+  <h1>Prijem i isporuka</h1>
+  <nav class="nav">
+    <span id="koSam" style="color:#8FA6B2"></span>
+    <a data-samo="vodi" href="/podesavanje.html">Podešavanje</a>
+    <a class="tu" href="/promet.html">Prijem i isporuka</a>
+    <a href="/zapisi.html">Dnevni zapisi</a>
+    <a data-samo="vodi" href="/sledljivost.html">Sledljivost</a>
+    <a href="/prilozi.html">Štampa priloga</a>
+    <a data-samo="vodi" href="/izvoz.html">Izvoz</a>
+  </nav>
+</header>
+
+<main>
+  <div class="jezicci" role="tablist">
+    <button type="button" id="tab_prijem" role="tab" aria-selected="true"
+            onclick="prebaci('prijem')">
+      <span class="kkt">KKT 1</span>Prijem robe</button>
+    <button type="button" id="tab_isporuka" role="tab" aria-selected="false"
+            onclick="prebaci('isporuka')">
+      <span class="kkt">KKT 3</span>Isporuka kupcu</button>
+  </div>
+  <div id="poruka"></div>
+  <div id="sadrzaj"></div>
+  <div id="istorija"></div>
+</main>
+
+<script src="/veza.js"></script>
+<script>
+const FIRMA = 1;
+let JA = null, AKTIVAN = 'prijem';
+// Kad ispravljamo raniji unos, ovdje stoji cio stari red. Stari se NE briše.
+let ISPRAVLJA = null;
+let DOBAVLJACI = [], KUPCI = [], VOZILA = [], ARTIKLI = [], ZALIHE = [];
+
+const $  = s => document.querySelector(s);
+const el = (t, a = {}, ...d) => {
+  const n = document.createElement(t);
+  for (const [k, v] of Object.entries(a)) {
+    if (k === 'class') n.className = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else if (v !== null && v !== undefined && v !== false) n.setAttribute(k, v);
+  }
+  d.flat().forEach(x => n.append(x?.nodeType ? x : document.createTextNode(x ?? '')));
+  return n;
+};
+const poruka = (v, n, t) => { $('#poruka').replaceChildren(
+  el('div', { class: 'traka ' + v }, el('b', {}, n), t || ''));
+  window.scrollTo({ top: 0, behavior: 'smooth' }); };
+const val = id => ($('#' + id)?.value ?? '').trim();
+const num = id => { const v = val(id); return v === '' ? null : Number(v); };
+const dat = s => s ? String(s).slice(0, 10).split('-').reverse().join('.') : '—';
+
+
+
+
+// =====================================================================
+(async function start() {
+  try {
+    JA = await ucitajJa();
+    if (!JA) return;            // nema veze — traka dolje, čeka se
+    sakrijNedozvoljeno(JA);
+  } catch (e) { poruka('alarm', 'Ne mogu da učitam stranicu', e.message); return; }
+  await ucitajSifarnike();
+  prebaci('prijem');
+})();
+
+async function ucitajSifarnike() {
+  [DOBAVLJACI, KUPCI, VOZILA, ARTIKLI, ZALIHE] = await Promise.all([
+    api(`/api/cg/dobavljaci?firma=${FIRMA}`),
+    api(`/api/cg/kupci?firma=${FIRMA}`),
+    api(`/api/cg/vozila?firma=${FIRMA}`),
+    api(`/api/cg/artikli?firma=${FIRMA}`),
+    api(`/api/cg/zalihe?firma=${FIRMA}`),
+  ]);
+}
+
+function prebaci(sta) {
+  AKTIVAN = sta;
+  ISPRAVLJA = null;
+  $('#tab_prijem').setAttribute('aria-selected', String(sta === 'prijem'));
+  $('#tab_isporuka').setAttribute('aria-selected', String(sta === 'isporuka'));
+  $('#osnov').textContent = sta === 'prijem'
+    ? 'KKT 1 · čl. 27 — korak nazad: od koga je roba došla'
+    : 'KKT 3 · čl. 27 — korak naprijed: kome je roba otišla';
+  $('#poruka').replaceChildren();
+  sta === 'prijem' ? formaPrijem() : formaIsporuka();
+  ucitajIstoriju();
+}
+
+// =====================================================================
+//  PRIJEM  (KKT 1)
+// =====================================================================
+function formaPrijem() {
+  if (!DOBAVLJACI.length || !ARTIKLI.length) {
+    $('#sadrzaj').replaceChildren(el('div', { class: 'traka pazi' },
+      el('b', {}, 'Prvo podesi šifarnike'),
+      'Nema unesenih dobavljača ili artikala. Otvori Podešavanje pa se vrati ovdje.'));
+    return;
+  }
+
+  const k = el('div', { class: 'kartica' },
+    el('h2', {}, 'Prijem robe'),
+    el('div', { class: 'sta' },
+      'Popunjava kontrolor prijema, na rampi, PRIJE istovara. '
+      + 'Ovo je ujedno Prilog 5 i početak sledljivosti.'));
+
+  k.append(el('div', { class: 'par' },
+    el('div', {}, el('label', { for: 'datum' }, 'Datum'),
+      el('input', { id: 'datum', type: 'date', value: danas() })),
+    el('div', {}, el('label', { for: 'vrijeme' }, 'Vrijeme ',
+      el('span', { class: 'sitno' }, '— neobavezno')),
+      el('input', { id: 'vrijeme', type: 'time' }))));
+
+  k.append(el('label', { for: 'dobavljac' }, 'Dobavljač'));
+  k.append(el('select', { id: 'dobavljac', onchange: ocijeniPrijem },
+    ...DOBAVLJACI.map(d => el('option', { value: d.id },
+      d.naziv + (d.odobren ? '' : '  ⚠ nije odobren')))));
+
+  k.append(el('label', { for: 'artikal' }, 'Artikal'));
+  k.append(el('select', { id: 'artikal', onchange: ocijeniPrijem },
+    ...ARTIKLI.map(a => el('option', { value: a.id },
+      `${a.naziv}  ·  ${a.grupa}` +
+      (a.granica_max !== null ? `  ·  do ${a.granica_max} °C` : '')))));
+
+  k.append(el('label', { for: 'lot' }, 'Broj serije / lota ',
+    el('span', { class: 'sitno' }, '· obavezno — bez njega nema sledljivosti')));
+  k.append(el('input', { id: 'lot', class: 'mono',
+    placeholder: 'sa deklaracije ili otpremnice', autocomplete: 'off' }));
+
+  k.append(el('div', { class: 'par' },
+    el('div', {}, el('label', { for: 'kolicina' }, 'Količina'),
+      el('input', { id: 'kolicina', type: 'number', step: 'any', inputmode: 'decimal' })),
+    el('div', {}, el('label', { for: 'rok' }, 'Rok trajanja'),
+      el('input', { id: 'rok', type: 'date' }))));
+
+  k.append(el('div', { class: 'par' },
+    el('div', {}, el('label', { for: 'temperatura' }, 'Izmjerena temperatura (°C)'),
+      el('input', { id: 'temperatura', type: 'number', step: '0.1', class: 'mono',
+        inputmode: 'decimal', oninput: ocijeniPrijem })),
+    el('div', {}, el('label', { for: 'otpremnica' }, 'Broj otpremnice'),
+      el('input', { id: 'otpremnica' }))));
+
+  k.append(el('div', { id: 'presuda' }));
+
+  k.append(el('label', { for: 'mjera' }, 'Korektivna mjera ',
+    el('span', { class: 'sitno' }, '— obavezna kod odstupanja')));
+  k.append(el('textarea', { id: 'mjera',
+    placeholder: 'Šta je urađeno sa pošiljkom, ko je obaviješten i kada.' }));
+
+  k.append(el('label', { for: 'izvrsilac' }, 'Ko je primio'));
+  k.append(el('input', { id: 'izvrsilac', value: JA?.ime || '' }));
+
+  k.append(el('button', { class: 'dugme', type: 'button', id: 'snimi',
+    onclick: snimiPrijem }, 'Snimi prijem'));
+
+  if (ISPRAVLJA) {
+    k.prepend(el('div', { class: 'traka pazi' },
+      el('b', {}, `Ispravljaš prijem serije ${ISPRAVLJA.lot} od ${dat(ISPRAVLJA.datum_prijema)}`),
+      'Stari zapis ostaje u evidenciji. Ovaj novi postaje važeći, a vidi se ko je i kada ispravio.'));
+    $('#sadrzaj').replaceChildren(k);
+    popuniPrijem(ISPRAVLJA);
+  } else {
+    $('#sadrzaj').replaceChildren(k);
+  }
+  ocijeniPrijem();
+}
+
+function popuniPrijem(x) {
+  const d = DOBAVLJACI.find(o => o.naziv === x.dobavljac);
+  const a = ARTIKLI.find(o => o.naziv === x.artikal);
+  if (d) $('#dobavljac').value = d.id;
+  if (a) $('#artikal').value = a.id;
+  $('#lot').value = x.lot || '';
+  $('#kolicina').value = x.primljeno ?? '';
+  if (x.datum_prijema) $('#datum').value = String(x.datum_prijema).slice(0, 10);
+  if (x.rok_trajanja) $('#rok').value = String(x.rok_trajanja).slice(0, 10);
+  $('#otpremnica').value = x.broj_otpremnice || '';
+  $('#temperatura').value = x.temperatura ?? '';
+}
+
+function zapocniIspravku(x) {
+  ISPRAVLJA = x;
+  formaPrijem();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Ista pravila kao na serveru — ovdje samo da radnik VIDI presudu prije snimanja.
+// Konačnu odluku uvijek donosi server.
+function ocijeniPrijem() {
+  const a = ARTIKLI.find(x => String(x.id) === val('artikal'));
+  const d = DOBAVLJACI.find(x => String(x.id) === val('dobavljac'));
+  const t = num('temperatura');
+  const box = $('#presuda');
+  if (!box) return;
+  const dijelovi = [];
+
+  if (d && !d.odobren) dijelovi.push(el('div', { class: 'presuda pazi' },
+    el('b', {}, 'Dobavljač nije na listi odobrenih'),
+    'Prijem se bilježi, ali traži odluku odgovornog lica (PRP-9).'));
+
+  if (!a || a.granica_max === null) {
+    dijelovi.push(el('div', { class: 'presuda tiho' },
+      'Artikal bez temperaturnog režima — temperatura se ne ocjenjuje.'));
+  } else if (!a.granica_potvrdio) {
+    dijelovi.push(el('div', { class: 'presuda pazi' },
+      el('b', {}, 'Granica nije potvrđena iz deklaracije'),
+      `Upisana je ${a.granica_max} °C, ali je niko nije potvrdio — ocjena nije automatska. `
+      + 'Odluku o prijemu donosi odgovorno lice.'));
+  } else if (t === null) {
+    dijelovi.push(el('div', { class: 'presuda tiho' },
+      `Granica za ovaj artikal: do ${a.granica_max} °C, tolerancija ${a.tolerancija} °C. `
+      + 'Upiši izmjerenu temperaturu.'));
+  } else {
+    const preko = t - Number(a.granica_max);
+    if (preko > Number(a.tolerancija))
+      dijelovi.push(el('div', { class: 'presuda alarm' },
+        el('span', { class: 'veliko' }, `${t} °C — ${preko.toFixed(1)} °C preko granice`),
+        el('b', {}, 'ROBA SE NE PRIMA'),
+        'Upiši korektivnu mjeru: pošiljka odbijena, dobavljač obaviješten.'));
+    else if (preko > 0)
+      dijelovi.push(el('div', { class: 'presuda pazi' },
+        el('span', { class: 'veliko' }, `${t} °C — ${preko.toFixed(1)} °C preko granice`),
+        el('b', {}, 'Prima se uz mjeru'),
+        'Unutar tolerancije. Odmah u komoru i pisano upozorenje dobavljaču.'));
+    else
+      dijelovi.push(el('div', { class: 'presuda ok' },
+        el('span', { class: 'veliko' }, `${t} °C`),
+        el('b', {}, 'U granicama'), `Granica je do ${a.granica_max} °C.`));
+  }
+
+  const rok = val('rok');
+  if (rok && rok < danas()) dijelovi.push(el('div', { class: 'presuda alarm' },
+    el('b', {}, 'Rok trajanja je istekao'), 'Roba se ne prima.'));
+
+  box.replaceChildren(...dijelovi);
+}
+
+async function snimiPrijem() {
+  if (!val('lot'))
+    return poruka('pazi', 'Nedostaje broj serije',
+      'Bez lota se kasnije ne može utvrditi kome je roba otišla. To je član 27.');
+  if (!val('kolicina'))
+    return poruka('pazi', 'Nedostaje količina', '');
+
+  const b = $('#snimi'); b.disabled = true; b.textContent = 'Snimam…';
+  try {
+    const o = await api('/api/cg/prijem', { method: 'POST', body: JSON.stringify({
+      firma_id: FIRMA, datum: val('datum'), vrijeme: val('vrijeme') || null,
+      dobavljac_id: Number(val('dobavljac')), artikal_id: Number(val('artikal')),
+      lot: val('lot'), kolicina: num('kolicina'), rok_trajanja: val('rok') || null,
+      broj_otpremnice: val('otpremnica') || null, temperatura: num('temperatura'),
+      korektivna_mjera: val('mjera') || null, izvrsilac: val('izvrsilac'),
+      ispravlja_id: ISPRAVLJA ? ISPRAVLJA.prijem_id : null,
+    })});
+    const ish = o.prijem.ishod;
+    const bio = ISPRAVLJA; ISPRAVLJA = null;
+    poruka(ish === 'prihvaceno' ? 'ok' : 'pazi',
+      `Prijem ${bio ? 'ispravljen' : 'snimljen'} — ${ish.replace(/_/g, ' ')}`,
+      (o.upozorenja || []).join(' · ') || 'Serija je sada u sistemu i može se pretražiti.');
+    await ucitajSifarnike();
+    formaPrijem();
+    ucitajIstoriju();
+  } catch (e) {
+    poruka('alarm', 'Nije snimljeno', e.message);
+  } finally { b.disabled = false; b.textContent = 'Snimi prijem'; }
+}
+
+// =====================================================================
+//  ISPORUKA  (KKT 3)
+// =====================================================================
+function formaIsporuka() {
+  if (!ZALIHE.length) {
+    $('#sadrzaj').replaceChildren(el('div', { class: 'traka pazi' },
+      el('b', {}, 'Nema robe na zalihama'),
+      'Prvo unesi prijem. Isporučuje se serija, ne artikal — zato mora postojati prijem.'));
+    return;
+  }
+  if (!KUPCI.length) {
+    $('#sadrzaj').replaceChildren(el('div', { class: 'traka pazi' },
+      el('b', {}, 'Nema unesenih kupaca'),
+      'Otvori Podešavanje → Kupci. Telefon je obavezan.'));
+    return;
+  }
+
+  const k = el('div', { class: 'kartica' },
+    el('h2', {}, 'Isporuka kupcu'),
+    el('div', { class: 'sta' },
+      'Popunjava vozač ili magacioner. Bira se SERIJA, ne artikal — '
+      + 'tako se zna kome je koja serija otišla.'));
+
+  k.append(el('div', { class: 'traka info' },
+    el('b', {}, 'Redoslijed je FEFO'),
+    'Lista je poredana tako da prva bude serija kojoj rok prvi ističe. Uzmi odozgo.'));
+
+  k.append(el('label', { for: 'lot' }, 'Serija sa zaliha'));
+  k.append(el('select', { id: 'lot', onchange: ocijeniIsporuku },
+    ...ZALIHE.map(z => el('option', { value: z.prijem_id },
+      `${z.lot} · ${z.artikal} · ostalo ${z.ostalo} ${z.jedinica}`
+      + (z.rok_trajanja ? ` · rok ${dat(z.rok_trajanja)}` : '')))));
+
+  k.append(el('label', { for: 'kupac' }, 'Kupac'));
+  k.append(el('select', { id: 'kupac' },
+    ...KUPCI.map(x => el('option', { value: x.id },
+      x.naziv + (x.adresa ? ` · ${x.adresa}` : '')))));
+
+  k.append(el('div', { class: 'par' },
+    el('div', {}, el('label', { for: 'datum' }, 'Datum'),
+      el('input', { id: 'datum', type: 'date', value: danas() })),
+    el('div', {}, el('label', { for: 'kolicina' }, 'Količina'),
+      el('input', { id: 'kolicina', type: 'number', step: 'any',
+        inputmode: 'decimal', oninput: ocijeniIsporuku }))));
+
+  k.append(el('label', { for: 'vozilo' }, 'Vozilo'));
+  k.append(el('select', { id: 'vozilo' },
+    el('option', { value: '' }, '— bez vozila —'),
+    ...VOZILA.map(v => el('option', { value: v.id },
+      v.registracija + (v.ima_rashladu ? ' · rashlada' : ' · bez rashlade')))));
+
+  k.append(el('div', { class: 'par' },
+    el('div', {}, el('label', { for: 'temp_utovar' }, 'Temperatura pri utovaru (°C)'),
+      el('input', { id: 'temp_utovar', type: 'number', step: '0.1', class: 'mono',
+        inputmode: 'decimal', oninput: ocijeniIsporuku })),
+    el('div', {}, el('label', { for: 'temp_isporuka' }, 'Temperatura pri isporuci (°C)'),
+      el('input', { id: 'temp_isporuka', type: 'number', step: '0.1', class: 'mono',
+        inputmode: 'decimal', oninput: ocijeniIsporuku }))));
+
+  k.append(el('label', { for: 'provjereno', style: 'margin-top:14px' },
+    'Kontrola vozila prije utovara (Prilog D1) je urađena'));
+  k.append(el('select', { id: 'provjereno', onchange: ocijeniIsporuku },
+    el('option', { value: 'da' }, 'da — vozilo provjereno'),
+    el('option', { value: 'ne' }, 'ne')));
+
+  k.append(el('div', { class: 'par' },
+    el('div', {}, el('label', { for: 'otpremnica' }, 'Broj otpremnice'),
+      el('input', { id: 'otpremnica' })),
+    el('div', {}, el('label', { for: 'vozac' }, 'Vozač'),
+      el('input', { id: 'vozac', value: JA?.ime || '' }))));
+
+  k.append(el('label', { for: 'preuzeo' }, 'Ko je preuzeo kod kupca'));
+  k.append(el('input', { id: 'preuzeo' }));
+
+  k.append(el('div', { id: 'presuda' }));
+
+  k.append(el('label', { for: 'mjera' }, 'Korektivna mjera ',
+    el('span', { class: 'sitno' }, '— obavezna kod odstupanja')));
+  k.append(el('textarea', { id: 'mjera',
+    placeholder: 'Šta je urađeno sa robom i ko je obaviješten.' }));
+
+  k.append(el('button', { class: 'dugme', type: 'button', id: 'snimi',
+    onclick: snimiIsporuku }, 'Snimi isporuku'));
+
+  $('#sadrzaj').replaceChildren(k);
+  ocijeniIsporuku();
+}
+
+function ocijeniIsporuku() {
+  const z = ZALIHE.find(x => String(x.prijem_id) === val('lot'));
+  const box = $('#presuda');
+  if (!box || !z) return;
+  const d = [];
+
+  const kol = num('kolicina');
+  if (kol !== null && kol > Number(z.ostalo)) d.push(el('div', { class: 'presuda alarm' },
+    el('b', {}, `Na zalihama je samo ${z.ostalo} ${z.jedinica}`),
+    'Ne možeš isporučiti više nego što je primljeno od te serije.'));
+
+  if (z.rok_trajanja && z.rok_trajanja.slice(0, 10) < danas())
+    d.push(el('div', { class: 'presuda alarm' },
+      el('b', {}, 'Rok trajanja ove serije je istekao'), 'Roba se ne isporučuje.'));
+
+  if (val('provjereno') === 'ne') d.push(el('div', { class: 'presuda alarm' },
+    el('b', {}, 'Vozilo nije provjereno'),
+    'Bez kontrole vozila utovar se ne obavlja. Uradi Prilog D1 na stranici Dnevni zapisi.'));
+
+  if (z.granica_max !== null && z.granica_potvrdjena) {
+    const g = Number(z.granica_max);
+    const tu = num('temp_utovar'), ti = num('temp_isporuka');
+    const preko = [tu, ti].filter(x => x !== null && x > g);
+    if (preko.length) d.push(el('div', { class: 'presuda alarm' },
+      el('span', { class: 'veliko' }, `${preko.join(' / ')} °C · granica ${g} °C`),
+      el('b', {}, 'ROBA SE NE PREDAJE KUPCU'),
+      'Vraća se u skladište i izdvaja. Upiši mjeru i obavijesti odgovorno lice.'));
+    else if (tu !== null || ti !== null) d.push(el('div', { class: 'presuda ok' },
+      el('b', {}, 'Hladni lanac održan'), `Granica je do ${g} °C.`));
+    else d.push(el('div', { class: 'presuda tiho' },
+      `Granica za ovu seriju: do ${g} °C. Izmjeri pri utovaru i pri isporuci.`));
+  } else {
+    d.push(el('div', { class: 'presuda tiho' },
+      'Serija bez potvrđenog temperaturnog režima — temperatura se ne ocjenjuje automatski.'));
+  }
+
+  box.replaceChildren(...d);
+}
+
+async function snimiIsporuku() {
+  if (!val('kolicina')) return poruka('pazi', 'Nedostaje količina', '');
+  const b = $('#snimi'); b.disabled = true; b.textContent = 'Snimam…';
+  try {
+    const o = await api('/api/cg/isporuka', { method: 'POST', body: JSON.stringify({
+      firma_id: FIRMA, datum: val('datum'), kupac_id: Number(val('kupac')),
+      prijem_id: Number(val('lot')), kolicina: num('kolicina'),
+      broj_otpremnice: val('otpremnica') || null,
+      vozilo_id: val('vozilo') ? Number(val('vozilo')) : null,
+      vozac: val('vozac'), temp_utovar: num('temp_utovar'),
+      temp_isporuka: num('temp_isporuka'),
+      vozilo_provjereno: val('provjereno') === 'da',
+      korektivna_mjera: val('mjera') || null, preuzeo: val('preuzeo') || null,
+    })});
+    poruka(o.isporuka.odstupanje ? 'pazi' : 'ok', 'Isporuka snimljena',
+      (o.upozorenja || []).join(' · ')
+      || 'Sada se ta serija može pretražiti na stranici Sledljivost.');
+    await ucitajSifarnike();
+    formaIsporuka();
+    ucitajIstoriju();
+  } catch (e) {
+    poruka('alarm', 'Nije snimljeno', e.message);
+  } finally { b.disabled = false; b.textContent = 'Snimi isporuku'; }
+}
+
+// =====================================================================
+async function ucitajIstoriju() {
+  try {
+    if (AKTIVAN === 'prijem') {
+      const r = await api(`/api/cg/prijem?firma=${FIRMA}&limit=15`);
+      $('#istorija').replaceChildren(el('div', { class: 'kartica' },
+        el('h2', { style: 'font-size:14px' }, 'Posljednji prijemi'),
+        r.length ? el('table', {},
+          el('thead', {}, el('tr', {},
+            el('th', {}, 'Datum'), el('th', {}, 'Serija'), el('th', {}, 'Artikal'),
+            el('th', {}, 'Dobavljač'), el('th', {}, 'Temp.'), el('th', {}, 'Ishod'),
+            el('th', {}, ''))),
+          el('tbody', {}, ...r.map(x => el('tr',
+            { class: x.ishod === 'prihvaceno' ? '' : 'odst' },
+            el('td', { class: 'n' }, dat(x.datum_prijema)),
+            el('td', { class: 'n' }, x.lot),
+            el('td', {}, x.artikal),
+            el('td', {}, x.dobavljac),
+            el('td', { class: 'n' }, x.temperatura != null ? x.temperatura + ' °C' : '—'),
+            el('td', {}, el('span', { class: 'znak ' +
+              (x.ishod === 'prihvaceno' ? 'ok' : x.ishod === 'odbijeno' ? 'alarm' : 'pazi') },
+              x.ishod.replace(/_/g, ' ')),
+              x.je_ispravka ? el('span', { class: 'znak pazi', style: 'margin-left:5px' }, 'ispravka') : '',
+              // Prijem upisan kasnije od dana prijema — vidljivo, ne skriveno.
+              x.naknadno ? el('span', { class: 'znak pazi', style: 'margin-left:5px',
+                title: `Upisano ${x.dana_kasnije} ${x.dana_kasnije === 1 ? 'dan' : 'dana'} poslije`
+              }, `naknadno +${x.dana_kasnije}`) : ''),
+            el('td', {}, el('button', { class: 'ispravi', type: 'button',
+              onclick: () => zapocniIspravku(x) }, 'ispravi'))))))
+          : el('div', { class: 'prazno' }, 'Još nema prijema.')));
+    } else {
+      $('#istorija').replaceChildren(el('div', { class: 'kartica' },
+        el('h2', { style: 'font-size:14px' }, 'Trenutne zalihe po serijama'),
+        ZALIHE.length ? el('table', {},
+          el('thead', {}, el('tr', {},
+            el('th', {}, 'Serija'), el('th', {}, 'Artikal'), el('th', {}, 'Rok'),
+            el('th', {}, 'Primljeno'), el('th', {}, 'Isporučeno'), el('th', {}, 'Ostalo'))),
+          el('tbody', {}, ...ZALIHE.map(z => el('tr', {},
+            el('td', { class: 'n' }, z.lot),
+            el('td', {}, z.artikal),
+            el('td', { class: 'n' }, dat(z.rok_trajanja)),
+            el('td', { class: 'n' }, String(z.primljeno)),
+            el('td', { class: 'n' }, String(z.isporuceno)),
+            el('td', { class: 'n' }, String(z.ostalo))))))
+          : el('div', { class: 'prazno' }, 'Nema robe na zalihama.')));
+    }
+  } catch (e) {
+    $('#istorija').replaceChildren(el('div', { class: 'traka alarm' },
+      el('b', {}, 'Greška'), e.message));
+  }
+}
+</script>
+</body>
+</html>

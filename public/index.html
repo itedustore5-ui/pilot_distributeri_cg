@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Provera osposobljenosti</title>
+<style>
+  :root{
+    --ink:#131A1F; --steel:#3A4A56; --muted:#6B7A85;
+    --paper:#EFF2F3; --card:#FFFFFF; --linija:#CBD5D9;
+    --cold:#0B6E8C; --cold-tamno:#08536B;
+    --signal:#B4410E; --ok:#2C6B47;
+    --mono: ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+    --sans: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--paper); color:var(--ink); font-family:var(--sans);
+    font-size:18px; line-height:1.5; display:flex; flex-direction:column;
+  }
+  .oznaka{
+    font-family:var(--mono); font-size:12px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--muted);
+  }
+
+  /* ---- traka: podseća na trakasti zapis sa rashladne komore ---- */
+  header{
+    background:var(--ink); color:#fff; padding:14px 20px 0;
+    position:sticky; top:0; z-index:5;
+  }
+  .zaglavlje{display:flex; justify-content:space-between; align-items:baseline; gap:16px}
+  .zaglavlje .oznaka{color:#8FA6B2}
+  .brojac{font-family:var(--mono); font-size:15px; letter-spacing:.06em; color:#fff}
+  .traka{display:flex; gap:2px; padding:12px 0 14px}
+  .traka i{
+    flex:1; height:12px; background:#2C3A44; border-radius:1px;
+    transition:background .12s linear;
+  }
+  .traka i.gotovo{background:var(--cold)}
+  .traka i.tekuce{background:#fff}
+
+  main{flex:1; display:flex; justify-content:center; padding:24px 16px 140px}
+  .okvir{width:100%; max-width:760px}
+
+  /* ---------------------------------------------------- uvodni ekran */
+  .kartica{
+    background:var(--card); border:1px solid var(--linija);
+    border-radius:4px; padding:28px;
+  }
+  h1{font-size:30px; line-height:1.2; margin:6px 0 18px; letter-spacing:-.01em}
+  .napomena{
+    border-left:3px solid var(--cold); background:#E6EEF1;
+    padding:14px 16px; margin:20px 0; font-size:17px;
+  }
+  .napomena b{color:var(--cold-tamno)}
+  label{display:block; margin:22px 0 8px; font-weight:600}
+  input,select{
+    width:100%; font-family:var(--sans); font-size:24px; padding:18px 16px;
+    border:2px solid var(--steel); border-radius:3px; background:#fff; color:var(--ink);
+  }
+  input{font-family:var(--mono); letter-spacing:.16em; text-transform:uppercase}
+  input:focus,select:focus{outline:3px solid var(--cold); outline-offset:1px; border-color:var(--cold)}
+
+  /* ---------------------------------------------------- pitanje */
+  .pitanje{font-size:27px; line-height:1.35; font-weight:600; margin:10px 0 26px}
+  .odgovori{display:flex; flex-direction:column; gap:12px}
+  .odgovor{
+    display:flex; align-items:flex-start; gap:16px; width:100%; min-height:68px;
+    padding:18px 20px; text-align:left; cursor:pointer;
+    background:var(--card); border:2px solid var(--linija); border-radius:3px;
+    font-family:var(--sans); font-size:20px; line-height:1.4; color:var(--ink);
+  }
+  .odgovor .slovo{
+    font-family:var(--mono); font-size:16px; font-weight:700; color:var(--muted);
+    border:2px solid var(--linija); border-radius:2px;
+    min-width:36px; height:36px; display:grid; place-items:center; flex:none;
+  }
+  .odgovor:focus-visible{outline:3px solid var(--cold); outline-offset:2px}
+  .odgovor[aria-pressed="true"]{border-color:var(--cold); background:#E6EEF1}
+  .odgovor[aria-pressed="true"] .slovo{background:var(--cold); color:#fff; border-color:var(--cold)}
+  @media (hover:hover){ .odgovor:hover{border-color:var(--steel)} }
+
+  /* ---------------------------------------------------- podnožje */
+  footer{
+    position:fixed; left:0; right:0; bottom:0; background:var(--paper);
+    border-top:1px solid var(--linija); padding:16px;
+    padding-bottom:calc(16px + env(safe-area-inset-bottom));
+  }
+  .dugmad{max-width:760px; margin:0 auto; display:flex; gap:12px}
+  button.glavno,button.sporedno{
+    font-family:var(--sans); font-size:20px; font-weight:600; min-height:64px;
+    border-radius:3px; cursor:pointer; padding:0 28px;
+  }
+  button.glavno{flex:1; background:var(--cold); color:#fff; border:2px solid var(--cold)}
+  button.glavno:disabled{background:#A9BAC2; border-color:#A9BAC2; cursor:not-allowed}
+  button.sporedno{background:transparent; color:var(--steel); border:2px solid var(--linija)}
+  button:focus-visible{outline:3px solid var(--ink); outline-offset:2px}
+
+  .greska{
+    margin-top:18px; padding:14px 16px; border-left:3px solid var(--signal);
+    background:#F7E9E3; color:#7A2C07; font-size:17px;
+  }
+  .sakriveno{display:none}
+  .kraj{text-align:center; padding:60px 20px}
+  .kraj .kvaka{
+    width:64px;height:64px;border-radius:50%;background:var(--ok);color:#fff;
+    display:grid;place-items:center;margin:0 auto 24px;font-size:32px
+  }
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important} }
+  @media (max-width:520px){
+    h1{font-size:25px} .pitanje{font-size:23px} .odgovor{font-size:18px}
+  }
+</style>
+</head>
+<body>
+
+<header id="zaglavlje" class="sakriveno">
+  <div class="zaglavlje">
+    <span class="oznaka">Provera osposobljenosti</span>
+    <span class="brojac" id="brojac">00 / 00</span>
+  </div>
+  <div class="traka" id="traka"></div>
+</header>
+
+<main>
+  <div class="okvir">
+
+    <!-- ============ 1. prijava ============ -->
+    <section id="ekranPrijava" class="kartica">
+      <span class="oznaka" id="zaglavljeFirme">Provera osposobljenosti</span>
+      <h1>Provera znanja sa obuke</h1>
+
+      <div class="napomena">
+        <b>Ovo nije ocenjivanje zaposlenih.</b> Rezultat se gleda po temama, da bi se
+        videlo koji deo obuke treba ponoviti. Uprava ne dobija spisak sa imenima.
+      </div>
+
+      <label for="talas">Termin</label>
+      <select id="talas"></select>
+
+      <label for="sifra">Tvoja šifra</label>
+      <input id="sifra" placeholder="npr. P-001" autocomplete="off"
+             autocapitalize="characters" spellcheck="false" inputmode="text">
+
+      <div id="greskaPrijava" class="greska sakriveno"></div>
+    </section>
+
+    <!-- ============ 2. pitanje ============ -->
+    <section id="ekranPitanje" class="sakriveno">
+      <div class="pitanje" id="tekstPitanja"></div>
+      <div class="odgovori" id="odgovori"></div>
+      <div id="greskaPitanje" class="greska sakriveno"></div>
+    </section>
+
+    <!-- ============ 3. kraj ============ -->
+    <section id="ekranKraj" class="kartica kraj sakriveno">
+      <div class="kvaka">✓</div>
+      <h1>Provera je zabeležena</h1>
+      <p style="color:var(--muted); font-size:19px; max-width:44ch; margin:0 auto">
+        Hvala. Rezultat se ne saopštava pojedinačno — ulazi u zbirni pregled po temama.
+      </p>
+    </section>
+
+  </div>
+</main>
+
+<footer id="podnozje">
+  <div class="dugmad">
+    <button class="sporedno sakriveno" id="dugmeNazad" type="button">Nazad</button>
+    <button class="glavno" id="dugmeDalje" type="button">Počni</button>
+  </div>
+</footer>
+<a href="/admin.html" style="position:fixed;right:10px;top:10px;z-index:9;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8FA6B2;text-decoration:none;opacity:.55" title="Za nadzornika">⌂</a>
+
+<script>
+const $ = id => document.getElementById(id);
+let sesijaId = null, pitanja = [], i = 0;
+const izbor = new Map();
+
+const prikazi = (el, da) => el.classList.toggle('sakriveno', !da);
+function greska(el, poruka){
+  el.textContent = poruka; prikazi(el, true);
+}
+
+async function posalji(putanja, telo){
+  const o = await fetch(putanja, {
+    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(telo)
+  });
+  const podaci = await o.json();
+  if(!o.ok) throw new Error(podaci.greska || 'Greška u vezi sa serverom.');
+  return podaci;
+}
+
+// ---------------------------------------------------------------- start
+(async function(){
+  try{
+    const talasi = await (await fetch('/api/talasi')).json();
+    if(!talasi.length){
+      greska($('greskaPrijava'), 'Trenutno nema otvorenog termina. Javi se nadzorniku.');
+      $('dugmeDalje').disabled = true; return;
+    }
+    $('talas').innerHTML = talasi
+      .map(t => `<option value="${t.id}">${t.oznaka} — ${t.opis}</option>`).join('');
+    const t0 = talasi[0];
+    if(t0?.firma) $('zaglavljeFirme').textContent =
+      `${t0.firma}${t0.program ? ' · ' + t0.program : ''}`;
+  }catch{
+    greska($('greskaPrijava'), 'Nema veze sa serverom. Javi se nadzorniku.');
+    $('dugmeDalje').disabled = true;
+  }
+})();
+
+// ---------------------------------------------------------------- traka
+function nacrtajTraku(){
+  $('traka').innerHTML = pitanja.map((_,n) =>
+    `<i class="${n < i ? 'gotovo' : n === i ? 'tekuce' : ''}"></i>`).join('');
+  $('brojac').textContent =
+    String(i+1).padStart(2,'0') + ' / ' + String(pitanja.length).padStart(2,'0');
+}
+
+function nacrtajPitanje(){
+  const p = pitanja[i];
+  $('tekstPitanja').textContent = p.tekst;
+  const slova = 'ABCDEFGH';
+  $('odgovori').innerHTML = p.opcije.map((o,n) => `
+    <button class="odgovor" type="button" role="button"
+            aria-pressed="${izbor.get(p.sesija_stavka_id) === o.id}"
+            data-opcija="${o.id}">
+      <span class="slovo" aria-hidden="true">${slova[n]}</span>
+      <span>${o.tekst}</span>
+    </button>`).join('');
+
+  [...$('odgovori').children].forEach(b => b.onclick = () => {
+    izbor.set(p.sesija_stavka_id, Number(b.dataset.opcija));
+    [...$('odgovori').children].forEach(x => x.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true');
+    $('dugmeDalje').disabled = false;
+  });
+
+  $('dugmeDalje').disabled = !izbor.has(p.sesija_stavka_id);
+  $('dugmeDalje').textContent = (i === pitanja.length - 1) ? 'Završi' : 'Dalje';
+  prikazi($('dugmeNazad'), i > 0);
+  prikazi($('greskaPitanje'), false);
+  nacrtajTraku();
+  window.scrollTo(0,0);
+}
+
+// ---------------------------------------------------------------- tokovi
+$('dugmeNazad').onclick = () => { if(i > 0){ i--; nacrtajPitanje(); } };
+
+$('dugmeDalje').onclick = async () => {
+  const d = $('dugmeDalje');
+  d.disabled = true;
+
+  // --- prijava
+  if(!sesijaId){
+    const sifra = $('sifra').value.trim();
+    if(!sifra){ greska($('greskaPrijava'),'Upiši svoju šifru.'); d.disabled = false; return; }
+    try{
+      const r = await posalji('/api/sesija', { sifra, talas_id: Number($('talas').value) });
+      sesijaId = r.sesija_id; pitanja = r.pitanja; i = 0;
+      prikazi($('ekranPrijava'), false);
+      prikazi($('ekranPitanje'), true);
+      prikazi($('zaglavlje'), true);
+      nacrtajPitanje();
+    }catch(e){ greska($('greskaPrijava'), e.message); d.disabled = false; }
+    return;
+  }
+
+  // --- snimanje odgovora
+  const p = pitanja[i];
+  try{
+    await posalji('/api/odgovor', {
+      sesija_stavka_id: p.sesija_stavka_id, opcija_id: izbor.get(p.sesija_stavka_id)
+    });
+  }catch(e){ greska($('greskaPitanje'), e.message); d.disabled = false; return; }
+
+  if(i < pitanja.length - 1){ i++; nacrtajPitanje(); return; }
+
+  // --- predaja
+  try{
+    await posalji('/api/predaja', { sesija_id: sesijaId });
+    prikazi($('ekranPitanje'), false);
+    prikazi($('zaglavlje'), false);
+    prikazi($('podnozje'), false);
+    prikazi($('ekranKraj'), true);
+  }catch(e){ greska($('greskaPitanje'), e.message); d.disabled = false; }
+};
+
+$('sifra').addEventListener('keydown', e => { if(e.key === 'Enter') $('dugmeDalje').click(); });
+</script>
+</body>
+</html>

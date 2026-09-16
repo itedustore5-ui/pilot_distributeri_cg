@@ -1,0 +1,105 @@
+# =====================================================================
+#  TAJNE — ovo nikada ne sme na GitHub
+#  DATABASE_URL sadrži lozinku baze, ADMIN_TOKEN otvara sve izveštaje.
+#  .env.example OSTAJE u repozitorijumu (nema stvarne vrednosti).
+# =====================================================================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+# tajna za potpisivanje licenci — nikada u repozitorijum
+licenca-tajna.txt
+alati/.env
+
+# ---------------------------------------------------------------------
+#  Zavisnosti
+# ---------------------------------------------------------------------
+node_modules/
+.npm/
+.pnpm-store/
+
+# ---------------------------------------------------------------------
+#  Podaci klijenta — rezultati testova su podaci o ličnosti.
+#  Izvozi, bekapi i dampovi baze ostaju van repozitorijuma.
+# ---------------------------------------------------------------------
+*.dump
+*.sql.gz
+backup/
+lokalno/.env
+lokalno/bekap/
+izvoz/
+izvestaji/
+*.csv
+*.xlsx
+
+# Radne kopije banke pitanja (npr. banka_hotel.local.json).
+# Zvanične banke bez sufiksa .local ostaju u repozitorijumu.
+db/*.local.json
+
+# ---------------------------------------------------------------------
+#  Logovi i procesi
+# ---------------------------------------------------------------------
+*.log
+npm-debug.log*
+logs/
+pids/
+*.pid
+
+# ---------------------------------------------------------------------
+#  Alati, keš, build
+# ---------------------------------------------------------------------
+coverage/
+.nyc_output/
+.cache/
+dist/
+build/
+tmp/
+temp/
+
+# ---------------------------------------------------------------------
+#  Uređivači
+# ---------------------------------------------------------------------
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# ---------------------------------------------------------------------
+#  Operativni sistemi
+# ---------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+Desktop.ini
+
+# ---------------------------------------------------------------------
+#  POSLOVNI MATERIJAL — ne ide u repozitorijum aplikacije
+#
+#  prezentacija/ sadrži prodajni scenario i interne bilješke vlasnice.
+#  dokumenti/    sadrži cjenovnik i nacrt ugovora.
+#
+#  Ovaj repozitorijum ide na Render i može dobiti saradnika.
+#  Te dvije mape se drže u zasebnom PRIVATNOM repozitorijumu.
+#  Vidi GIT.md.
+# ---------------------------------------------------------------------
+prezentacija/
+dokumenti/
+
+# ---------------------------------------------------------------------
+#  SPISAK KLIJENATA SA PRISTUPNIM PODACIMA
+#
+#  alati/klijenti.txt sadrži adrese baza sa lozinkama, po jednu za svakog
+#  klijenta. To NIKAD ne ide u git — ni u privatni repozitorijum.
+#  Bekapi isto ne idu: to su podaci klijenata, ne kod.
+# ---------------------------------------------------------------------
+alati/klijenti.txt
+bekap/
+*.dump
+*.backup

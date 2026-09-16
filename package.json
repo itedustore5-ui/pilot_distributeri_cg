@@ -1,0 +1,21 @@
+{
+  "name": "haccp-distributeri-cg",
+  "version": "1.0.0",
+  "description": "DHP i HACCP evidencija za distributere hrane u Crnoj Gori — sledljivost, prijem, isporuka, dnevni zapisi i osposobljenost zaposlenih",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "seed": "node db/seed.js",
+    "seed:svez": "node db/seed.js --svez",
+    "pregled": "node alati/dnevni-pregled.mjs"
+  },
+  "dependencies": {
+    "dotenv": "^17.0.0",
+    "express": "^5.0.0",
+    "nodemailer": "^6.9.0",
+    "pg": "^8.11.0"
+  }
+}

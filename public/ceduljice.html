@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ceduljice sa šiframa</title>
+<style>
+  :root{
+    --ink:#131A1F; --steel:#3A4A56; --muted:#6B7A85;
+    --paper:#EFF2F3; --list:#FFF; --linija:#CBD5D9; --cold:#0B6E8C;
+    --mono: ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+    --sans: system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px}
+  .oznaka{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+  header{background:var(--ink);color:#fff;padding:18px 24px}
+  header h1{margin:6px 0 0;font-size:20px;font-weight:600}
+  header .oznaka{color:#8FA6B2}
+  .vrh{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+  .vrh input{font-family:var(--mono);font-size:14px;padding:9px 12px;border-radius:3px;
+    border:1px solid #2C3A44;background:#1C262D;color:#fff;min-width:140px}
+  .vrh button{font-family:var(--sans);font-size:14px;font-weight:600;padding:9px 18px;
+    border-radius:3px;border:none;cursor:pointer;background:var(--cold);color:#fff}
+  .vrh button.tiho{background:transparent;color:#8FA6B2;border:1px solid #2C3A44}
+
+  main{max-width:210mm;margin:22px auto;padding:0 14px 60px}
+  .uputstvo{border-left:3px solid var(--cold);background:#E6EEF1;padding:13px 15px;
+    font-size:13px;line-height:1.6;margin-bottom:18px}
+
+  .list{background:var(--list);border:1px solid var(--linija);padding:12mm}
+  .mreza{display:grid;grid-template-columns:repeat(2,1fr);gap:0}
+  .ceduljica{border:1px dashed var(--muted);padding:9mm 8mm;text-align:center;
+    display:flex;flex-direction:column;justify-content:center;min-height:38mm}
+  .ceduljica .firma{font-size:10px;color:var(--muted);letter-spacing:.04em;
+    text-transform:uppercase;margin-bottom:6px;line-height:1.3}
+  .ceduljica .sifra{font-family:var(--mono);font-size:30px;font-weight:700;letter-spacing:.09em;
+    line-height:1;margin:4px 0 7px}
+  .ceduljica .mesto{font-size:11.5px;color:var(--steel)}
+  .ceduljica .uput{font-size:10px;color:var(--muted);margin-top:8px;line-height:1.4}
+
+  .prazno{color:var(--muted);text-align:center;padding:34px 0;font-size:13.5px}
+
+  @page{size:A4;margin:10mm}
+  @media print{
+    body{background:#fff}
+    header,.uputstvo,.nestampa{display:none !important}
+    main{max-width:none;margin:0;padding:0}
+    .list{border:none;padding:0}
+    .ceduljica{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="oznaka">Za nadzornika · seče se i deli zaposlenima</span>
+  <h1>Ceduljice sa šiframa</h1>
+  <div class="vrh nestampa">
+    <input id="grupa" placeholder="grupa" aria-label="Grupa" style="max-width:90px">
+    <input id="token" type="password" placeholder="pristupni token" aria-label="Token">
+    <button id="ucitaj" type="button">Pripremi</button>
+    <button class="tiho" id="stampaj" type="button">Štampaj</button>
+    <a href="/admin.html" style="color:#8FA6B2;font-size:13px;text-decoration:none;margin-left:auto">← komandna tabla</a>
+  </div>
+</header>
+
+<main>
+  <div class="uputstvo nestampa">
+    Odštampaj, iseci po isprekidanoj liniji i podeli zaposlenima pre prvog merenja.
+    <b>Isti čovek koristi istu šifru u svim terminima</b> — zato ceduljicu treba da sačuva
+    do kraja ciklusa.<br><br>
+    Spisak <b>šifra → ime</b> vodi nadzornik na papiru i drži ga kod sebe. U sistemu nema imena,
+    i baš zato merenje ostaje anonimno prema upravi.
+  </div>
+
+  <div class="list" id="list"><div class="prazno">Upiši grupu i token, pa klikni Pripremi.</div></div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const par = new URLSearchParams(location.search);
+if(par.get('k')) $('grupa').value = par.get('k');
+try{ const t = sessionStorage.getItem('token'); if(t) $('token').value = t; }catch(e){}
+
+async function uzmi(p){
+  const o = await fetch(p, { headers:{ 'x-admin-token': $('token').value.trim() } });
+  const d = await o.json().catch(() => ({}));
+  if(!o.ok) throw new Error(d.greska || (o.status === 401 ? 'Pogrešan token.' : 'Greška.'));
+  return d;
+}
+
+$('ucitaj').onclick = async () => {
+  const k = $('grupa').value.trim();
+  if(!k || !$('token').value.trim()) return alert('Upiši grupu i token.');
+  try{
+    try{ sessionStorage.setItem('token', $('token').value.trim()); }catch(e){}
+    const [zag, u] = await Promise.all([
+      uzmi(`/api/izvestaj/${k}/zaglavlje`),
+      uzmi(`/api/izvestaj/${k}/spisak-ucesnika`),
+    ]);
+    if(u.length === 0){
+      $('list').innerHTML = '<div class="prazno">Za ovu grupu još nema nijedne šifre. ' +
+        'Napravi ih na komandnoj tabli.</div>';
+      return;
+    }
+    $('list').innerHTML = `<div class="mreza">${u.map(x => `
+      <div class="ceduljica">
+        <div class="firma">${zag.firma}<br>${zag.program}</div>
+        <div class="sifra">${x.sifra}</div>
+        <div class="mesto">${x.radno_mesto ?? ''}${x.smena ? ' · smena ' + x.smena : ''}</div>
+        <div class="uput">Sačuvaj ovu ceduljicu.<br>Ista šifra važi za sve provere.</div>
+      </div>`).join('')}</div>`;
+  }catch(e){ alert(e.message); }
+};
+
+$('stampaj').onclick = () => window.print();
+if($('grupa').value && $('token').value) $('ucitaj').click();
+
+// ---------------------------------------------------------------- prijava
+// Stranice rade preko sesije iz kolačića. Token se više ne kuca.
+// Ako sesija nije važeća, vodi na prijavu.
+let JA = null;
+async function proveriPrijavu(){
+  try{
+    const o = await fetch('/api/ja');
+    if(!o.ok){ location.href = '/prijava.html?dalje=' + encodeURIComponent(location.pathname); return null; }
+    JA = await o.json();
+    const t = document.getElementById('token');
+    if(t){ const red = t.closest('div'); t.style.display = 'none'; }
+    const z = document.getElementById('koSam');
+    if(z) z.textContent = `${JA.ime} · ${
+      JA.uloga === 'izvodjac' ? 'izvođač' : JA.uloga === 'bzr' ? 'BZR / kvalitet' : 'uprava'}`;
+    return JA;
+  }catch(e){ return null; }
+}
+async function odjava(){
+  await fetch('/api/odjava', { method:'POST' });
+  location.href = '/prijava.html';
+}
+proveriPrijavu();
+</script>
+</body>
+</html>

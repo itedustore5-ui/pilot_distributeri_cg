@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Izveštaj o zadržavanju znanja</title>
+<style>
+  :root{
+    --ink:#131A1F; --steel:#3A4A56; --muted:#6B7A85;
+    --paper:#EFF2F3; --card:#FFF; --linija:#CBD5D9;
+    --cold:#0B6E8C; --signal:#B4410E; --ok:#2C6B47; --alarm:#96161B;
+    --mono: ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+    --sans: system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px}
+  .oznaka{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  header{background:var(--ink);color:#fff;padding:22px 28px}
+  header .oznaka{color:#8FA6B2}
+  header h1{margin:6px 0 0;font-size:23px;letter-spacing:-.01em;font-weight:600}
+  .alatke{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px}
+  .alatke input{
+    font-family:var(--mono);font-size:14px;padding:10px 12px;border-radius:3px;
+    border:1px solid #2C3A44;background:#1C262D;color:#fff;min-width:150px
+  }
+  .alatke button{
+    font-family:var(--sans);font-size:14px;font-weight:600;padding:10px 20px;
+    border-radius:3px;border:none;background:var(--cold);color:#fff;cursor:pointer
+  }
+  main{padding:28px;max-width:1180px;margin:0 auto}
+  section{background:var(--card);border:1px solid var(--linija);border-radius:4px;padding:22px;margin-bottom:20px}
+  h2{font-size:17px;margin:4px 0 4px;font-weight:600}
+  .pod{color:var(--muted);font-size:13.5px;margin:0 0 18px;max-width:78ch;line-height:1.55}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--linija)}
+  thead th{
+    font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);border-bottom:2px solid var(--steel);white-space:nowrap
+  }
+  td.broj,th.broj{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+  tbody tr:hover{background:#F6F9F9}
+  .znak{
+    display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.06em;
+    padding:3px 8px;border-radius:2px;text-transform:uppercase
+  }
+  .z-ok{background:#E3EFE8;color:var(--ok)}
+  .z-lose{background:#F7E3E4;color:var(--alarm)}
+  .z-rizik{background:#F7E9E3;color:var(--signal)}
+  .ispod{color:var(--alarm);font-weight:700}
+  .pad{color:var(--signal);font-weight:600}
+  .rast{color:var(--ok);font-weight:600}
+  .prazno{color:var(--muted);text-align:center;padding:34px 0;font-size:14px}
+  .alatke button.tiho{background:transparent;color:#8FA6B2;border:1px solid #2C3A44}
+  .nav{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-top:14px;
+    padding-top:13px;border-top:1px solid #2C3A44;font-size:13px}
+  .nav span{color:#fff;font-weight:600}
+  .nav a{color:#8FA6B2;text-decoration:none;border-bottom:1px solid transparent}
+  .nav a:hover{color:#fff;border-bottom-color:#8FA6B2}
+  .mono{font-family:var(--mono);font-size:12px}
+  .tekst-stavke{max-width:56ch;line-height:1.4}
+  @page{size:A4 landscape;margin:12mm}
+  @media print{
+    body{background:#fff;font-size:10pt}
+    .alatke,.nav,.nestampa{display:none !important}
+    header{background:#fff;color:var(--ink);border-bottom:2px solid var(--ink);padding:0 0 10px}
+    header .oznaka{color:var(--muted)}
+    main{max-width:none;padding:0;margin:0}
+    section{border:none;padding:0;margin-bottom:16px;break-inside:avoid}
+    tbody tr:hover{background:none}
+  }
+  .savet{border-left:3px solid var(--cold);background:#E6EEF1;padding:13px 15px;font-size:13.5px;line-height:1.55}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="oznaka" id="zaglavljeFirme">Merenje znanja nakon obuke</span>
+  <h1 id="naslov">Zadržavanje znanja nakon obuke</h1>
+  <div id="oznakaPaketa" class="oznaka" style="margin-top:6px;color:#8FA6B2"></div>
+  <div class="alatke">
+    <input id="grupa" value="1" aria-label="Broj grupe" placeholder="grupa">
+    <input id="token" type="password" placeholder="pristupni token" aria-label="Token">
+    <button id="ucitaj" type="button">Prikaži izveštaj</button>
+    <span style="flex:1"></span>
+    <button class="tiho" id="stampaj" type="button">Štampaj / PDF</button>
+    <button class="tiho" id="izvezi" type="button">Izvezi CSV</button>
+  </div>
+  <nav class="nav nestampa">
+    <span id="koSam" style="color:#8FA6B2;font-weight:400"></span>
+    <a href="#" onclick="odjava();return false">odjava</a>
+    <a href="/admin.html" style="font-weight:600;color:#fff">⌂ Komandna tabla</a>
+    <span>Izveštaj za kvalitet <span id="paketZnak" style="font-weight:400;opacity:.7"></span></span>
+    <a href="/obrazac6.html">Obrazac 6 →</a>
+    <a href="/evidencija.html">Evidencija →</a>
+    <a href="/uprava.html">Izveštaj za upravu →</a>
+  </nav>
+</header>
+
+<main>
+  <section id="sekSidra">
+    <span class="oznaka">Provera uporedivosti</span>
+    <h2>Sidrena pitanja</h2>
+    <p class="pod">
+      Sidro je identično u sva četiri termina, pa i ono prati učenje — zato se ne
+      gleda samo po sebi. Gleda se <b>razmak</b> između sidra i rotacionih pitanja.
+      Stabilan razmak znači da su forme podjednako teške i da je pad rezultata
+      stvaran pad znanja. Razmak koji skače znači da razlika potiče od težine forme,
+      i ostatak izveštaja se ne tumači dok se to ne razjasni.
+    </p>
+    <div id="sidra"></div>
+  </section>
+
+  <section>
+    <span class="oznaka">Glavni nalaz</span>
+    <h2>Rezultat po temama kroz vreme</h2>
+    <p class="pod">
+      Prag se primenjuje na temu, ne na zaposlenog. Tema ispod praga znači da se taj
+      deo obuke ponavlja za celu smenu.
+    </p>
+    <div id="teme"></div>
+  </section>
+
+  <section id="sekZaboravljanje" data-paket="prosireno">
+    <span class="oznaka">Odluka</span>
+    <h2>Šta je obuka podigla i šta se zadržalo</h2>
+    <p class="pod">
+      Dobitak je efekat obuke odmah. Zadržano je ono što je preživelo tri meseca.
+      Osip pokazuje koliko se izgubilo — i tu se planira ponavljanje.
+    </p>
+    <div id="zaboravljanje"></div>
+  </section>
+
+  <section>
+    <span class="oznaka">Kontrola sprovođenja</span>
+    <h2>Odziv po terminima</h2>
+    <p class="pod">Odziv ispod 80% oslabljuje nalaz i mora biti naveden u izveštaju.</p>
+    <div id="ucesce"></div>
+  </section>
+  <section>
+    <span class="oznaka">Zaštita nalaza</span>
+    <h2>Analiza pitanja</h2>
+    <p class="pod">
+      Pre nego što izjaviš da je neka tema slaba, proveri da pitanja iz nje nisu pokvarena.
+      <b>Težina</b> je procenat tačnih odgovora. <b>Razdvajanje</b> pokazuje da li pitanje
+      razlikuje one koji znaju od onih koji ne znaju; negativna vrednost skoro uvek znači
+      pogrešno označen tačan odgovor. Pri ovako malom broju ispitanika sve između −0,2 i +0,2
+      je statistički šum, pa su nalazi signal za ručnu proveru, a ne dokaz.
+    </p>
+    <div id="stavke"></div>
+  </section>
+
+  <section>
+    <span class="oznaka">Najkorisniji nalaz za obuku</span>
+    <h2>Raširene zablude</h2>
+    <p class="pod">
+      Netačni odgovori koje bira najviše ljudi. Kada četvrtina grupe izabere istu grešku,
+      to nije neznanje nego zajedničko pogrešno uverenje — i tačno to treba ispraviti na
+      sledećoj obuci.
+    </p>
+    <div id="distraktori"></div>
+  </section>
+
+  <section id="sekSmene">
+    <span class="oznaka">Organizacija</span>
+    <h2>Presek po smenama</h2>
+    <p class="pod">
+      Trajna razlika između smena obično nije razlika u znanju nego u uslovima pod kojima
+      je obuka održana.
+    </p>
+    <div id="smene"></div>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const bez = '<div class="prazno">Nema podataka za prikaz.</div>';
+
+async function uzmi(putanja){
+  const o = await fetch(putanja, { headers:{ 'x-admin-token': $('token').value } });
+  if(o.status === 401) throw new Error('Pogrešan token.');
+  if(!o.ok) throw new Error('Greška pri učitavanju.');
+  return o.json();
+}
+
+const pr = v => (v === null || v === undefined) ? '—' : Number(v).toFixed(1) + '%';
+const delta = v => {
+  if(v === null || v === undefined) return '—';
+  const n = Number(v);
+  const k = n < -5 ? 'pad' : n > 5 ? 'rast' : '';
+  return `<span class="${k}">${n > 0 ? '+' : ''}${n.toFixed(1)}</span>`;
+};
+
+function tabela(zaglavlja, redovi){
+  if(!redovi.length) return bez;
+  return `<table><thead><tr>${
+    zaglavlja.map(h => `<th class="${h.broj?'broj':''}">${h.n}</th>`).join('')
+  }</tr></thead><tbody>${redovi.join('')}</tbody></table>`;
+}
+
+$('ucitaj').onclick = async () => {
+  const k = $('grupa').value.trim();
+  try{
+    const zag = await uzmi(`/api/izvestaj/${k}/zaglavlje`);
+    const osnovni = zag.paket === 'osnovno';
+    $('naslov').textContent = osnovni
+      ? 'Provera znanja nakon obuke' : 'Zadržavanje znanja nakon obuke';
+    $('zaglavljeFirme').textContent =
+      `${zag.firma} · ${zag.program} · ${zag.godina}`;
+    $('oznakaPaketa').textContent = osnovni
+      ? 'Osnovni paket · dva termina merenja, na dan obuke'
+      : 'Prošireni paket · četiri termina, sa merenjem na 30 i 90 dana';
+    podesiNav(zag.paket);
+    document.querySelectorAll('[data-paket="prosireno"]')
+      .forEach(el => el.style.display = osnovni ? 'none' : '');
+
+    // ------------------------------------------------ sidra
+    const sidra = await uzmi(`/api/izvestaj/${k}/sidra`);
+    const razmaci = sidra.map(s => Number(s.razmak)).filter(n => !Number.isNaN(n));
+    const kolebanje = razmaci.length > 1 ? Math.max(...razmaci) - Math.min(...razmaci) : 0;
+    $('sidra').innerHTML = tabela(
+      [{n:'Termin'},{n:'Sidro',broj:1},{n:'Rotaciona',broj:1},{n:'Razmak',broj:1}],
+      sidra.map(s => `<tr><td><b>${s.talas}</b></td>
+        <td class="broj">${pr(s.procenat_sidra)}</td>
+        <td class="broj">${pr(s.procenat_rotacione)}</td>
+        <td class="broj">${s.razmak === null ? '—' : Number(s.razmak).toFixed(1)}</td></tr>`)
+    ) + (razmaci.length > 1 ? `<p class="savet" style="margin-top:16px">
+        Kolebanje razmaka: <b>${kolebanje.toFixed(1)} procentnih poena</b>. ${
+          kolebanje <= 12
+            ? 'Forme su uporedive — razlike između termina se mogu pripisati znanju.'
+            : 'Kolebanje je veliko. Proveri sastav formi pre nego što protumačiš pad rezultata.'
+        }</p>` : '');
+
+    // ------------------------------------------------ teme × talas
+    const teme = await uzmi(`/api/izvestaj/${k}/teme`);
+    const mapa = {};
+    teme.forEach(r => {
+      mapa[r.tema] ??= { naziv:r.tema_naziv, rizik:r.nivo_rizika, prag:r.prag_teme, t:{} };
+      mapa[r.tema].t[r.talas] = Number(r.procenat);
+    });
+    const redoviTema = Object.entries(mapa).map(([oz, v]) => {
+      const c = t => v.t[t] === undefined ? '<td class="broj">—</td>'
+        : `<td class="broj ${v.t[t] < Number(v.prag) ? 'ispod' : ''}">${v.t[t].toFixed(1)}</td>`;
+      const zadnji = v.t.T90 ?? v.t.T30 ?? v.t.T1 ?? v.t.T0;
+      const stanje = zadnji === undefined ? ''
+        : zadnji < Number(v.prag)
+          ? '<span class="znak z-lose">ponoviti obuku</span>'
+          : '<span class="znak z-ok">u redu</span>';
+      return `<tr>
+        <td><b>${oz}</b> ${v.naziv}<br><span class="oznaka">rizik: ${v.rizik}</span></td>
+        ${c('T0')}${c('T1')}${c('T30')}${c('T90')}
+        <td class="broj">${Number(v.prag).toFixed(0)}</td>
+        <td>${stanje}</td></tr>`;
+    });
+    $('teme').innerHTML = tabela(
+      [{n:'Tema'},{n:'T0',broj:1},{n:'T1',broj:1},{n:'T30',broj:1},{n:'T90',broj:1},
+       {n:'Prag',broj:1},{n:'Nalaz'}], redoviTema);
+
+    // ------------------------------------------------ zaboravljanje
+    const zab = await uzmi(`/api/izvestaj/${k}/zaboravljanje`);
+    $('zaboravljanje').innerHTML = tabela(
+      [{n:'Tema'},{n:'Dobitak T1−T0',broj:1},{n:'Zadržano T90−T0',broj:1},{n:'Osip T1−T90',broj:1}],
+      zab.map(r => `<tr>
+        <td><b>${r.tema}</b> ${r.tema_naziv}</td>
+        <td class="broj">${delta(r.dobitak)}</td>
+        <td class="broj">${delta(r.zadrzano)}</td>
+        <td class="broj">${r.osip === null ? '—' : Number(r.osip).toFixed(1)}</td></tr>`)
+    );
+
+    // ------------------------------------------------ odziv
+    const uc = await uzmi(`/api/izvestaj/${k}/ucesce`);
+    $('ucesce').innerHTML = tabela(
+      [{n:'Termin'},{n:'Planiran'},{n:'Upisanih',broj:1},{n:'Predalo',broj:1},{n:'Odziv',broj:1},{n:'Nalaz'}],
+      uc.map(r => `<tr>
+        <td><b>${r.talas}</b></td>
+        <td>${r.planiran_datum ? new Date(r.planiran_datum).toLocaleDateString('sr-RS') : '—'}</td>
+        <td class="broj">${r.upisanih}</td>
+        <td class="broj">${r.predatih}</td>
+        <td class="broj">${pr(r.odziv)}</td>
+        <td>${Number(r.odziv) >= 80
+          ? '<span class="znak z-ok">dovoljan</span>'
+          : r.predatih > 0 ? '<span class="znak z-rizik">nizak odziv</span>' : ''}</td></tr>`)
+    );
+
+    // ------------------------------------------------ analiza pitanja
+    const stavke = await uzmi(`/api/izvestaj/${k}/stavke`);
+    // „premali uzorak" nije zamerka na pitanje nego ograničenje podataka —
+    // ne prikazuje se u tabeli, nego se broji u napomeni ispod.
+    const malo = stavke.filter(x => x.nalaz === 'premali uzorak');
+    const problem = stavke.filter(x => x.nalaz !== 'u redu' && x.nalaz !== 'premali uzorak');
+    $('stavke').innerHTML = (problem.length
+      ? tabela([{n:'Pitanje'},{n:'Tema'},{n:'n',broj:1},{n:'Težina',broj:1},
+                {n:'Razdvajanje',broj:1},{n:'Nalaz'}],
+          problem.map(r => `<tr>
+            <td><span class="mono">${r.porodica}.${r.varijanta}</span>
+                <div class="tekst-stavke">${r.tekst}</div></td>
+            <td>${r.tema}${r.je_sidro ? ' <span class="znak z-ok">sidro</span>' : ''}</td>
+            <td class="broj">${r.n}</td>
+            <td class="broj">${pr(r.tezina)}</td>
+            <td class="broj">${r.diskriminacija ?? '—'}</td>
+            <td><span class="znak ${r.nalaz === 'PROVERI KLJUČ' ? 'z-lose' : 'z-rizik'}">${r.nalaz}</span></td>
+          </tr>`))
+      : '<div class="prazno">Nijedno pitanje nije označeno za proveru.</div>')
+      + `<p class="savet" style="margin-top:16px">
+          Ukupno pitanja u upotrebi: <b>${stavke.length}</b>. Bez zamerke:
+          <b>${stavke.length - problem.length - malo.length}</b>. Za proveru: <b>${problem.length}</b>.
+          ${problem.some(x => x.nalaz === 'PROVERI KLJUČ')
+            ? ' Pitanja označena sa PROVERI KLJUČ pregledaj pre nego što pošalješ izveštaj klijentu.'
+            : ''}
+          ${malo.length ? `<br><br>Za <b>${malo.length}</b> pitanja nema dovoljno odgovora za
+            pouzdanu analizu${osnovni
+              ? ' — u osnovnom paketu svaka varijanta bude poslužena svega desetak puta. ' +
+                'Analiza pitanja postaje upotrebljiva tek sa četiri termina merenja ili sa većom grupom.'
+              : ' (ispod 20 odgovora). Analiza za njih se ne prikazuje.'}` : ''}</p>`;
+
+    // ------------------------------------------------ distraktori
+    const dis = await uzmi(`/api/izvestaj/${k}/distraktori`);
+    $('distraktori').innerHTML = tabela(
+      [{n:'Pitanje'},{n:'Tema'},{n:'Pogrešan odgovor koji su birali'},{n:'Izabralo',broj:1}],
+      dis.map(r => `<tr>
+        <td><span class="mono">${r.porodica}.${r.varijanta}</span>
+            <div class="tekst-stavke">${r.pitanje}</div></td>
+        <td>${r.tema}</td>
+        <td class="tekst-stavke">${r.odgovor}</td>
+        <td class="broj ${Number(r.procenat) >= 33 ? 'ispod' : ''}">${pr(r.procenat)}</td>
+      </tr>`));
+
+    // ------------------------------------------------ smene
+    const sm = await uzmi(`/api/izvestaj/${k}/smene`);
+    const talasi = [...new Set(sm.map(x => x.talas))];
+    $('smene').innerHTML = tabela(
+      [{n:'Smena'},{n:'Zaposlenih',broj:1}, ...talasi.map(t => ({ n:t, broj:1 }))],
+      [...new Set(sm.map(x => x.smena))].map(s => {
+        const red = sm.filter(x => x.smena === s);
+        return `<tr><td><b>${s}</b></td><td class="broj">${red[0]?.ljudi ?? '—'}</td>
+          ${talasi.map(t => {
+            const c = red.find(x => x.talas === t);
+            return `<td class="broj">${c ? pr(c.procenat) : '—'}</td>`;
+          }).join('')}</tr>`;
+      }));
+
+    zaIzvoz = { zab, teme, uc, sidra, stavke, dis, sm };
+  }catch(e){
+    alert(e.message);
+  }
+};
+
+// ---------------------------------------------------------------- izvoz i štampa
+let zaIzvoz = null;
+
+function csv(redovi){
+  // BOM + tačka-zarez: tako Excel na srpskom jeziku otvori fajl ispravno
+  const t = redovi.map(r => r.map(c => {
+    const v = (c === null || c === undefined) ? '' : String(c);
+    return /[";\n]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v;
+  }).join(';')).join('\r\n');
+  return '\uFEFF' + t;
+}
+function skini(naziv, sadrzaj){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([sadrzaj], { type:'text/csv;charset=utf-8' }));
+  a.download = naziv; a.click(); URL.revokeObjectURL(a.href);
+}
+
+$('izvezi').onclick = () => {
+  if(!zaIzvoz) return alert('Prvo prikaži izveštaj.');
+  const { zab, uc, sidra, stavke, dis, sm } = zaIzvoz;
+  const d = new Date().toISOString().slice(0,10);
+  skini(`izvestaj-kvalitet-${d}.csv`, csv([
+    ['Izveštaj o zadržavanju znanja — menadžer kvaliteta'],
+    ['Izvezeno', new Date().toLocaleString('sr-RS')],
+    [],
+    ['REZULTAT PO TEMAMA'],
+    ['Tema','Naziv','Rizik','T0','T1','T30','T90','Dobitak','Zadržano','Osip'],
+    ...zab.map(r => [r.tema, r.tema_naziv, r.nivo_rizika, r.t0, r.t1, r.t30, r.t90,
+                     r.dobitak, r.zadrzano, r.osip]),
+    [],
+    ['UPOREDIVOST FORMI'],
+    ['Termin','Sidro %','Rotaciona %','Razmak'],
+    ...sidra.map(r => [r.talas, r.procenat_sidra, r.procenat_rotacione, r.razmak]),
+    [],
+    ['ODZIV'],
+    ['Termin','Datum','Predalo','Upisanih','Odziv %'],
+    ...uc.map(r => [r.talas, r.planiran_datum ?? '', r.predatih, r.upisanih, r.odziv]),
+    [],
+    ['PO SMENAMA'],
+    ['Smena','Termin','Zaposlenih','Rezultat %'],
+    ...sm.map(r => [r.smena, r.talas, r.ljudi, r.procenat]),
+    [],
+    ['ANALIZA PITANJA'],
+    ['Tema','Porodica','Varijanta','Sidro','n','Težina %','Razdvajanje','Nalaz','Tekst'],
+    ...stavke.map(r => [r.tema, r.porodica, r.varijanta, r.je_sidro ? 'da' : 'ne',
+                        r.n, r.tezina, r.diskriminacija, r.nalaz, r.tekst]),
+    [],
+    ['RAŠIRENE ZABLUDE'],
+    ['Tema','Porodica','Varijanta','Izabralo %','Pogrešan odgovor','Pitanje'],
+    ...dis.map(r => [r.tema, r.porodica, r.varijanta, r.procenat, r.odgovor, r.pitanje]),
+  ]));
+};
+
+$('stampaj').onclick = () => window.print();
+
+
+
+// token se pamti do zatvaranja pregledača, da ga ne kucaš na svakoj stranici
+(function(){
+  const t = document.getElementById('token');
+  if(!t) return;
+  try{ const s = sessionStorage.getItem('token'); if(s && !t.value) t.value = s; }catch(e){}
+  t.addEventListener('change', () => { try{ sessionStorage.setItem('token', t.value.trim()); }catch(e){} });
+})();
+
+
+// ---------------------------------------------------------------- prijava
+// Stranice rade preko sesije iz kolačića. Token se više ne kuca.
+// Ako sesija nije važeća, vodi na prijavu.
+let JA = null;
+async function proveriPrijavu(){
+  try{
+    const o = await fetch('/api/ja');
+    if(!o.ok){ location.href = '/prijava.html?dalje=' + encodeURIComponent(location.pathname); return null; }
+    JA = await o.json();
+    const t = document.getElementById('token');
+    if(t){ const red = t.closest('div'); t.style.display = 'none'; }
+    const z = document.getElementById('koSam');
+    if(z) z.textContent = `${JA.ime} · ${
+      JA.uloga === 'izvodjac' ? 'izvođač' : JA.uloga === 'bzr' ? 'BZR / kvalitet' : 'uprava'}`;
+    return JA;
+  }catch(e){ return null; }
+}
+async function odjava(){
+  await fetch('/api/odjava', { method:'POST' });
+  location.href = '/prijava.html';
+}
+
+// ---------------------------------------------------------------- navigacija
+// U osnovnom paketu se stranice koje se tiču zadržavanja znanja prikazuju
+// prigušeno, sa napomenom — ne skrivaju se, da klijent vidi šta dobija proširenjem.
+function podesiNav(paket){
+  const osn = paket === 'osnovno';
+  document.querySelectorAll('.nav a[data-paket="prosireno"]').forEach(a => {
+    a.style.opacity = osn ? '.45' : '';
+    a.title = osn ? 'Dostupno u proširenom paketu' : '';
+  });
+  const o = document.getElementById('paketZnak');
+  if(o) o.textContent = osn ? 'osnovni paket' : 'prošireni paket';
+}
+proveriPrijavu();
+</script>
+</body>
+</html>

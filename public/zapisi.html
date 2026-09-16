@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="sr-Latn-ME">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dnevni zapisi — DHP/HACCP</title>
+<style>
+  :root{
+    --ink:#131A1F; --steel:#3A4A56; --muted:#6B7A85;
+    --paper:#EFF2F3; --list:#FFF; --linija:#CBD5D9;
+    --cold:#0B6E8C; --signal:#B4410E; --ok:#2C6B47; --alarm:#96161B;
+    --mono: ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+    --sans: system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+    font-size:16px;line-height:1.5;-webkit-text-size-adjust:100%}
+  .oznaka{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted)}
+
+  header{background:var(--ink);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:20}
+  header h1{margin:5px 0 0;font-size:18px;font-weight:600}
+  header .oznaka{color:#8FA6B2}
+  .nav{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:11px;
+    padding-top:10px;border-top:1px solid #2C3A44;font-size:13px}
+  .nav a{color:#8FA6B2;text-decoration:none}
+  .nav a:hover,.nav a.tu{color:#fff}
+  .nav a.tu{font-weight:600}
+
+  main{max-width:820px;margin:0 auto;padding:16px 14px 100px}
+
+  /* ---- izbor obrasca ---- */
+  .plocice{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px;margin-bottom:20px}
+  /* display:grid iz gornjeg pravila pobjeđuje ugrađeno [hidden]{display:none},
+     pa sklopljena grupa ostane vidljiva. Zato izričito. */
+  .plocice[hidden]{display:none}
+  .plocica{background:var(--list);border:1px solid var(--linija);border-left:3px solid var(--cold);
+    padding:11px 12px;cursor:pointer;text-align:left;font-family:var(--sans);font-size:14px;
+    color:var(--ink);line-height:1.35}
+  .plocica:hover{border-left-color:var(--ink)}
+  .plocica.izabrana{background:var(--ink);color:#fff;border-left-color:var(--signal)}
+  .plocica .kod{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;
+    color:var(--muted);display:block;margin-bottom:3px}
+  .plocica.izabrana .kod{color:#8FA6B2}
+  .plocica .cest{display:block;font-size:11.5px;color:var(--muted);margin-top:4px}
+  .grupa{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted);margin:2px 0 8px}
+  .vise{background:none;border:none;color:var(--cold);cursor:pointer;font-size:13.5px;
+    font-family:var(--sans);padding:6px 0;text-decoration:underline;margin-bottom:14px}
+  .plocica.izabrana .cest{color:#8FA6B2}
+
+  /* ---- forma ---- */
+  .kartica{background:var(--list);border:1px solid var(--linija);padding:16px;margin-bottom:16px}
+  .kartica h2{margin:0 0 3px;font-size:16px}
+  .kartica .osnov{font-size:12px;color:var(--muted);margin-bottom:14px}
+  label{display:block;font-size:13px;font-weight:600;margin:12px 0 4px}
+  label .sitno{font-weight:400;color:var(--muted)}
+  input,select,textarea{width:100%;font-family:var(--sans);font-size:16px;padding:11px 12px;
+    border:1px solid var(--linija);border-radius:3px;background:#FCFDFD;color:var(--ink)}
+  input[type=number],input.temp{font-family:var(--mono)}
+  textarea{min-height:66px;resize:vertical}
+  .par{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:520px){.par{grid-template-columns:1fr}}
+
+  .dane{display:flex;gap:8px;margin-top:4px}
+  .dane button{flex:1;padding:13px;font-size:15px;font-weight:600;border:1px solid var(--linija);
+    background:#FCFDFD;color:var(--steel);border-radius:3px;cursor:pointer;font-family:var(--sans)}
+  .dane button[aria-pressed=true][data-v="da"]{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .dane button[aria-pressed=true][data-v="ne"]{background:var(--alarm);color:#fff;border-color:var(--alarm)}
+
+  .dugme{width:100%;padding:15px;font-size:16px;font-weight:600;border:none;border-radius:3px;
+    background:var(--cold);color:#fff;cursor:pointer;font-family:var(--sans);margin-top:18px}
+  .dugme:disabled{background:var(--muted);cursor:default}
+  .dugme.tiho{background:transparent;color:var(--steel);border:1px solid var(--linija);margin-top:9px}
+
+  .traka{padding:12px 14px;font-size:13.5px;line-height:1.55;margin-bottom:14px;border-left:3px solid}
+  .traka.ok{border-color:var(--ok);background:#E4EFE8;color:#1C4A30}
+  .traka.pazi{border-color:var(--signal);background:#F7E9E3;color:#7A2C07}
+  .traka.alarm{border-color:var(--alarm);background:#F6E3E4;color:#6E1013}
+  .traka.info{border-color:var(--cold);background:#E6EEF1;color:#08536B}
+  .traka b{display:block;margin-bottom:2px}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+  th,td{border-bottom:1px solid var(--linija);padding:7px 8px;text-align:left;vertical-align:top}
+  th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);font-weight:600}
+  td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
+  tr.odstupanje td{background:#FBF0EF}
+  .znak{font-family:var(--mono);font-size:10px;letter-spacing:.08em;padding:2px 6px;border-radius:2px;
+    text-transform:uppercase}
+  .znak.ok{background:#D9E9DF;color:#1C4A30}
+  .znak.pazi{background:#F4DFD5;color:#7A2C07}
+  .znak.alarm{background:#EFD4D5;color:#6E1013}
+  .prazno{color:var(--muted);padding:22px 0;text-align:center;font-size:14px}
+  .ispravi{background:none;border:none;color:var(--cold);cursor:pointer;font-size:12.5px;
+    font-family:var(--sans);padding:0;text-decoration:underline}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="oznaka">Zakon o bezbjednosti hrane „Sl. list CG" 59/2026 · čl. 35 i 36</span>
+  <h1>Dnevni zapisi</h1>
+  <nav class="nav">
+    <span id="koSam" style="color:#8FA6B2"></span>
+    <a data-samo="vodi" href="/podesavanje.html">Podešavanje</a>
+    <a href="/promet.html">Prijem i isporuka</a>
+    <a class="tu" href="/zapisi.html">Zapisi</a>
+    <a data-samo="vodi" href="/sledljivost.html">Sledljivost</a>
+    <a href="/prilozi.html">Štampa priloga</a>
+    <a data-samo="vodi" href="/izvoz.html">Izvoz</a>
+    <a data-samo="vodi" href="/admin.html">Komandna tabla</a>
+  </nav>
+</header>
+
+<main>
+  <div id="poruka"></div>
+
+  <div class="grupa" id="naslovDanas" hidden>Svaki dan</div>
+  <div class="plocice" id="plocice"></div>
+  <button type="button" class="vise" id="dugmeVise" hidden></button>
+  <div class="plocice" id="plociceOstalo" hidden></div>
+
+  <div id="forma"></div>
+
+  <div class="kartica" id="istorijaBox" hidden>
+    <h2 style="font-size:14px">Uneseno</h2>
+    <div id="istorija"></div>
+  </div>
+</main>
+
+<script src="/veza.js"></script>
+<script>
+const FIRMA = 1;
+let DEF = null, IZABRAN = null, JA = null;
+// Kad ispravljamo tuđi zapis, ovdje stoji id starog. Stari se NE briše.
+let ISPRAVLJA = null;
+
+const $  = s => document.querySelector(s);
+const el = (t, a = {}, ...d) => {
+  const n = document.createElement(t);
+  for (const [k, v] of Object.entries(a)) {
+    if (k === 'class') n.className = v;
+    else if (k === 'html') n.innerHTML = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else if (v !== null && v !== undefined && v !== false) n.setAttribute(k, v);
+  }
+  d.flat().forEach(x => n.append(x?.nodeType ? x : document.createTextNode(x ?? '')));
+  return n;
+};
+
+
+
+
+const poruka = (vrsta, naslov, tekst) => {
+  $('#poruka').replaceChildren(
+    el('div', { class: 'traka ' + vrsta }, el('b', {}, naslov), tekst || ''));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+
+// --------------------------------------------------------------- pokretanje
+(async function start() {
+  try {
+    JA = await ucitajJa();
+    if (!JA) return;            // nema veze — traka dolje, čeka se
+    sakrijNedozvoljeno(JA);
+  } catch (e) { poruka('alarm', 'Ne mogu da učitam stranicu', e.message); return; }
+
+  DEF = await (await fetch('/obrasci-cg.json')).json();
+  const rucni = DEF.obrasci.filter(o => !o.generisan);
+
+  // Magacioner na rampi ne treba spisak od dvanaest obrazaca. Ovo su četiri
+  // koja se popunjavaju svakodnevno; ostalo je povremeno i stoji sklopljeno.
+  // Ako klijent ima drugačiji ritam, mijenja se samo ovaj spisak.
+  const SVAKI_DAN = ['P3', 'P7', 'P8', 'D1'];
+
+  const plocica = o => el('button', {
+    class: 'plocica', type: 'button',
+    onclick: () => izaberi(o.oznaka),
+    'data-kod': o.oznaka,
+  },
+    el('span', { class: 'kod' }, 'Prilog ' + o.oznaka),
+    o.naziv,
+    el('span', { class: 'cest' }, o.ucestalost));
+
+  const svaki  = rucni.filter(o => SVAKI_DAN.includes(o.oznaka));
+  const ostalo = rucni.filter(o => !SVAKI_DAN.includes(o.oznaka));
+
+  $('#plocice').replaceChildren(...svaki.map(plocica));
+  $('#naslovDanas').hidden = false;
+  $('#plociceOstalo').replaceChildren(...ostalo.map(plocica));
+
+  const dugme = $('#dugmeVise');
+  dugme.hidden = false;
+  const osvjezi = () => {
+    const otvoreno = !$('#plociceOstalo').hidden;
+    dugme.textContent = otvoreno
+      ? 'Sakrij ostale obrasce'
+      : `Ostali obrasci (${ostalo.length}) — povremeno`;
+  };
+  dugme.onclick = () => {
+    $('#plociceOstalo').hidden = !$('#plociceOstalo').hidden;
+    osvjezi();
+  };
+  osvjezi();
+
+  // Ako je operater, prvo mu pokaži šta je danas ostalo.
+  if (JA.uloga === 'operater') {
+    poruka('info', 'Unosi se samo ono što je stvarno izmjereno.',
+      'Prazan dan je manji problem od izmišljenog zapisa. Zapis se ne može obrisati poslije unosa.');
+  } else {
+    try {
+      const rupe = await api(`/api/cg/rupe?firma=${FIRMA}&dana=7`);
+      if (rupe.length) poruka('pazi', `${rupe.length} zapisa nedostaje u poslednjih 7 dana`,
+        rupe.slice(0, 6).map(r => `${r.datum.slice(0,10)} · Prilog ${r.obrazac}`).join(' · ')
+        + (rupe.length > 6 ? ' …' : ''));
+    } catch {}
+  }
+})();
+
+// --------------------------------------------------------------- forma
+function izaberi(kod) {
+  IZABRAN = DEF.obrasci.find(o => o.oznaka === kod);
+  document.querySelectorAll('.plocica').forEach(p =>
+    p.classList.toggle('izabrana', p.dataset.kod === kod));
+  nacrtajFormu();
+  ucitajIstoriju();
+  $('#forma').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function poljeZa(p) {
+  const id = 'p_' + p.id;
+  if (p.tip === 'da_ne') {
+    const kutija = el('div', { class: 'dane', id, 'data-vrijednost': '' });
+    for (const v of ['da', 'ne']) {
+      kutija.append(el('button', {
+        type: 'button', 'data-v': v, 'aria-pressed': 'false',
+        onclick: e => {
+          kutija.dataset.vrijednost = v;
+          kutija.querySelectorAll('button').forEach(b =>
+            b.setAttribute('aria-pressed', String(b.dataset.v === v)));
+          proveriPravilo();
+        },
+      }, v === 'da' ? 'DA' : 'NE'));
+    }
+    return kutija;
+  }
+  if (p.tip === 'izbor') {
+    return el('select', { id, onchange: proveriPravilo },
+      el('option', { value: '' }, '— izaberi —'),
+      ...p.opcije.map(o => el('option', { value: o }, o)));
+  }
+  const tipovi = { broj: 'number', temp: 'number', datum: 'date', vrijeme: 'time' };
+  return el('input', {
+    id,
+    type: tipovi[p.tip] || 'text',
+    step: p.tip === 'temp' ? '0.1' : (p.tip === 'broj' ? 'any' : null),
+    class: p.tip === 'temp' ? 'temp' : null,
+    inputmode: p.tip === 'temp' || p.tip === 'broj' ? 'decimal' : null,
+    value: p.podrazumevano ?? '',
+    oninput: proveriPravilo,
+  });
+}
+
+function nacrtajFormu() {
+  const o = IZABRAN;
+  const k = el('div', { class: 'kartica' },
+    el('h2', {}, `Prilog ${o.oznaka} — ${o.naziv}`),
+    el('div', { class: 'osnov' }, `${o.osnov} · ${o.ucestalost} · popunjava: ${o.ko}`));
+
+  if (o.pravilo) k.append(el('div', { class: 'traka info' },
+    el('b', {}, 'Pravilo'), o.pravilo));
+
+  const par = el('div', { class: 'par' },
+    el('div', {}, el('label', { for: 'z_datum' }, 'Datum'),
+      el('input', { id: 'z_datum', type: 'date', value: danas() })),
+    el('div', {}, el('label', { for: 'z_vrijeme' }, 'Vrijeme ',
+      el('span', { class: 'sitno' }, '— neobavezno')),
+      el('input', { id: 'z_vrijeme', type: 'time' })));
+  k.append(par);
+
+  for (const p of o.polja) {
+    k.append(el('label', { for: 'p_' + p.id }, p.naziv,
+      p.kljucno ? el('span', { class: 'sitno' }, ' · ključno') : ''));
+    k.append(poljeZa(p));
+  }
+
+  k.append(el('div', { id: 'ocjena' }));
+
+  k.append(el('label', { for: 'z_mjera' }, 'Korektivna mjera ',
+    el('span', { class: 'sitno' }, '— obavezna kod odstupanja')));
+  k.append(el('textarea', { id: 'z_mjera',
+    placeholder: 'Šta je konkretno urađeno, ko je to uradio i kada.' }));
+
+  k.append(el('label', { for: 'z_izvrsilac' }, 'Izvršilac'));
+  k.append(el('input', { id: 'z_izvrsilac', value: JA?.ime || '' }));
+
+  k.append(el('button', { class: 'dugme', id: 'z_snimi', type: 'button', onclick: snimi },
+    'Snimi zapis'));
+
+  if (ISPRAVLJA) k.prepend(el('div', { class: 'traka pazi' },
+    el('b', {}, `Ispravljaš zapis od ${ISPRAVLJA.datum.slice(0, 10).split('-').reverse().join('.')}.`),
+    'Stari zapis se ne briše — ostaje u evidenciji, a ovaj novi postaje važeći. '
+    + 'Oba se vide u tragu ispravki.'));
+
+  $('#forma').replaceChildren(k);
+  if (ISPRAVLJA) popuni(ISPRAVLJA);
+  proveriPravilo();
+}
+
+// Popuni formu vrijednostima starog zapisa, da se ispravlja samo ono što je pogrešno.
+function popuni(z) {
+  $('#z_datum').value = z.datum.slice(0, 10);
+  if (z.vrijeme) $('#z_vrijeme').value = String(z.vrijeme).slice(0, 5);
+  $('#z_mjera').value = z.korektivna_mjera || '';
+  for (const p of IZABRAN.polja) {
+    const n = document.getElementById('p_' + p.id);
+    const v = z.podaci?.[p.id];
+    if (!n || v === undefined || v === null) continue;
+    if (p.tip === 'da_ne') {
+      n.dataset.vrijednost = v ? 'da' : 'ne';
+      n.querySelectorAll('button').forEach(b =>
+        b.setAttribute('aria-pressed', String((b.dataset.v === 'da') === !!v)));
+    } else n.value = v;
+  }
+}
+
+function zapocniIspravku(z) {
+  ISPRAVLJA = z;
+  nacrtajFormu();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function odustaniOdIspravke() {
+  ISPRAVLJA = null;
+  nacrtajFormu();
+}
+
+// --------------------------------------------------------------- ocjena odstupanja
+function vrijednosti() {
+  const v = {};
+  for (const p of IZABRAN.polja) {
+    const n = document.getElementById('p_' + p.id);
+    if (!n) continue;
+    if (p.tip === 'da_ne') v[p.id] = n.dataset.vrijednost === 'da' ? true
+      : n.dataset.vrijednost === 'ne' ? false : null;
+    else if (p.tip === 'broj' || p.tip === 'temp')
+      v[p.id] = n.value === '' ? null : Number(n.value);
+    else v[p.id] = n.value || null;
+  }
+  return v;
+}
+
+// Pravila iz obrasci-cg.json se ocjenjuju ovdje, na osnovu imena polja.
+// Namjerno bez eval — izraz se raščlanjuje na jednostavne uslove.
+function oceni(izraz, v) {
+  if (!izraz) return false;
+  if (izraz.trim() === 'true') return true;
+  return izraz.split('||').some(grana =>
+    grana.split('&&').every(uslov => {
+      const m = uslov.trim().match(/^(\w+)\s*(==|!=|<=|>=|<|>)\s*(.+)$/);
+      if (!m) return false;
+      const [, polje, op, sirovo] = m;
+      let desno = sirovo.trim();
+      if (/^'.*'$/.test(desno)) desno = desno.slice(1, -1);
+      else if (desno === 'true') desno = true;
+      else if (desno === 'false') desno = false;
+      else if (v[desno] !== undefined) desno = v[desno];
+      else if (!isNaN(Number(desno))) desno = Number(desno);
+      const lijevo = v[polje];
+      if (lijevo === null || lijevo === undefined) return false;
+      switch (op) {
+        case '==': return lijevo === desno;
+        case '!=': return lijevo !== desno;
+        case '<':  return Number(lijevo) <  Number(desno);
+        case '<=': return Number(lijevo) <= Number(desno);
+        case '>':  return Number(lijevo) >  Number(desno);
+        case '>=': return Number(lijevo) >= Number(desno);
+      }
+      return false;
+    }));
+}
+
+function proveriPravilo() {
+  if (!IZABRAN) return;
+  const odst = oceni(IZABRAN.odstupanje_kad, vrijednosti());
+  const box = $('#ocjena');
+  if (!box) return;
+  box.replaceChildren(odst
+    ? el('div', { class: 'traka alarm' },
+        el('b', {}, 'Odstupanje'),
+        'Zapis se ne može snimiti bez korektivne mjere. ' + (IZABRAN.pravilo || ''))
+    : el('div', { class: 'traka ok' }, el('b', {}, 'U granicama'),
+        'Nema odstupanja po pravilu ovog obrasca.'));
+  const m = $('#z_mjera');
+  if (m) m.style.borderColor = odst && !m.value.trim() ? 'var(--alarm)' : '';
+}
+
+// --------------------------------------------------------------- snimanje
+async function snimi() {
+  const v = vrijednosti();
+  const odst = oceni(IZABRAN.odstupanje_kad, v);
+  const mjera = $('#z_mjera').value.trim();
+
+  const prazna = IZABRAN.polja.filter(p => p.kljucno &&
+    (v[p.id] === null || v[p.id] === undefined || v[p.id] === ''));
+  if (prazna.length)
+    return poruka('pazi', 'Nepopunjena ključna polja',
+      prazna.map(p => p.naziv).join(' · '));
+
+  if (odst && !mjera)
+    return poruka('alarm', 'Korektivna mjera je obavezna',
+      'Odstupanje bez zapisane mjere je nalaz protiv firme, ne protiv zaposlenog.');
+
+  const dugme = $('#z_snimi');
+  dugme.disabled = true; dugme.textContent = 'Snimam…';
+  try {
+    await api('/api/cg/zapis', {
+      method: 'POST',
+      body: JSON.stringify({
+        firma_id: FIRMA,
+        obrazac: IZABRAN.oznaka,
+        datum: $('#z_datum').value,
+        vrijeme: $('#z_vrijeme').value || null,
+        podaci: v,
+        odstupanje: odst,
+        korektivna_mjera: mjera || null,
+        izvrsilac: $('#z_izvrsilac').value.trim(),
+        ispravlja_id: ISPRAVLJA ? ISPRAVLJA.id : null,
+      }),
+    });
+    poruka(odst ? 'pazi' : 'ok',
+      ISPRAVLJA ? `Prilog ${IZABRAN.oznaka} ispravljen`
+                : `Prilog ${IZABRAN.oznaka} snimljen`,
+      ISPRAVLJA ? 'Novi zapis je važeći. Stari ostaje u evidenciji sa tragom ko ga je i kada ispravio.'
+        : odst ? 'Odstupanje je zabilježeno zajedno sa mjerom. Odgovorno lice ga vidi na pregledu.'
+               : 'Zapis je u evidenciji i ne može se naknadno mijenjati.');
+    ISPRAVLJA = null;
+    nacrtajFormu();
+    ucitajIstoriju();
+  } catch (e) {
+    poruka('alarm', 'Nije snimljeno', e.message);
+  } finally {
+    dugme.disabled = false; dugme.textContent = 'Snimi zapis';
+  }
+}
+
+// --------------------------------------------------------------- istorija
+async function ucitajIstoriju() {
+  try {
+    const r = await api(`/api/cg/zapis/${IZABRAN.oznaka}?firma=${FIRMA}&limit=25`);
+    $('#istorijaBox').hidden = false;
+    if (!r.length) {
+      $('#istorija').replaceChildren(el('div', { class: 'prazno' }, 'Još nema zapisa.'));
+      return;
+    }
+    const kljucna = IZABRAN.polja.filter(p => p.kljucno);
+    const t = el('table', {},
+      el('thead', {}, el('tr', {},
+        el('th', {}, 'Datum'),
+        ...kljucna.map(p => el('th', {}, p.naziv)),
+        el('th', {}, 'Stanje'),
+        el('th', {}, 'Unio'),
+        el('th', {}, ''))),
+      el('tbody', {}, ...r.map(z => el('tr', { class: z.odstupanje ? 'odstupanje' : '' },
+        el('td', { class: 'n' }, z.datum.slice(0, 10)),
+        ...kljucna.map(p => el('td', {},
+          String(z.podaci[p.id] === true ? 'da'
+            : z.podaci[p.id] === false ? 'ne'
+            : z.podaci[p.id] ?? '—'))),
+        el('td', {}, el('span', { class: 'znak ' + (z.odstupanje ? 'alarm' : 'ok') },
+          z.odstupanje ? 'odstupanje' : 'u redu'),
+          z.je_ispravka ? el('span', { class: 'znak pazi', style: 'margin-left:5px' }, 'ispravka') : '',
+          // Zapis upisan kasnije od dana na koji se odnosi. Nije zabranjeno,
+          // ali inspektor to gleda — pa se ni ovdje ne krije.
+          z.naknadno ? el('span', { class: 'znak pazi', style: 'margin-left:5px',
+            title: `Upisano ${z.dana_kasnije} ${z.dana_kasnije === 1 ? 'dan' : 'dana'} poslije`
+          }, `naknadno +${z.dana_kasnije}`) : ''),
+        el('td', {}, z.izvrsilac),
+        el('td', {}, el('button', { class: 'ispravi', type: 'button',
+          onclick: () => zapocniIspravku(z) }, 'ispravi'))))));
+    $('#istorija').replaceChildren(t);
+  } catch (e) {
+    $('#istorija').replaceChildren(el('div', { class: 'prazno' }, e.message));
+  }
+}
+</script>
+</body>
+</html>

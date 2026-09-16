@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="sr-Latn-ME">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sledljivost i povlačenje</title>
+<style>
+  :root{
+    --ink:#131A1F; --steel:#3A4A56; --muted:#6B7A85;
+    --paper:#EFF2F3; --list:#FFF; --linija:#CBD5D9;
+    --cold:#0B6E8C; --signal:#B4410E; --ok:#2C6B47; --alarm:#96161B;
+    --mono: ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+    --sans: system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+  .oznaka{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+  header{background:var(--ink);color:#fff;padding:16px}
+  header h1{margin:5px 0 0;font-size:19px;font-weight:600}
+  header .oznaka{color:#8FA6B2}
+  .nav{display:flex;gap:14px;flex-wrap:wrap;margin-top:11px;padding-top:10px;
+    border-top:1px solid #2C3A44;font-size:13px}
+  .nav a{color:#8FA6B2;text-decoration:none}
+  .nav a:hover,.nav a.tu{color:#fff}
+  .nav a.tu{font-weight:600}
+
+  main{max-width:960px;margin:18px auto;padding:0 14px 80px}
+
+  .trazi{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+  .trazi input{flex:1;min-width:190px;font-family:var(--mono);font-size:17px;padding:13px 14px;
+    border:1px solid var(--linija);border-radius:3px;background:var(--list);text-transform:uppercase}
+  .trazi button{padding:13px 22px;font-size:15px;font-weight:600;border:none;border-radius:3px;
+    background:var(--cold);color:#fff;cursor:pointer;font-family:var(--sans)}
+  .trazi button.tiho{background:transparent;color:var(--steel);border:1px solid var(--linija)}
+
+  .sat{font-family:var(--mono);font-size:28px;letter-spacing:.04em;color:var(--ink)}
+  .sat.kasni{color:var(--alarm)}
+  .satBox{background:var(--ink);color:#fff;padding:13px 16px;margin-bottom:16px;
+    display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+  .satBox .sat{color:#fff}
+  .satBox .sat.kasni{color:#FF9B9E}
+  .satBox small{color:#8FA6B2;font-size:12px;display:block}
+
+  .kartica{background:var(--list);border:1px solid var(--linija);padding:15px 16px;margin-bottom:15px}
+  .kartica h2{margin:0 0 11px;font-size:15px;display:flex;justify-content:space-between;
+    align-items:baseline;gap:10px;flex-wrap:wrap}
+  .kartica h2 .sitno{font-weight:400;font-size:12px;color:var(--muted)}
+
+  .brojke{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;
+    background:var(--linija);border:1px solid var(--linija);margin-bottom:15px}
+  .brojka{background:var(--list);padding:12px 13px}
+  .brojka .v{font-family:var(--mono);font-size:23px;line-height:1.15}
+  .brojka .n{font-size:11.5px;color:var(--muted);margin-top:3px}
+  .brojka.istaknuta .v{color:var(--signal)}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{border-bottom:1px solid var(--linija);padding:8px 9px;text-align:left;vertical-align:top}
+  th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);font-weight:600}
+  td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
+  td.tel{font-family:var(--mono);white-space:nowrap}
+  .znak{font-family:var(--mono);font-size:10px;letter-spacing:.08em;padding:2px 6px;
+    border-radius:2px;text-transform:uppercase}
+  .znak.ok{background:#D9E9DF;color:#1C4A30}
+  .znak.pazi{background:#F4DFD5;color:#7A2C07}
+  .znak.alarm{background:#EFD4D5;color:#6E1013}
+
+  .traka{padding:12px 14px;font-size:13.5px;line-height:1.55;margin-bottom:14px;border-left:3px solid}
+  .traka.info{border-color:var(--cold);background:#E6EEF1;color:#08536B}
+  .traka.pazi{border-color:var(--signal);background:#F7E9E3;color:#7A2C07}
+  .traka.alarm{border-color:var(--alarm);background:#F6E3E4;color:#6E1013}
+  .traka b{display:block;margin-bottom:2px}
+  .prazno{color:var(--muted);padding:26px 0;text-align:center}
+
+  .stampaj{background:transparent;border:1px solid var(--linija);color:var(--steel);
+    padding:7px 13px;font-size:13px;border-radius:3px;cursor:pointer;font-family:var(--sans)}
+
+  @page{size:A4;margin:14mm}
+  @media print{
+    body{background:#fff;font-size:10pt}
+    header,.nav,.trazi,.nestampa,.satBox{display:none!important}
+    main{max-width:none;margin:0;padding:0}
+    .kartica{border:none;padding:0;margin:0 0 10mm}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="oznaka">Zakon o bezbjednosti hrane „Sl. list CG" 59/2026 · čl. 27 i 28</span>
+  <h1>Sledljivost i povlačenje</h1>
+  <nav class="nav">
+    <span id="koSam" style="color:#8FA6B2"></span>
+    <a href="/podesavanje.html">Podešavanje</a>
+    <a href="/promet.html">Prijem i isporuka</a>
+    <a href="/zapisi.html">Zapisi</a>
+    <a class="tu" href="/sledljivost.html">Sledljivost</a>
+    <a href="/prilozi.html">Štampa priloga</a>
+    <a href="/izvoz.html">Izvoz</a>
+    <a href="/admin.html">Komandna tabla</a>
+  </nav>
+</header>
+
+<main>
+  <div class="trazi nestampa">
+    <input id="lot" placeholder="broj serije / lota" autocomplete="off"
+           onkeydown="if(event.key==='Enter')trazi()">
+    <button type="button" onclick="trazi()">Pronađi</button>
+    <button type="button" class="tiho" onclick="pokreniVjezbu()">Vježba povlačenja</button>
+  </div>
+
+  <div id="satBox"></div>
+  <div id="poruka"></div>
+  <div id="rezultat">
+    <div class="traka info">
+      <b>Test koji sistem mora da prođe</b>
+      Odgovorno lice mora u roku od <b style="display:inline">4 sata</b> od saznanja imati
+      kompletnu listu kupaca kojima je serija otišla. Ako se do te liste dolazi
+      prelistavanjem otpremnica, sistem ne radi — bez obzira na to što papiri postoje.
+    </div>
+  </div>
+</main>
+
+<script src="/veza.js"></script>
+<script>
+const FIRMA = 1;
+let POCETAK = null, TAJMER = null, POSLEDNJI = null, JA = null;
+
+const $  = s => document.querySelector(s);
+const el = (t, a = {}, ...d) => {
+  const n = document.createElement(t);
+  for (const [k, v] of Object.entries(a)) {
+    if (k === 'class') n.className = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else if (v !== null && v !== undefined && v !== false) n.setAttribute(k, v);
+  }
+  d.flat().forEach(x => n.append(x?.nodeType ? x : document.createTextNode(x ?? '')));
+  return n;
+};
+
+
+(async () => {
+  JA = await ucitajJa();
+  if (!JA) return;              // nema veze — traka dolje, čeka se
+})();
+
+// --------------------------------------------------------------- vježba i sat
+function pokreniVjezbu() {
+  POCETAK = Date.now();
+  crtajSat();
+  clearInterval(TAJMER);
+  TAJMER = setInterval(crtajSat, 1000);
+  $('#lot').focus();
+  $('#poruka').replaceChildren(el('div', { class: 'traka pazi' },
+    el('b', {}, 'Vježba je počela'),
+    'Cilj je kompletna lista kupaca u roku od 4 sata. Unesi nasumičnu seriju iz zaliha, '
+    + 'pa poslije zabilježi rezultat kroz Prilog D3 na stranici Zapisi.'));
+}
+
+function crtajSat() {
+  if (!POCETAK) return;
+  const s = Math.floor((Date.now() - POCETAK) / 1000);
+  const h = String(Math.floor(s / 3600)).padStart(2, '0');
+  const m = String(Math.floor(s % 3600 / 60)).padStart(2, '0');
+  const sek = String(s % 60).padStart(2, '0');
+  $('#satBox').replaceChildren(el('div', { class: 'satBox nestampa' },
+    el('div', {},
+      el('div', { class: 'sat' + (s > 14400 ? ' kasni' : '') }, `${h}:${m}:${sek}`),
+      el('small', {}, s > 14400 ? 'preko cilja od 4 sata' : 'od početka vježbe · cilj 4 sata')),
+    el('button', { class: 'stampaj', type: 'button', style: 'color:#8FA6B2;border-color:#2C3A44',
+      onclick: () => { clearInterval(TAJMER); POCETAK = null; $('#satBox').replaceChildren(); } },
+      'Zaustavi')));
+}
+
+// --------------------------------------------------------------- pretraga
+async function trazi() {
+  const lot = $('#lot').value.trim();
+  if (!lot) return;
+  $('#rezultat').replaceChildren(el('div', { class: 'prazno' }, 'Tražim…'));
+  try {
+    const d = await api(`/api/cg/sledljivost/${encodeURIComponent(lot)}?firma=${FIRMA}`);
+    POSLEDNJI = d;
+    prikazi(d);
+  } catch (e) {
+    $('#rezultat').replaceChildren(el('div', { class: 'traka alarm' },
+      el('b', {}, 'Greška'), e.message));
+  }
+}
+
+function prikazi(d) {
+  const v = [];
+
+  if (!d.nazad.length) {
+    $('#rezultat').replaceChildren(el('div', { class: 'traka alarm' },
+      el('b', {}, `Serija „${d.lot}" nije pronađena`),
+      'Ili lot nije unesen na prijemu, ili je upisan drugačije. '
+      + 'Serija bez zapisa o prijemu znači da korak nazad iz čl. 27 ne postoji za tu robu.'));
+    return;
+  }
+
+  // ---- brojke
+  const z = d.zbir;
+  v.push(el('div', { class: 'brojke' },
+    el('div', { class: 'brojka' },
+      el('div', { class: 'v' }, String(z.primljeno)), el('div', { class: 'n' }, 'primljeno')),
+    el('div', { class: 'brojka' },
+      el('div', { class: 'v' }, String(z.isporuceno)), el('div', { class: 'n' }, 'isporučeno')),
+    el('div', { class: 'brojka' + (z.na_zalihama > 0 ? ' istaknuta' : '') },
+      el('div', { class: 'v' }, String(z.na_zalihama)), el('div', { class: 'n' }, 'još na zalihama')),
+    el('div', { class: 'brojka' + (z.broj_kupaca ? ' istaknuta' : '') },
+      el('div', { class: 'v' }, String(z.broj_kupaca)), el('div', { class: 'n' }, 'kupaca za obavještavanje'))));
+
+  if (z.na_zalihama > 0) v.push(el('div', { class: 'traka pazi' },
+    el('b', {}, `Na zalihama je još ${z.na_zalihama}`),
+    'Prvi korak povlačenja: fizički izdvoji tu količinu i označi je „ZADRŽANO — NE IZDAVATI".'));
+
+  // ---- korak nazad
+  v.push(el('div', { class: 'kartica' },
+    el('h2', {}, 'Korak nazad — ko je isporučio',
+      el('span', { class: 'sitno' }, 'čl. 27 Zakona')),
+    el('table', {},
+      el('thead', {}, el('tr', {},
+        el('th', {}, 'Datum'), el('th', {}, 'Artikal'), el('th', {}, 'Dobavljač'),
+        el('th', {}, 'Telefon'), el('th', {}, 'Otpremnica'), el('th', {}, 'Rok'),
+        el('th', {}, 'Temp.'), el('th', {}, 'Prijem'))),
+      el('tbody', {}, ...d.nazad.map(r => el('tr', {},
+        el('td', { class: 'n' }, r.datum_prijema?.slice(0, 10)),
+        el('td', {}, r.artikal),
+        el('td', {}, r.dobavljac),
+        el('td', { class: 'tel' }, r.dobavljac_telefon || '—'),
+        el('td', {}, r.broj_otpremnice || '—'),
+        el('td', { class: 'n' }, r.rok_trajanja?.slice(0, 10) || '—'),
+        el('td', { class: 'n' }, r.temperatura != null ? r.temperatura + ' °C' : '—'),
+        el('td', {}, el('span', {
+          class: 'znak ' + (r.ishod === 'prihvaceno' ? 'ok'
+            : r.ishod === 'odbijeno' ? 'alarm' : 'pazi') },
+          r.ishod.replace(/_/g, ' ')))))))));
+
+  // ---- korak naprijed
+  v.push(el('div', { class: 'kartica' },
+    el('h2', {}, 'Korak naprijed — kome je isporučeno',
+      el('span', { class: 'sitno' }, `${d.napred.length} isporuka`)),
+    d.napred.length
+      ? el('table', {},
+          el('thead', {}, el('tr', {},
+            el('th', {}, 'Datum'), el('th', {}, 'Kupac'), el('th', {}, 'Telefon'),
+            el('th', {}, 'Količina'), el('th', {}, 'Otpremnica'),
+            el('th', {}, 'Vozilo'), el('th', {}, 'Vozač'))),
+          el('tbody', {}, ...d.napred.map(r => el('tr', {},
+            el('td', { class: 'n' }, r.datum_isporuke?.slice(0, 10)),
+            el('td', {}, r.kupac),
+            el('td', { class: 'tel' }, r.kupac_telefon || '—'),
+            el('td', { class: 'n' }, String(r.isporuceno)),
+            el('td', {}, r.broj_otpremnice || '—'),
+            el('td', {}, r.vozilo || '—'),
+            el('td', {}, r.vozac || '—')))))
+      : el('div', { class: 'prazno' }, 'Ova serija još nije izlazila iz skladišta.')));
+
+  // ---- lista za obavještavanje
+  if (d.kontakti.length) {
+    v.push(el('div', { class: 'kartica' },
+      el('h2', {}, 'Lista za obavještavanje',
+        el('button', { class: 'stampaj nestampa', type: 'button', onclick: () => window.print() },
+          'Štampaj')),
+      el('div', { class: 'traka info nestampa' },
+        el('b', {}, 'Redoslijed'),
+        'Telefonom odmah, pa pisano istog dana. Zabilježi ko je, kada i kako obaviješten. '
+        + 'UBH se obavještava bez odlaganja (čl. 28).'),
+      el('table', {},
+        el('thead', {}, el('tr', {},
+          el('th', {}, 'Kupac'), el('th', {}, 'Telefon'), el('th', {}, 'Adresa'),
+          el('th', {}, 'Pozvan'), el('th', {}, 'Sati'), el('th', {}, 'Potpis'))),
+        el('tbody', {}, ...d.kontakti.map(k => el('tr', {},
+          el('td', {}, k.kupac),
+          el('td', { class: 'tel' }, k.telefon || '—'),
+          el('td', {}, k.adresa || '—'),
+          el('td', {}, ' '), el('td', {}, ' '), el('td', {}, ' ')))))));
+
+    const bezTelefona = d.kontakti.filter(k => !k.telefon).length;
+    if (bezTelefona) v.unshift(el('div', { class: 'traka alarm' },
+      el('b', {}, `${bezTelefona} kupaca nema telefon u sistemu`),
+      'Povlačenje se ne može izvesti u roku. Ovo je prvi nalaz koji treba zatvoriti.'));
+  }
+
+  $('#rezultat').replaceChildren(...v);
+}
+</script>
+</body>
+</html>

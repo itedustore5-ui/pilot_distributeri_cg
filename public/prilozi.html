@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="sr-Latn-ME">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prilozi za štampu i potpis</title>
+<style>
+  :root{
+    --ink:#131A1F; --steel:#3A4A56; --muted:#6B7A85;
+    --paper:#EFF2F3; --list:#FFF; --linija:#CBD5D9;
+    --cold:#0B6E8C; --signal:#B4410E; --ok:#2C6B47; --alarm:#96161B;
+    --mono: ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+    --sans: system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+  .oznaka{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+  header{background:var(--ink);color:#fff;padding:16px}
+  header h1{margin:5px 0 0;font-size:19px;font-weight:600}
+  header .oznaka{color:#8FA6B2}
+  .kontrole{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:13px}
+  .kontrole input,.kontrole select{font-family:var(--mono);font-size:14px;padding:9px 12px;
+    border-radius:3px;border:1px solid #2C3A44;background:#1C262D;color:#fff;min-width:110px}
+  .kontrole button{font-size:14px;font-weight:600;padding:9px 17px;border-radius:3px;border:none;
+    cursor:pointer;background:var(--cold);color:#fff;font-family:var(--sans)}
+  .kontrole button.tiho{background:transparent;color:#8FA6B2;border:1px solid #2C3A44}
+  .nav{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;padding-top:10px;
+    border-top:1px solid #2C3A44;font-size:13px}
+  .nav a{color:#8FA6B2;text-decoration:none}
+  .nav a:hover,.nav a.tu{color:#fff}
+  .nav a.tu{font-weight:600}
+
+  main{max-width:210mm;margin:20px auto;padding:0 14px 80px}
+
+  .traka{padding:12px 14px;font-size:13.5px;line-height:1.55;margin-bottom:14px;border-left:3px solid}
+  .traka.info{border-color:var(--cold);background:#E6EEF1;color:#08536B}
+  .traka.pazi{border-color:var(--signal);background:#F7E9E3;color:#7A2C07}
+  .traka.alarm{border-color:var(--alarm);background:#F6E3E4;color:#6E1013}
+  .traka b{display:block;margin-bottom:2px}
+
+  /* ---------------------------- list papira ---------------------------- */
+  .list{background:var(--list);border:1px solid var(--linija);padding:15mm 13mm;margin-bottom:18px}
+  .zaglavlje{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;
+    border-bottom:1.5px solid var(--ink);padding-bottom:7px;margin-bottom:5px}
+  .zaglavlje .firma{font-size:12.5px;font-weight:600}
+  .zaglavlje .meta{font-family:var(--mono);font-size:9.5px;color:var(--muted);text-align:right;
+    line-height:1.6;letter-spacing:.06em}
+  .list h2{font-size:13px;text-align:center;margin:13px 0 3px;text-transform:uppercase;letter-spacing:.02em}
+  .list .podnaslov{text-align:center;font-size:10.5px;color:var(--muted);margin-bottom:14px}
+
+  table.o{width:100%;border-collapse:collapse;font-size:10.5px;line-height:1.35}
+  table.o th,table.o td{border:1px solid var(--steel);padding:5px 6px;text-align:left;vertical-align:top}
+  table.o th{background:#F2F5F6;font-weight:600;font-size:9.5px;text-transform:uppercase;letter-spacing:.04em}
+  table.o td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
+  table.o td.potpis{height:30px;background:#FFFCF5}
+  table.o tr.odst td{background:#FBF0EF}
+
+  table.par{width:100%;border-collapse:collapse;font-size:11px}
+  table.par th,table.par td{border:1px solid var(--steel);padding:5px 7px;vertical-align:top}
+  table.par th{background:#F2F5F6;width:36%;font-weight:600;text-align:left}
+  .rukom{font-size:9px;color:var(--signal);font-style:italic}
+  .prazno-polje{display:block;min-height:18px;border-bottom:1px dotted var(--muted);background:#FFFCF5}
+
+  .potpisi{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:20px}
+  .potpis{font-size:10px;color:var(--muted);text-align:center}
+  .linija-potpisa{border-bottom:1px solid var(--ink);height:32px;margin-bottom:4px}
+  .prazno{color:var(--muted);text-align:center;padding:28px 0;font-size:13.5px}
+
+  @page{size:A4;margin:12mm}
+  @media print{
+    body{background:#fff;font-size:10pt}
+    header,.nestampa{display:none!important}
+    main{max-width:none;margin:0;padding:0}
+    .list{border:none;padding:0;margin:0;break-after:page}
+    .list:last-child{break-after:auto}
+    table.o th,table.par th{background:#F2F5F6!important;
+      -webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .prazno-polje,table.o td.potpis{background:transparent}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="oznaka">Vodič za dobru higijensku praksu · UBH v1.0 · 03.05.2023</span>
+  <h1>Prilozi za štampu i potpis</h1>
+  <div class="kontrole nestampa">
+    <select id="sta">
+      <option value="P13">Prilog 13 — Godišnji plan obuke</option>
+      <option value="P14">Prilog 14 — Evidencija prisutnih na obuci</option>
+      <option value="POTVRDA">Potvrda o osposobljenosti (po zaposlenom)</option>
+      <option value="P7">Prilog 7 — Temperature rashladnih uređaja</option>
+      <option value="P8">Prilog 8 — Temperature zamrzivača</option>
+      <option value="P3">Prilog 3 — Evidencija čišćenja</option>
+      <option value="P6">Prilog 6 — Provjera termometra</option>
+      <option value="P11">Prilog 11 — Dezinsekcija</option>
+      <option value="P12">Prilog 12 — Deratizacija</option>
+      <option value="D1">Prilog D1 — Kontrola vozila</option>
+      <option value="D3">Prilog D3 — Povlačenje / opoziv</option>
+      <option value="D4">Prilog D4 — Reklamacije</option>
+      <option value="ODSTUPANJA">Pregled odstupanja (za verifikaciju)</option>
+      <option value="ISPRAVKE">Trag ispravki zapisa</option>
+    </select>
+    <input id="grupa" value="1" title="grupa" aria-label="Grupa">
+    <input id="od" type="date" aria-label="Od">
+    <input id="doo" type="date" aria-label="Do">
+    <button type="button" onclick="pripremi()">Pripremi</button>
+    <button type="button" class="tiho" onclick="window.print()">Štampaj / PDF</button>
+  </div>
+  <nav class="nav">
+    <span id="koSam" style="color:#8FA6B2"></span>
+    <a href="/podesavanje.html">Podešavanje</a>
+    <a href="/promet.html">Prijem i isporuka</a>
+    <a href="/zapisi.html">Zapisi</a>
+    <a href="/sledljivost.html">Sledljivost</a>
+    <a class="tu" href="/prilozi.html">Štampa priloga</a>
+    <a href="/izvoz.html">Izvoz</a>
+    <a href="/admin.html">Komandna tabla</a>
+  </nav>
+</header>
+
+<main>
+  <div id="poruka" class="nestampa"></div>
+  <div id="izlaz">
+    <div class="traka info nestampa">
+      <b>Ovo nije Obrazac 6</b>
+      Obrazac 6 je srpski i u Crnoj Gori nema pravnu težinu. Crnogorski inspektor traži
+      dokumentaciju dobre higijenske prakse i HACCP-a: godišnji plan obuke, evidenciju
+      prisutnih sa potpisima, i zapise o kontrolama. To su prilozi na ovoj strani.
+    </div>
+  </div>
+</main>
+
+<script src="/veza.js"></script>
+<script>
+const FIRMA = 1;
+let DEF = null, JA = null, FIRMA_INFO = null;
+
+const $  = s => document.querySelector(s);
+const el = (t, a = {}, ...d) => {
+  const n = document.createElement(t);
+  for (const [k, v] of Object.entries(a)) {
+    if (k === 'class') n.className = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else if (v !== null && v !== undefined && v !== false) n.setAttribute(k, v);
+  }
+  d.flat().forEach(x => n.append(x?.nodeType ? x : document.createTextNode(x ?? '')));
+  return n;
+};
+const dat = s => s ? String(s).slice(0, 10).split('-').reverse().join('.') + '.' : '—';
+
+const poruka = (v, n, t) => $('#poruka').replaceChildren(
+  el('div', { class: 'traka ' + v }, el('b', {}, n), t || ''));
+
+(async () => {
+  try {
+    JA = await ucitajJa();
+    if (!JA) return;            // nema veze — traka dolje, čeka se
+  } catch (e) { poruka('alarm', 'Ne mogu da učitam stranicu', e.message); return; }
+  DEF = await (await fetch('/obrasci-cg.json')).json();
+  // Naziv subjekta se povlači jednom, da svaki prilog ima ispravno zaglavlje.
+  try { FIRMA_INFO = await api(`/api/izvestaj/${$('#grupa').value || 1}/zaglavlje`); }
+  catch { /* zaglavlje nije obavezno za prikaz zapisa */ }
+  const d = new Date(); d.setMonth(d.getMonth() - 1);
+  $('#od').value = lokalniDatum(d);
+  $('#doo').value = danas();
+})();
+
+// --------------------------------------------------------------- zaglavlje lista
+function zaglavlje(naslov, podnaslov, dodatno = {}) {
+  return [
+    el('div', { class: 'zaglavlje' },
+      el('div', {},
+        el('div', { class: 'firma' }, FIRMA_INFO?.firma || '{{NAZIV SUBJEKTA}}'),
+        el('div', { style: 'font-size:10px;color:#6B7A85' },
+          'Subjekt u poslovanju hranom · skladištenje i distribucija')),
+      el('div', { class: 'meta' },
+        el('div', {}, dodatno.oznaka || ''),
+        el('div', {}, 'Izdanje ' + (dodatno.izdanje || '1.0')),
+        el('div', {}, 'Štampano ' + dat(danas())))),
+    el('h2', {}, naslov),
+    el('div', { class: 'podnaslov' }, podnaslov),
+  ];
+}
+
+function potpisi(...uloge) {
+  return el('div', { class: 'potpisi' }, ...uloge.map(u =>
+    el('div', { class: 'potpis' }, el('div', { class: 'linija-potpisa' }), u)));
+}
+
+// --------------------------------------------------------------- glavni tok
+async function pripremi() {
+  const sta = $('#sta').value;
+  $('#izlaz').replaceChildren(el('div', { class: 'prazno' }, 'Pripremam…'));
+  $('#poruka').replaceChildren();
+  try {
+    if (sta === 'P14')            await prilog14();
+    else if (sta === 'POTVRDA')   await potvrde();
+    else if (sta === 'ODSTUPANJA') await odstupanja();
+    else if (sta === 'ISPRAVKE')   await ispravke();
+    else                          await zapisiObrazac(sta);
+  } catch (e) {
+    $('#izlaz').replaceChildren();
+    poruka('alarm', 'Nije pripremljeno', e.message);
+  }
+}
+
+// --------------------------------------------------------------- Prilog 14
+async function prilog14() {
+  const g = $('#grupa').value || 1;
+  const red = await api(`/api/izvestaj/${g}/osposobljavanje`);
+  if (!red.length) throw new Error('Nema evidentiranih obuka za ovu grupu.');
+  FIRMA_INFO = { firma: red[0].firma };
+
+  const poObuci = new Map();
+  for (const r of red) {
+    if (!poObuci.has(r.obuka_id)) poObuci.set(r.obuka_id, []);
+    poObuci.get(r.obuka_id).push(r);
+  }
+
+  const bezImena = red.some(r => !r.ime_prezime);
+  if (bezImena) poruka('pazi', 'Evidencija prisutnih traži ime i prezime',
+    'Grupa je podešena da čuva samo šifre. Prilog 14 se ne može potpisati šifrom. '
+    + 'Redoslijed: prvo ugovor o obradi podataka, pa uključivanje imena, pa štampa.');
+
+  const listovi = [];
+  for (const [, r] of poObuci) {
+    const o = r[0];
+    const prisutni = r.filter(x => x.prisustvovao);
+    listovi.push(el('div', { class: 'list' },
+      ...zaglavlje('Evidencija prisutnih na obučavanju',
+        'Prilog 14 · Vodič za dobru higijensku praksu (UBH) · čl. 35 Zakona o bezbjednosti hrane',
+        { oznaka: 'PRILOG 14' }),
+      el('table', { class: 'par', style: 'margin-bottom:12px' },
+        el('tr', {}, el('th', {}, 'Naziv obuke'), el('td', {}, o.obuka)),
+        el('tr', {}, el('th', {}, 'Datum i trajanje'),
+          el('td', {}, `${dat(o.obuka_od)}${o.obuka_do && o.obuka_do !== o.obuka_od ? ' – ' + dat(o.obuka_do) : ''}`
+            + (o.trajanje_sati ? ` · ${o.trajanje_sati} h` : ''))),
+        el('tr', {}, el('th', {}, 'Oblik'), el('td', {}, o.oblik || '—')),
+        el('tr', {}, el('th', {}, 'Mjesto'), el('td', {}, o.mesto || '—')),
+        el('tr', {}, el('th', {}, 'Izvođač'),
+          el('td', {}, (o.izvodjac || '—') + (o.izvodjac_svojstvo ? ` (${o.izvodjac_svojstvo})` : ''))),
+        el('tr', {}, el('th', {}, 'Materijal / osnov'), el('td', {}, o.materijal || '—'))),
+      el('table', { class: 'o' },
+        el('thead', {}, el('tr', {},
+          el('th', { style: 'width:6%' }, 'R. br.'),
+          el('th', { style: 'width:30%' }, 'Ime i prezime'),
+          el('th', { style: 'width:22%' }, 'Radno mjesto'),
+          el('th', { style: 'width:10%' }, 'Šifra'),
+          el('th', { style: 'width:32%' }, 'Svojeručni potpis'))),
+        el('tbody', {}, ...prisutni.map((x, i) => el('tr', {},
+          el('td', { class: 'n' }, String(i + 1)),
+          el('td', {}, x.ime_prezime || el('span', { class: 'prazno-polje' })),
+          el('td', {}, x.radno_mesto || '—'),
+          el('td', { class: 'n' }, x.sifra),
+          el('td', { class: 'potpis' }, ''))))),
+      el('div', { style: 'font-size:9.5px;color:#6B7A85;margin-top:7px' },
+        'Potpis se daje svojeručno na štampanom primjerku. Potpis se ne digitalizuje.'),
+      potpisi('Izvođač obuke', 'Odgovorno lice za bezbjednost hrane', 'Datum')));
+
+    const odsutni = r.filter(x => !x.prisustvovao);
+    if (odsutni.length) listovi.push(el('div', { class: 'list' },
+      ...zaglavlje('Odsutni sa obuke i plan nadoknade',
+        'Dopuna uz Prilog 14', { oznaka: 'PRILOG 14/A' }),
+      el('table', { class: 'o' },
+        el('thead', {}, el('tr', {},
+          el('th', {}, 'Ime i prezime'), el('th', {}, 'Šifra'),
+          el('th', {}, 'Radno mjesto'), el('th', {}, 'Razlog odsustva'),
+          el('th', {}, 'Termin nadoknade'))),
+        el('tbody', {}, ...odsutni.map(x => el('tr', {},
+          el('td', {}, x.ime_prezime || '—'),
+          el('td', { class: 'n' }, x.sifra),
+          el('td', {}, x.radno_mesto || '—'),
+          el('td', {}, x.napomena_prisustva || el('span', { class: 'prazno-polje' })),
+          el('td', {}, el('span', { class: 'prazno-polje' })))))),
+      el('div', { class: 'rukom', style: 'margin-top:7px' },
+        'Zaposleni koji nije prošao obuku ne smije samostalno raditi sa hranom dok je ne prođe.')));
+  }
+  $('#izlaz').replaceChildren(...listovi);
+}
+
+// --------------------------------------------------------------- Potvrde
+async function potvrde() {
+  const g = $('#grupa').value || 1;
+  const red = await api(`/api/izvestaj/${g}/osposobljavanje`);
+  if (!red.length) throw new Error('Nema evidentiranih obuka za ovu grupu.');
+  FIRMA_INFO = { firma: red[0].firma };
+
+  const prosli = red.filter(r => r.prisustvovao && r.rezultat_provere !== null);
+  if (!prosli.length) throw new Error('Nema završenih provjera osposobljenosti.');
+
+  const pali = prosli.filter(r => Number(r.rezultat_provere) < Number(r.prag_teme || 70));
+  if (pali.length) poruka('pazi', `${pali.length} zaposlenih ispod praga`,
+    'Njima se potvrda ne izdaje dok ne prođu ponovnu obuku i provjeru. '
+    + 'Ispod su označeni i njihov list nosi napomenu.');
+
+  $('#izlaz').replaceChildren(...prosli.map(r => {
+    const prag = Number(r.prag_teme || 70);
+    const polozio = Number(r.rezultat_provere) >= prag;
+    return el('div', { class: 'list' },
+      ...zaglavlje('Potvrda o osposobljenosti za rad sa hranom',
+        'čl. 35 Zakona o bezbjednosti hrane („Sl. list CG" 59/2026) · Uredba o higijeni hrane',
+        { oznaka: 'POTVRDA' }),
+      el('table', { class: 'par' },
+        el('tr', {}, el('th', {}, 'Ime i prezime'),
+          el('td', {}, r.ime_prezime || el('span', { class: 'prazno-polje' }))),
+        el('tr', {}, el('th', {}, 'Šifra u evidenciji'), el('td', {}, r.sifra)),
+        el('tr', {}, el('th', {}, 'Radno mjesto'), el('td', {}, r.radno_mesto || '—')),
+        el('tr', {}, el('th', {}, 'Naziv obuke'), el('td', {}, r.obuka)),
+        el('tr', {}, el('th', {}, 'Datum obuke'), el('td', {}, dat(r.obuka_od))),
+        el('tr', {}, el('th', {}, 'Trajanje'),
+          el('td', {}, r.trajanje_sati ? r.trajanje_sati + ' h' : '—')),
+        el('tr', {}, el('th', {}, 'Oblik obuke'), el('td', {}, r.oblik || '—')),
+        el('tr', {}, el('th', {}, 'Izvođač obuke'),
+          el('td', {}, (r.izvodjac || '—') + (r.izvodjac_svojstvo ? ` (${r.izvodjac_svojstvo})` : ''))),
+        el('tr', {}, el('th', {}, 'Datum teorijske provjere'), el('td', {}, dat(r.datum_provere))),
+        el('tr', {}, el('th', {}, 'Rezultat teorijske provjere'),
+          el('td', {}, `${Number(r.rezultat_provere).toFixed(1)} % (prag ${prag} %)`)),
+        el('tr', {}, el('th', {}, 'Praktična obuka na radnom mjestu'),
+          el('td', {}, el('span', { class: 'prazno-polje' }),
+            el('div', { class: 'rukom' }, 'datum i potpis lica koje je izvelo praktični dio — upisuje se rukom'))),
+        el('tr', {}, el('th', {}, 'Praktična provjera na radnom mjestu'),
+          el('td', {}, el('span', { class: 'prazno-polje' }),
+            el('div', { class: 'rukom' }, 'ocjena i potpis — upisuje se rukom'))),
+        el('tr', {}, el('th', {}, 'Ishod'),
+          el('td', {}, polozio
+            ? 'Zaposleni je osposobljen za rad sa hranom na navedenom radnom mjestu.'
+            : 'NIJE OSPOSOBLJEN — potrebna ponovna obuka i provjera. Do tada ne radi samostalno sa hranom.')),
+        el('tr', {}, el('th', {}, 'Sljedeća periodična obuka'),
+          el('td', {}, el('span', { class: 'prazno-polje' }),
+            el('div', { class: 'rukom' }, 'najkasnije 12 mjeseci od datuma obuke'))),
+        el('tr', {}, el('th', {}, 'Sanitarna knjižica'),
+          el('td', {}, el('span', { class: 'prazno-polje' }),
+            el('div', { class: 'rukom' },
+              'broj i datum posljednjeg pregleda — Zakon o zaštiti stanovništva od zaraznih bolesti, čl. 31')))),
+      el('div', { style: 'font-size:9.5px;color:#6B7A85;margin-top:9px' },
+        'Ova potvrda je interni zapis poslodavca o izvršenoj obuci i provjeri osposobljenosti. '
+        + 'Nije sertifikat — sertifikate izdaju isključivo akreditovana sertifikaciona tijela.'),
+      potpisi('Izvođač obuke', 'Odgovorno lice za bezbjednost hrane', 'Zaposleni'));
+  }));
+}
+
+// --------------------------------------------------------------- opšti prilozi
+async function zapisiObrazac(kod) {
+  const o = DEF.obrasci.find(x => x.oznaka === kod);
+  const r = await api(`/api/cg/zapis/${kod}?firma=${FIRMA}&od=${$('#od').value}&do=${$('#doo').value}&limit=500`);
+  if (!r.length) throw new Error(`Nema zapisa za Prilog ${kod} u izabranom periodu.`);
+
+  const kolone = o.polja || [];
+  $('#izlaz').replaceChildren(el('div', { class: 'list' },
+    ...zaglavlje(o.naziv, `Prilog ${kod} · ${o.osnov} · period ${dat($('#od').value)} – ${dat($('#doo').value)}`,
+      { oznaka: 'PRILOG ' + kod }),
+    el('table', { class: 'o' },
+      el('thead', {}, el('tr', {},
+        el('th', {}, 'Datum'),
+        ...kolone.map(p => el('th', {}, p.naziv)),
+        el('th', {}, 'Korektivna mjera'),
+        el('th', {}, 'Izvršilac'),
+        el('th', {}, 'Kontrolisao'))),
+      el('tbody', {}, ...r.map(z => el('tr', { class: z.odstupanje ? 'odst' : '' },
+        el('td', { class: 'n' }, dat(z.datum) + (z.vrijeme ? ' ' + z.vrijeme.slice(0, 5) : '')),
+        ...kolone.map(p => el('td', {},
+          z.podaci[p.id] === true ? 'da' : z.podaci[p.id] === false ? 'ne'
+            : (z.podaci[p.id] ?? '—'))),
+        el('td', {}, z.korektivna_mjera || (z.odstupanje ? '⚠ NEDOSTAJE' : '—')),
+        el('td', {}, z.izvrsilac),
+        el('td', {}, z.kontrolor || el('span', { class: 'prazno-polje' })))))),
+    el('div', { style: 'font-size:9.5px;color:#6B7A85;margin-top:8px' },
+      `Ukupno zapisa: ${r.length} · sa odstupanjem: ${r.filter(z => z.odstupanje).length}`),
+    potpisi('Izvršilac', 'Odgovorno lice za bezbjednost hrane', 'Datum kontrole')));
+}
+
+// --------------------------------------------------------------- trag ispravki
+// Ovo se pokazuje inspektoru kad pita „a šta ako neko pogriješi“.
+// Odgovor je: greška ostaje vidljiva, uz nju stoji ko ju je i kada ispravio.
+async function ispravke() {
+  const r = await api(`/api/cg/ispravke?firma=${FIRMA}`);
+  const zaglav = zaglavlje('Trag ispravki zapisa',
+    'Zapis se ne briše i ne mijenja — ispravka je nov zapis. Ovdje se vide oba.',
+    { oznaka: 'ISPRAVKE' });
+
+  if (!r.length) {
+    $('#izlaz').replaceChildren(el('div', { class: 'list' }, ...zaglav,
+      el('div', { class: 'prazno' }, 'U evidenciji nema nijedne ispravke.'),
+      el('div', { style: 'font-size:9.5px;color:#6B7A85' },
+        'Nula ispravki kroz duži period nije nužno dobra vijest — provjeri da li se zapisi '
+        + 'uopšte popunjavaju i da li zaposleni znaju da ispravka postoji.'),
+      potpisi('Odgovorno lice', 'Konsultant', 'Datum')));
+    return;
+  }
+
+  $('#izlaz').replaceChildren(el('div', { class: 'list' }, ...zaglav,
+    el('table', { class: 'o' },
+      el('thead', {}, el('tr', {},
+        el('th', {}, 'Zapis'), el('th', {}, 'Dana'),
+        el('th', {}, 'Bilo upisano'), el('th', {}, 'Ispravljeno na'),
+        el('th', {}, 'Unio'), el('th', {}, 'Ispravio'))),
+      el('tbody', {}, ...r.map(x => el('tr', {},
+        el('td', {}, x.oznaka),
+        el('td', { class: 'n' }, dat(x.datum_izvornog)),
+        el('td', {}, x.bilo || '—'),
+        el('td', {}, x.ispravljeno_na || '—'),
+        el('td', {}, x.unio || '—'),
+        el('td', {}, x.ispravio || '—'))))),
+    el('div', { style: 'font-size:9.5px;color:#6B7A85;margin-top:8px' },
+      `Ukupno ispravki: ${r.length}`),
+    potpisi('Odgovorno lice za bezbjednost hrane', 'Konsultant', 'Datum pregleda')));
+}
+
+// --------------------------------------------------------------- odstupanja
+async function odstupanja() {
+  const r = await api(`/api/cg/odstupanja?firma=${FIRMA}&od=${$('#od').value}`);
+  if (!r.length) {
+    $('#izlaz').replaceChildren(el('div', { class: 'list' },
+      ...zaglavlje('Pregled odstupanja i korektivnih mjera',
+        `Verifikacija odgovornog lica · period od ${dat($('#od').value)}`,
+        { oznaka: 'VERIFIKACIJA' }),
+      el('div', { class: 'prazno' }, 'U izabranom periodu nema zabilježenih odstupanja.'),
+      el('div', { style: 'font-size:9.5px;color:#6B7A85' },
+        'Nula odstupanja kroz duži period nije nužno dobra vijest — provjeri da li se '
+        + 'zapisi uopšte popunjavaju i da li su granice postavljene realno.'),
+      potpisi('Odgovorno lice', 'Konsultant', 'Datum')));
+    return;
+  }
+  const bezMjere = r.filter(x => !x.korektivna_mjera);
+  if (bezMjere.length) poruka('alarm', `${bezMjere.length} odstupanja bez korektivne mjere`,
+    'Ovo je najteži nalaz koji inspektor može naći u zapisima — priznata greška bez reakcije.');
+
+  $('#izlaz').replaceChildren(el('div', { class: 'list' },
+    ...zaglavlje('Pregled odstupanja i korektivnih mjera',
+      `Verifikacija odgovornog lica · period od ${dat($('#od').value)}`,
+      { oznaka: 'VERIFIKACIJA' }),
+    el('table', { class: 'o' },
+      el('thead', {}, el('tr', {},
+        el('th', {}, 'Datum'), el('th', {}, 'Izvor'), el('th', {}, 'Opis'),
+        el('th', {}, 'Korektivna mjera'), el('th', {}, 'Izvršilac'))),
+      el('tbody', {}, ...r.map(x => el('tr', { class: x.korektivna_mjera ? '' : 'odst' },
+        el('td', { class: 'n' }, dat(x.datum)),
+        el('td', {}, x.izvor),
+        el('td', {}, x.opis || '—'),
+        el('td', {}, x.korektivna_mjera || '⚠ NEDOSTAJE'),
+        el('td', {}, x.izvrsilac || '—'))))),
+    el('div', { style: 'font-size:9.5px;color:#6B7A85;margin-top:8px' },
+      `Ukupno: ${r.length} · bez korektivne mjere: ${bezMjere.length}`),
+    potpisi('Odgovorno lice za bezbjednost hrane', 'Konsultant', 'Datum verifikacije')));
+}
+</script>
+</body>
+</html>

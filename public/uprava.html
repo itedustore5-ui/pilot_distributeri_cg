@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Izveštaj o efektima obuke — uprava</title>
+<style>
+  :root{
+    --ink:#131A1F; --steel:#3A4A56; --muted:#6B7A85;
+    --paper:#EFF2F3; --list:#FFF; --linija:#CBD5D9;
+    --cold:#0B6E8C; --signal:#B4410E; --ok:#2C6B47; --alarm:#96161B;
+    --mono: ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+    --sans: system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+  .oznaka{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+  /* ---- traka sa kontrolama: ne štampa se ---- */
+  .kontrole{background:var(--ink);color:#fff;padding:16px 24px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .kontrole input{font-family:var(--mono);font-size:14px;padding:9px 12px;border-radius:3px;
+    border:1px solid #2C3A44;background:#1C262D;color:#fff;min-width:140px}
+  .kontrole button{font-family:var(--sans);font-size:14px;font-weight:600;padding:9px 18px;
+    border-radius:3px;border:none;cursor:pointer;background:var(--cold);color:#fff}
+  .kontrole button.tiho{background:transparent;color:#8FA6B2;border:1px solid #2C3A44}
+  .kontrole .razmak{flex:1}
+  .nav{background:var(--ink);color:#fff;padding:0 24px 16px;display:flex;gap:18px;
+    flex-wrap:wrap;align-items:center;font-size:13px}
+  .nav span{color:#fff;font-weight:600}
+  .nav a{color:#8FA6B2;text-decoration:none;border-bottom:1px solid transparent}
+  .nav a:hover{color:#fff;border-bottom-color:#8FA6B2}
+
+  /* ---- list papira ---- */
+  .list{max-width:210mm;margin:24px auto;background:var(--list);padding:22mm 20mm;
+    border:1px solid var(--linija);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+
+  .zaglavlje{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:22px}
+  h1{font-size:21px;margin:6px 0 10px;letter-spacing:-.01em}
+  .meta{display:grid;grid-template-columns:repeat(2,1fr);gap:4px 28px;font-size:13px;color:var(--steel)}
+  .meta b{color:var(--ink);font-weight:600}
+
+  h2{font-size:15px;margin:26px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--linija)}
+  h2 .oznaka{float:right;font-weight:400;padding-top:3px}
+
+  /* ---- glavni brojevi ---- */
+  .brojevi{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--linija);
+    border:1px solid var(--linija);margin:16px 0}
+  .broj{background:var(--list);padding:16px 14px}
+  .broj .v{font-family:var(--mono);font-size:30px;font-weight:700;line-height:1;letter-spacing:-.02em}
+  .broj .o{font-size:12px;color:var(--muted);margin-top:7px;line-height:1.4}
+  .v.dobro{color:var(--ok)} .v.lose{color:var(--alarm)} .v.pazi{color:var(--signal)}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0}
+  th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--linija);vertical-align:top}
+  thead th{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--muted);border-bottom:1.5px solid var(--steel)}
+  td.broj-c,th.broj-c{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .ispod{color:var(--alarm);font-weight:700}
+  .znak{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.05em;
+    padding:2px 7px;border-radius:2px;text-transform:uppercase;white-space:nowrap}
+  .z-ok{background:#E3EFE8;color:var(--ok)}
+  .z-lose{background:#F7E3E4;color:var(--alarm)}
+  .z-pazi{background:#F7E9E3;color:var(--signal)}
+
+  .zakljucak{border-left:3px solid var(--cold);background:#E6EEF1;padding:13px 15px;margin:14px 0;font-size:13.5px}
+  .zakljucak ul{margin:8px 0 0;padding-left:18px}
+  .zakljucak li{margin:4px 0}
+
+  .fusnota{font-size:11.5px;color:var(--muted);line-height:1.55;margin-top:8px}
+
+  /* ---- potpisi ---- */
+  .potpisi{display:grid;grid-template-columns:1fr 1fr;gap:34px;margin-top:38px;padding-top:20px;
+    border-top:1px solid var(--linija)}
+  .potpis{font-size:12px;color:var(--muted)}
+  .linija-potpisa{border-bottom:1px solid var(--ink);height:38px;margin-bottom:6px}
+
+  .prazno{color:var(--muted);padding:26px 0;text-align:center;font-size:13.5px}
+
+  /* ---- štampa ---- */
+  @page{size:A4;margin:14mm}
+  @media print{
+    body{background:#fff;font-size:11pt}
+    .kontrole,.nestampa{display:none !important}
+    .list{max-width:none;margin:0;padding:0;border:none;box-shadow:none}
+    h2{break-after:avoid} table{break-inside:auto} tr{break-inside:avoid}
+    .potpisi{break-inside:avoid}
+    .brojevi{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+
+<div class="kontrole nestampa">
+  <input id="grupa" value="1" aria-label="Grupa" placeholder="grupa">
+  <input id="token" type="password" placeholder="pristupni token" aria-label="Token">
+  <button id="ucitaj" type="button">Prikaži</button>
+  <span class="razmak"></span>
+  <button class="tiho" id="stampaj" type="button">Štampaj / PDF</button>
+  <button class="tiho" id="izvezi" type="button">Izvezi CSV</button>
+</div>
+  <nav class="nav nestampa">
+    <span id="koSam" style="color:#8FA6B2;font-weight:400"></span>
+    <a href="#" onclick="odjava();return false">odjava</a>
+    <a href="/admin.html" style="font-weight:600;color:#fff">⌂ Komandna tabla</a>
+    <span>Izveštaj za upravu <span id="paketZnak" style="font-weight:400;opacity:.7"></span></span>
+    <a href="/obrazac6.html">Obrazac 6 →</a>
+    <a href="/evidencija.html">Evidencija →</a>
+    <a href="/izvestaj.html" data-paket="prosireno">Izveštaj za kvalitet →</a>
+  </nav>
+
+
+<div class="list" id="list">
+  <div class="prazno">Upiši grupu i token, pa klikni Prikaži.</div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const pr = v => (v === null || v === undefined || v === '') ? '—' : Number(v).toFixed(1) + '%';
+const dan = d => d ? new Date(d).toLocaleDateString('sr-RS') : '—';
+let zaPodatke = null;
+
+async function uzmi(p){
+  const o = await fetch(p, { headers:{ 'x-admin-token': $('token').value } });
+  if(o.status === 401) throw new Error('Pogrešan token.');
+  if(!o.ok) throw new Error('Greška pri učitavanju: ' + p);
+  return o.json();
+}
+
+$('ucitaj').onclick = async () => {
+  const k = $('grupa').value.trim();
+  try{
+    const [zag, zab, teme, uc, sidra, smene, pon] = await Promise.all([
+      uzmi(`/api/izvestaj/${k}/zaglavlje`),
+      uzmi(`/api/izvestaj/${k}/zaboravljanje`),
+      uzmi(`/api/izvestaj/${k}/teme`),
+      uzmi(`/api/izvestaj/${k}/ucesce`),
+      uzmi(`/api/izvestaj/${k}/sidra`),
+      uzmi(`/api/izvestaj/${k}/smene`),
+      uzmi(`/api/izvestaj/${k}/dopuna-zbirno`),
+    ]);
+    nacrtaj(zag, zab, teme, uc, sidra, smene, pon);
+  }catch(e){ alert(e.message); }
+};
+
+function nacrtaj(zag, zab, teme, uc, sidra, smene, pon){
+  const prag = Number(zag.prag_teme);
+  const osnovni = zag.paket === 'osnovno';   // samo T0 i T1
+    podesiNav(zag.paket);
+
+  // --- glavni brojevi
+  const dob = zab.map(r => Number(r.dobitak)).filter(n => !isNaN(n));
+  const zad = zab.map(r => Number(r.zadrzano)).filter(n => !isNaN(n));
+  const prosekDob = dob.length ? dob.reduce((a,b)=>a+b,0)/dob.length : null;
+  const prosekZad = zad.length ? zad.reduce((a,b)=>a+b,0)/zad.length : null;
+
+  const zadnji = uc.filter(r => Number(r.predatih) > 0).pop();
+  const odziv = zadnji ? Number(zadnji.odziv) : null;
+
+  const nizak = teme.filter(t => t.status === 'ISPOD PRAGA')
+    .reduce((m,t) => { m[t.tema] = t; return m; }, {});
+  const brojNiskih = new Set(
+    teme.filter(t => t.talas === (zab.length ? 'T90' : '') && t.status === 'ISPOD PRAGA')
+        .map(t => t.tema)).size
+    || Object.keys(nizak).length;
+
+  // teme ispod praga na poslednjem merenju
+  const poslednjiTalas = ['T90','T30','T1','T0'].find(t => teme.some(x => x.talas === t));
+  const ispodPraga = teme.filter(t => t.talas === poslednjiTalas && t.status === 'ISPOD PRAGA');
+
+  // --- razmak sidro/rotaciona
+  const razmaci = sidra.map(s => Number(s.razmak)).filter(n => !isNaN(n));
+  const kolebanje = razmaci.length > 1 ? Math.max(...razmaci) - Math.min(...razmaci) : null;
+
+  // --- ljudi za ponovnu obuku, po temi
+  const ponPoTemi = {};
+  pon.forEach(r => { ponPoTemi[r.tema] = Number(r.zaposlenih); });
+  const ukupnoZaPonovnu = Math.max(0, ...pon.map(r => Number(r.zaposlenih)));
+
+  const html = `
+  <div class="zaglavlje">
+    <span class="oznaka">Izveštaj za upravu · zbirni podaci, bez imena zaposlenih</span>
+    <h1>${osnovni ? 'Efekti obuke' : 'Efekti obuke i zadržavanje znanja'}</h1>
+    <div class="meta">
+      <div><b>${zag.firma}</b></div>
+      <div>Grupa: <b>${zag.grupa}</b></div>
+      <div>${zag.program}, ${zag.godina}</div>
+      <div>Obuhvaćeno zaposlenih: <b>${zag.upisanih}</b></div>
+      <div>Prag zadovoljavajućeg znanja: <b>${prag.toFixed(0)}%</b> po temi</div>
+      <div>Izveštaj sačinjen: <b>${new Date().toLocaleDateString('sr-RS')}</b></div>
+    </div>
+  </div>
+
+  <div class="brojevi" style="${osnovni ? 'grid-template-columns:repeat(2,1fr)' : ''}">
+    <div class="broj">
+      <div class="v ${prosekDob >= 25 ? 'dobro' : 'pazi'}">${prosekDob === null ? '—' : (prosekDob>0?'+':'') + prosekDob.toFixed(0)}</div>
+      <div class="o">procentnih poena — koliko je obuka podigla znanje</div>
+    </div>
+    ${osnovni ? '' : `<div class="broj">
+      <div class="v ${prosekZad >= 20 ? 'dobro' : prosekZad >= 10 ? 'pazi' : 'lose'}">${prosekZad === null ? '—' : (prosekZad>0?'+':'') + prosekZad.toFixed(0)}</div>
+      <div class="o">procentnih poena — koliko je ostalo posle tri meseca</div>
+    </div>`}
+    <div class="broj">
+      <div class="v ${ispodPraga.length === 0 ? 'dobro' : 'lose'}">${ispodPraga.length}</div>
+      <div class="o">od ${zab.length} tema ispod praga na poslednjem merenju</div>
+    </div>
+  </div>
+
+  <h2>Šta treba uraditi<span class="oznaka">predlog mera</span></h2>
+  <div class="zakljucak">
+    ${ispodPraga.length === 0
+      ? 'Nijedna tema nije ispod praga. Obuka se ponavlja po redovnom rasporedu.'
+      : `Ponoviti obuku za teme koje su ispod praga. Ponavljanje se organizuje za
+         <b>celu smenu</b>, ne za pojedince — nizak rezultat na temi je pokazatelj
+         da taj deo obuke nije preneo znanje.
+         <ul>${ispodPraga.map(t => `<li><b>${t.tema} ${t.tema_naziv}</b> — ${pr(t.procenat)}
+           (rizik: ${t.nivo_rizika})${ponPoTemi[t.tema] ? `, pogođeno ${ponPoTemi[t.tema]} zaposlenih` : ''}</li>`).join('')}</ul>`}
+    ${ukupnoZaPonovnu ? `<div style="margin-top:10px">Ukupno zaposlenih kojima je potrebna dopunska obuka bar iz jedne teme: <b>${ukupnoZaPonovnu}</b>.
+      Poimeničan spisak vodi lice za bezbednost i zdravlje na radu.</div>` : ''}
+  </div>
+
+  <h2>Rezultat po temama<span class="oznaka">merenja kroz vreme</span></h2>
+  <table>
+    <thead><tr>
+      <th>Tema</th><th>Rizik</th>
+      <th class="broj-c">Pre obuke</th><th class="broj-c">Posle obuke</th>
+      ${osnovni ? '' : '<th class="broj-c">30 dana</th><th class="broj-c">90 dana</th>'}<th>Nalaz</th>
+    </tr></thead>
+    <tbody>${zab.map(r => {
+      const t90 = osnovni ? r.t1 : (r.t90 ?? r.t30 ?? r.t1);
+      const ok = t90 === null || Number(t90) >= prag;
+      const c = v => `<td class="broj-c ${v !== null && Number(v) < prag ? 'ispod' : ''}">${pr(v)}</td>`;
+      return `<tr>
+        <td><b>${r.tema}</b> ${r.tema_naziv}</td>
+        <td>${r.nivo_rizika}</td>
+        ${c(r.t0)}${c(r.t1)}${osnovni ? '' : c(r.t30) + c(r.t90)}
+        <td>${ok ? '<span class="znak z-ok">u redu</span>' : '<span class="znak z-lose">ponoviti</span>'}</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>
+  <div class="fusnota">
+    Prag od ${prag.toFixed(0)}% primenjuje se na temu, ne na zaposlenog. Rezultat pojedinca
+    se ne prikazuje upravi i ne koristi se za ocenjivanje rada.
+  </div>
+
+  ${smene.length ? `
+  <h2>Presek po smenama<span class="oznaka">organizacija obuke</span></h2>
+  <table>
+    <thead><tr><th>Smena</th><th class="broj-c">Zaposlenih</th>
+      ${[...new Set(smene.map(s=>s.talas))].map(t=>`<th class="broj-c">${t}</th>`).join('')}
+    </tr></thead>
+    <tbody>${[...new Set(smene.map(s=>s.smena))].map(sm => {
+      const red = smene.filter(s=>s.smena===sm);
+      return `<tr><td><b>${sm}</b></td><td class="broj-c">${red[0]?.ljudi ?? '—'}</td>
+        ${red.map(r=>`<td class="broj-c">${pr(r.procenat)}</td>`).join('')}</tr>`;
+    }).join('')}</tbody>
+  </table>
+  <div class="fusnota">
+    Trajna razlika između smena obično nije razlika u znanju nego u uslovima
+    pod kojima je obuka održana — vreme održavanja, prisustvo, veličina grupe.
+  </div>` : ''}
+
+  <h2>Sprovođenje i pouzdanost<span class="oznaka">kontrola</span></h2>
+  <table>
+    <thead><tr><th>Termin merenja</th><th>Datum</th>
+      <th class="broj-c">Obuhvaćeno</th><th class="broj-c">Odziv</th><th>Nalaz</th></tr></thead>
+    <tbody>${uc.map(r => `<tr>
+      <td><b>${r.talas}</b></td><td>${dan(r.planiran_datum)}</td>
+      <td class="broj-c">${r.predatih} / ${r.upisanih}</td>
+      <td class="broj-c">${pr(r.odziv)}</td>
+      <td>${Number(r.odziv) >= 80 ? '<span class="znak z-ok">dovoljan</span>'
+            : Number(r.predatih) > 0 ? '<span class="znak z-pazi">nizak odziv</span>' : '—'}</td>
+    </tr>`).join('')}</tbody>
+  </table>
+  <div class="fusnota">
+    ${kolebanje === null ? '' : `Kontrola uporedivosti: razlike u težini između termina iznose
+    ${kolebanje.toFixed(1)} procentnih poena, ${kolebanje <= 12
+      ? 'što je u prihvatljivim granicama — promene rezultata odražavaju znanje, a ne različitu težinu pitanja.'
+      : 'što je iznad prihvatljivog. Razlike između termina tumačiti sa rezervom.'}`}
+    ${uc.some(r => Number(r.odziv) < 80 && Number(r.predatih) > 0)
+      ? ' Odziv ispod 80% na pojedinim terminima smanjuje pouzdanost nalaza za te termine.' : ''}
+  </div>
+
+  <h2>Osnov<span class="oznaka">propisi</span></h2>
+  <div class="fusnota">
+    ${zag.pravni_osnov || '—'}<br><br>
+    Ovaj izveštaj je zapis o izvršenoj proveri osposobljenosti zaposlenih i ulaže se u
+    dokumentaciju poslodavca. Nije sertifikat — sertifikate izdaju isključivo akreditovana
+    sertifikaciona tela. Odgovornost za sprovođenje obuke i vođenje evidencije, u skladu sa
+    propisima, ostaje na poslodavcu.
+  </div>
+
+  <div class="potpisi">
+    <div class="potpis"><div class="linija-potpisa"></div>Sačinio — lice za bezbednost i zdravlje na radu / menadžer kvaliteta</div>
+    <div class="potpis"><div class="linija-potpisa"></div>Odgovorno lice poslodavca, mesto i datum</div>
+  </div>`;
+
+  $('list').innerHTML = html;
+
+  // priprema izvoza
+  zaPodatke = { zag, zab, uc, ispodPraga };
+}
+
+// ---------------------------------------------------------------- izvoz
+function csv(redovi){
+  // tačka-zarez i BOM: tako Excel na srpskom jeziku otvori fajl ispravno
+  const t = redovi.map(r => r.map(c => {
+    const s = (c === null || c === undefined) ? '' : String(c);
+    return /[";\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+  }).join(';')).join('\r\n');
+  return '\uFEFF' + t;
+}
+function skini(naziv, sadrzaj){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([sadrzaj], { type:'text/csv;charset=utf-8' }));
+  a.download = naziv; a.click(); URL.revokeObjectURL(a.href);
+}
+
+$('izvezi').onclick = () => {
+  if(!zaPodatke) return alert('Prvo prikaži izveštaj.');
+  const { zag, zab, uc } = zaPodatke;
+  const r = [
+    ['Izveštaj o efektima obuke — uprava'],
+    ['Firma', zag.firma], ['Program', zag.program + ' ' + zag.godina],
+    ['Grupa', zag.grupa], ['Zaposlenih', zag.upisanih],
+    ['Prag po temi (%)', zag.prag_teme],
+    ['Sačinjeno', new Date().toLocaleDateString('sr-RS')],
+    [],
+    ...(zag.paket === 'osnovno'
+      ? [['Tema','Naziv','Rizik','Pre obuke','Posle obuke','Dobitak'],
+         ...zab.map(x => [x.tema, x.tema_naziv, x.nivo_rizika, x.t0, x.t1, x.dobitak])]
+      : [['Tema','Naziv','Rizik','Pre obuke','Posle obuke','30 dana','90 dana','Dobitak','Zadržano','Osip'],
+         ...zab.map(x => [x.tema, x.tema_naziv, x.nivo_rizika, x.t0, x.t1, x.t30, x.t90, x.dobitak, x.zadrzano, x.osip])]),
+    [],
+    ['Termin','Datum','Predalo','Obuhvaćeno','Odziv %'],
+    ...uc.map(x => [x.talas, x.planiran_datum ?? '', x.predatih, x.upisanih, x.odziv]),
+  ];
+  skini(`izvestaj-uprava-${zag.firma.replace(/\W+/g,'-')}-${new Date().toISOString().slice(0,10)}.csv`, csv(r));
+};
+
+$('stampaj').onclick = () => window.print();
+
+
+// token se pamti do zatvaranja pregledača, da ga ne kucaš na svakoj stranici
+(function(){
+  const t = document.getElementById('token');
+  if(!t) return;
+  try{ const s = sessionStorage.getItem('token'); if(s && !t.value) t.value = s; }catch(e){}
+  t.addEventListener('change', () => { try{ sessionStorage.setItem('token', t.value.trim()); }catch(e){} });
+})();
+
+
+// ---------------------------------------------------------------- prijava
+// Stranice rade preko sesije iz kolačića. Token se više ne kuca.
+// Ako sesija nije važeća, vodi na prijavu.
+let JA = null;
+async function proveriPrijavu(){
+  try{
+    const o = await fetch('/api/ja');
+    if(!o.ok){ location.href = '/prijava.html?dalje=' + encodeURIComponent(location.pathname); return null; }
+    JA = await o.json();
+    const t = document.getElementById('token');
+    if(t){ const red = t.closest('div'); t.style.display = 'none'; }
+    const z = document.getElementById('koSam');
+    if(z) z.textContent = `${JA.ime} · ${
+      JA.uloga === 'izvodjac' ? 'izvođač' : JA.uloga === 'bzr' ? 'BZR / kvalitet' : 'uprava'}`;
+    return JA;
+  }catch(e){ return null; }
+}
+async function odjava(){
+  await fetch('/api/odjava', { method:'POST' });
+  location.href = '/prijava.html';
+}
+
+// ---------------------------------------------------------------- navigacija
+// U osnovnom paketu se stranice koje se tiču zadržavanja znanja prikazuju
+// prigušeno, sa napomenom — ne skrivaju se, da klijent vidi šta dobija proširenjem.
+function podesiNav(paket){
+  const osn = paket === 'osnovno';
+  document.querySelectorAll('.nav a[data-paket="prosireno"]').forEach(a => {
+    a.style.opacity = osn ? '.45' : '';
+    a.title = osn ? 'Dostupno u proširenom paketu' : '';
+  });
+  const o = document.getElementById('paketZnak');
+  if(o) o.textContent = osn ? 'osnovni paket' : 'prošireni paket';
+}
+proveriPrijavu();
+</script>
+</body>
+</html>
