@@ -101,6 +101,7 @@
     <nav class="nav">
       <span id="koSam" style="color:#8FA6B2"></span>
       <a class="tu" href="/tabla.html">Tabla</a>
+      <a href="/ljudi.html">Ljudi</a>
       <a href="/promet.html">Prijem i isporuka</a>
       <a href="/zapisi.html">Dnevni zapisi</a>
       <a href="/sledljivost.html">Sledljivost</a>
@@ -165,6 +166,11 @@
           <td>Prilog 13 i 14, potvrde po zaposlenom</td>
         </tr>
         <tr>
+          <td><b>Važenje sanitarnih knjižica</b> — obnova prije isteka</td>
+          <td class="kad">stalno</td>
+          <td>Ljudi → Spisak lica · kazna 2.500–20.000 €</td>
+        </tr>
+        <tr>
           <td>Odluka o povlačenju kad se pojavi nebezbjedna hrana</td>
           <td class="kad">bez odlaganja</td>
           <td><b>pisana odluka</b> + obavještenje UBH</td>
@@ -175,10 +181,12 @@
 
   <div class="kartica">
     <h2>Gdje šta radiš</h2>
-    <p class="sta">Četiri stvari koje otvaraš najčešće.</p>
+    <p class="sta">Ono što otvaraš najčešće.</p>
     <div class="precice">
       <a href="/sledljivost.html"><b>Pretraga serije</b>
         <span>Kupac zove — kome je još otišla</span></a>
+      <a href="/ljudi.html"><b>Ljudi</b>
+        <span>Sanitarne knjižice i nalozi</span></a>
       <a href="/prilozi.html"><b>Štampa za potpis</b>
         <span>Prilozi, potvrde, pregled odstupanja</span></a>
       <a href="/zapisi.html"><b>Dnevni zapisi</b>
@@ -213,6 +221,7 @@ function presuda(vrsta, veliko, sitno) {
 
 (async () => {
   const ja = await ucitajJa();
+  if (ja) sakrijNedozvoljeno(ja);
   if (!ja) return;                    // nema veze — traka dolje, čeka se
 
   // --- šta bi inspektor zapisao ---
@@ -225,15 +234,16 @@ function presuda(vrsta, veliko, sitno) {
         'Nijedan nalaz. Evidencija je potpuna za posljednjih 30 dana.');
     } else if (sp.spreman) {
       presuda('ok', 'Nema teških nalaza',
-        `${sp.nalazi.length} ${pade(sp.nalazi.length, 'stavka', 'stavke', 'stavki')} `
+        `${pade(sp.nalazi.length, 'stavka', 'stavke', 'stavki')} `
         + 'za sređivanje, nijedna nije teška.');
     } else {
       const ostalih = sp.nalazi.length - visokih;
       presuda('alarm',
-        `${visokih} ${pade(visokih, 'težak nalaz', 'teška nalaza', 'teških nalaza')} `
+        `${pade(visokih, 'težak nalaz', 'teška nalaza', 'teških nalaza')} `
         + 'koji bi inspektor zapisao',
         ostalih
-          ? `Još ${ostalih} ${pade(ostalih, 'lakša stavka', 'lakše stavke', 'lakših stavki')} ispod. Riješi teške prvo.`
+          ? `Još ${pade(ostalih, 'lakša stavka', 'lakše stavke', 'lakših stavki')} ispod. `
+            + 'Riješi teške prvo.'
           : 'Ispod piše šta je i šta se radi.');
     }
 

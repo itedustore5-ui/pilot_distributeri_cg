@@ -161,6 +161,10 @@ async function ucitajJa() {
    su za odgovorno lice i konsultanta. Bez ovoga bi kliknuo, dobio 403 i
    mislio da je aplikacija pokvarena. */
 function sakrijNedozvoljeno(ja) {
+  // Konsultantska komandna tabla — nikom osim izvođaču. Odgovorno lice tamo
+  // vidi banku pitanja i podešavanja koja nisu njegov posao.
+  if (ja?.uloga !== 'izvodjac')
+    document.querySelectorAll('.nav a[data-samo="konsultant"]').forEach(a => a.remove());
   if (ja?.uloga !== 'operater') return;
   document.querySelectorAll('.nav a[data-samo="vodi"]').forEach(a => a.remove());
 }

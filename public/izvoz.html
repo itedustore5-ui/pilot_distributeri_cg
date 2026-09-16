@@ -62,13 +62,14 @@
   <nav class="nav">
     <span id="koSam" style="color:#8FA6B2"></span>
     <a data-samo="vodi" href="/tabla.html">Tabla</a>
+    <a data-samo="vodi" href="/ljudi.html">Ljudi</a>
     <a href="/podesavanje.html">Podešavanje</a>
     <a href="/promet.html">Prijem i isporuka</a>
     <a href="/zapisi.html">Zapisi</a>
     <a href="/sledljivost.html">Sledljivost</a>
     <a href="/prilozi.html">Štampa priloga</a>
     <a class="tu" href="/izvoz.html">Izvoz</a>
-    <a href="/admin.html">Komandna tabla</a>
+    <a data-samo="konsultant" href="/admin.html">Komandna tabla</a>
   </nav>
 </header>
 
@@ -130,6 +131,7 @@ const poruka = (v, n, t) => $('#poruka').replaceChildren(
 
 (async () => {
   const ja = await ucitajJa();
+  if (ja) sakrijNedozvoljeno(ja);
   if (!ja) return;                 // nema veze — traka dolje, čeka se
 
   try {

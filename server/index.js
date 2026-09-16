@@ -27,6 +27,10 @@ const samoAdmin = dozvoli('izvodjac', 'bzr');
 const iUprava   = dozvoli('izvodjac', 'bzr', 'uprava');
 // upravljanje korisnicima i licencom — samo izvođač
 const samoIzvodjac = dozvoli('izvodjac');
+// Banka pitanja i analiza stavki: samo izvođač. Odgovorno lice vodi obuku i vidi
+// rezultate, ali ne i same stavke — ko zna pitanja, ne mjeri više znanje nego
+// pamćenje pitanja. Ista granica čuva i vrijednost banke kao autorskog rada.
+const bankaPitanja = dozvoli('izvodjac');
 
 const uhvati = fn => (req, res) =>
   fn(req, res).catch(e => {
@@ -318,7 +322,7 @@ app.post('/api/admin/generisi-ucesnike', samoAdmin, uhvati(async (req, res) => {
  *
  * Ista aplikacija i ista banka pitanja u oba slučaja — razlika je broj termina.
  */
-app.post('/api/admin/paket', samoAdmin, uhvati(async (req, res) => {
+app.post('/api/admin/paket', bankaPitanja, uhvati(async (req, res) => {
   const id = Number(req.body.grupa_id);
   const paket = req.body.paket;
   if (!['provera', 'osnovno', 'prosireno'].includes(paket))
@@ -426,7 +430,7 @@ app.get('/api/izvestaj/:grupaId/zaglavlje', iUprava, uhvati(async (req, res) => 
   res.json(r);
 }));
 
-app.get('/api/izvestaj/:grupaId/stavke', samoAdmin, uhvati(async (req, res) => {
+app.get('/api/izvestaj/:grupaId/stavke', bankaPitanja, uhvati(async (req, res) => {
   const { rows } = await upit(
     `SELECT * FROM v_analiza_stavki WHERE grupa_id = $1
       ORDER BY (nalaz <> 'u redu') DESC, diskriminacija NULLS FIRST, tema, porodica, varijanta`,
@@ -434,7 +438,7 @@ app.get('/api/izvestaj/:grupaId/stavke', samoAdmin, uhvati(async (req, res) => {
   res.json(rows);
 }));
 
-app.get('/api/izvestaj/:grupaId/distraktori', samoAdmin, uhvati(async (req, res) => {
+app.get('/api/izvestaj/:grupaId/distraktori', bankaPitanja, uhvati(async (req, res) => {
   const { rows } = await upit(
     `SELECT * FROM v_distraktori
       WHERE grupa_id = $1 AND NOT tacna AND procenat >= COALESCE($2::numeric, 20)
@@ -464,7 +468,7 @@ app.get('/api/izvestaj/:grupaId/ponovna-obuka', samoAdmin, uhvati(async (req, re
   res.json(rows);
 }));
 
-app.get('/api/izvestaj/:grupaId/kvalitet', samoAdmin, uhvati(async (req, res) => {
+app.get('/api/izvestaj/:grupaId/kvalitet', bankaPitanja, uhvati(async (req, res) => {
   const { rows } = await upit(
     `SELECT * FROM v_kvalitet_podataka WHERE grupa_id = $1
       ORDER BY (nalaz <> 'u redu') DESC, sek_po_pitanju`, [req.params.grupaId]);
@@ -492,7 +496,7 @@ app.get('/api/izvestaj/:grupaId/ucesnici', samoAdmin, uhvati(async (req, res) =>
  * Ovde se VIDE tačni odgovori. Ne otvara se pred učesnicima dok svi
  * talasi nisu završeni. Služi za razjašnjenje spora i pripremu ponovne obuke.
  */
-app.get('/api/sesija/:id/pregled', samoAdmin, uhvati(async (req, res) => {
+app.get('/api/sesija/:id/pregled', bankaPitanja, uhvati(async (req, res) => {
   const { rows: [zag] } = await upit(
     `SELECT s.id, u.sifra, u.radno_mesto, u.smena, w.oznaka AS talas, w.opis,
             s.predata::date AS datum, s.bodovi, s.max_bodovi, s.procenat,
@@ -635,7 +639,7 @@ app.post('/api/admin/imena', samoAdmin, uhvati(async (req, res) => {
 //  Unose se jednom po firmi; posle se automatski uparuju sa svakim
 //  zaposlenim na tom radnom mestu prilikom štampe Obrasca 6.
 // =====================================================================
-app.get('/api/sifre', samoAdmin, uhvati(async (_req, res) => {
+app.get('/api/sifre', bankaPitanja, uhvati(async (_req, res) => {
   const [{ rows: razlozi }, { rows: opasnosti }] = await Promise.all([
     upit(`SELECT * FROM sifra_razloga ORDER BY sifra`),
     upit(`SELECT * FROM sifra_opasnosti ORDER BY sifra`),
@@ -898,26 +902,64 @@ app.post('/api/lozinka', dozvoli('izvodjac','bzr','uprava','operater'), uhvati(a
   res.json({ ok: true });
 }));
 
-app.get('/api/korisnici', samoIzvodjac, uhvati(async (_req, res) => {
+/* ---------------------------------------------------------------- korisnici
+   Izvođač radi sve. Odgovorno lice (`bzr`) smije samo jedno: da otvori i
+   zatvori nalog magacionera ili vozača u SVOJOJ firmi. Nikad nalog sebi
+   ravan ni iznad sebe, nikad u tuđoj firmi.
+
+   Zašto uopšte: bez toga nov radnik u ponedjeljak nema nalog dok se
+   konsultant ne javi, pa upisuje pod tuđom šifrom — a lažan trag je gori
+   od praznog dana. */
+const jeIzvodjac = req => req.korisnik?.uloga === 'izvodjac';
+
+/** Vraća null ako smije, ili poruku o odbijanju. */
+function smijeNadUlogom(req, uloga) {
+  if (jeIzvodjac(req)) return null;
+  if (uloga !== 'operater')
+    return 'Odgovorno lice smije da otvori samo nalog za magacin i prevoz.';
+  if (!req.korisnik?.firma_id)
+    return 'Tvoj nalog nije vezan za firmu, pa ne može da otvara naloge.';
+  return null;
+}
+
+/** Učitava ciljanog korisnika i provjerava smije li podnosilac nad njim. */
+async function ciljKorisnik(req) {
+  const { rows: [c] } = await upit(
+    `SELECT id, uloga, firma_id FROM korisnik WHERE id = $1`, [req.params.id]);
+  if (!c) return { greska: 'Korisnik ne postoji.', status: 404 };
+  if (jeIzvodjac(req)) return { cilj: c };
+  if (c.uloga !== 'operater' || c.firma_id !== req.korisnik?.firma_id)
+    return { greska: 'Nad tim nalogom nemaš ovlašćenje.', status: 403 };
+  return { cilj: c };
+}
+
+app.get('/api/korisnici', dozvoli('izvodjac', 'bzr'), uhvati(async (req, res) => {
+  const samoMoji = !jeIzvodjac(req);
   const { rows } = await upit(
     `SELECT k.id, k.email, k.ime, k.uloga, k.aktivan, k.mora_promeniti,
             k.poslednja_prijava, f.naziv AS firma
        FROM korisnik k LEFT JOIN firma f ON f.id = k.firma_id
-      ORDER BY k.uloga, k.ime`);
+      WHERE NOT $1::bool OR (k.uloga = 'operater' AND k.firma_id = $2)
+      ORDER BY k.uloga, k.ime`,
+    [samoMoji, req.korisnik?.firma_id || null]);
   res.json(rows);
 }));
 
 /** Novi korisnik. Lozinku pravi sistem i pokazuje je JEDNOM. */
-app.post('/api/korisnici', samoIzvodjac, uhvati(async (req, res) => {
-  const { email, ime, uloga, firma_id } = req.body;
-  if (!email || !ime || !['izvodjac','bzr','uprava'].includes(uloga))
+app.post('/api/korisnici', dozvoli('izvodjac', 'bzr'), uhvati(async (req, res) => {
+  const { email, ime, uloga } = req.body;
+  if (!email || !ime || !['izvodjac','bzr','uprava','operater'].includes(uloga))
     return res.status(400).json({ greska: 'Potrebni su email, ime i ispravna uloga.' });
+  const ne = smijeNadUlogom(req, uloga);
+  if (ne) return res.status(403).json({ greska: ne });
+  // Odgovorno lice ne bira firmu — nalog nastaje u njegovoj.
+  const firma_id = jeIzvodjac(req) ? (req.body.firma_id || null) : req.korisnik.firma_id;
   const lozinka = crypto.randomBytes(9).toString('base64url');
   try {
     const { rows: [k] } = await upit(
       `INSERT INTO korisnik (firma_id, email, ime, uloga, lozinka_hash)
        VALUES ($1, lower($2), $3, $4::uloga_t, $5) RETURNING id`,
-      [firma_id || null, String(email).trim(), ime, uloga, hesirajLozinku(lozinka)]);
+      [firma_id, String(email).trim(), ime, uloga, hesirajLozinku(lozinka)]);
     res.json({ id: k.id, email, lozinka,
       poruka: 'Zapiši lozinku — prikazuje se samo sada. Korisnik je menja pri prvoj prijavi.' });
   } catch (e) {
@@ -926,14 +968,18 @@ app.post('/api/korisnici', samoIzvodjac, uhvati(async (req, res) => {
   }
 }));
 
-app.post('/api/korisnici/:id/stanje', samoIzvodjac, uhvati(async (req, res) => {
+app.post('/api/korisnici/:id/stanje', dozvoli('izvodjac', 'bzr'), uhvati(async (req, res) => {
+  const { greska, status } = await ciljKorisnik(req);
+  if (greska) return res.status(status).json({ greska });
   await upit(`UPDATE korisnik SET aktivan = $2 WHERE id = $1`,
     [req.params.id, req.body.aktivan !== false]);
   await upit(`DELETE FROM sesija_korisnika WHERE korisnik_id = $1`, [req.params.id]);
   res.json({ ok: true });
 }));
 
-app.post('/api/korisnici/:id/nova-lozinka', samoIzvodjac, uhvati(async (req, res) => {
+app.post('/api/korisnici/:id/nova-lozinka', dozvoli('izvodjac', 'bzr'), uhvati(async (req, res) => {
+  const { greska, status } = await ciljKorisnik(req);
+  if (greska) return res.status(status).json({ greska });
   const lozinka = crypto.randomBytes(9).toString('base64url');
   const r = await upit(
     `UPDATE korisnik SET lozinka_hash = $2, mora_promeniti = TRUE WHERE id = $1`,

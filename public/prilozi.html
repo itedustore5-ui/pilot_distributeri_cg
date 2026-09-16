@@ -88,6 +88,7 @@
   <div class="kontrole nestampa">
     <select id="sta">
       <option value="IMENOVANJE">Rješenje o imenovanju odgovornog lica</option>
+      <option value="LICA">Spisak lica koja rukuju hranom (sanitarne knjižice)</option>
       <option value="P13">Prilog 13 — Godišnji plan obuke</option>
       <option value="P14">Prilog 14 — Evidencija prisutnih na obuci</option>
       <option value="POTVRDA">Potvrda o osposobljenosti (po zaposlenom)</option>
@@ -112,13 +113,14 @@
   <nav class="nav">
     <span id="koSam" style="color:#8FA6B2"></span>
     <a data-samo="vodi" href="/tabla.html">Tabla</a>
+    <a data-samo="vodi" href="/ljudi.html">Ljudi</a>
     <a href="/podesavanje.html">Podešavanje</a>
     <a href="/promet.html">Prijem i isporuka</a>
     <a href="/zapisi.html">Zapisi</a>
     <a href="/sledljivost.html">Sledljivost</a>
     <a class="tu" href="/prilozi.html">Štampa priloga</a>
     <a href="/izvoz.html">Izvoz</a>
-    <a href="/admin.html">Komandna tabla</a>
+    <a data-samo="konsultant" href="/admin.html">Komandna tabla</a>
   </nav>
 </header>
 
@@ -126,10 +128,12 @@
   <div id="poruka" class="nestampa"></div>
   <div id="izlaz">
     <div class="traka info nestampa">
-      <b>Ovo nije Obrazac 6</b>
-      Obrazac 6 je srpski i u Crnoj Gori nema pravnu težinu. Crnogorski inspektor traži
-      dokumentaciju dobre higijenske prakse i HACCP-a: godišnji plan obuke, evidenciju
-      prisutnih sa potpisima, i zapise o kontrolama. To su prilozi na ovoj strani.
+      <b>Izaberi šta štampaš, pa „Pripremi"</b>
+      Lista se puni zapisima koji su već uneseni — ništa se ovdje ne dopisuje.
+      Potpisuje se odgovorno lice za bezbjednost hrane, na papiru, poslije pregleda.
+      <span style="display:block;margin-top:6px;font-size:12px;color:#6B7A85">
+        Pitaju te za Obrazac 6? <a href="/obrazac6.html">Zašto ga ovdje nema</a>.
+      </span>
     </div>
   </div>
 </main>
@@ -158,6 +162,7 @@ const poruka = (v, n, t) => $('#poruka').replaceChildren(
 (async () => {
   try {
     JA = await ucitajJa();
+    if (JA) sakrijNedozvoljeno(JA);
     if (!JA) return;            // nema veze — traka dolje, čeka se
   } catch (e) { poruka('alarm', 'Ne mogu da učitam stranicu', e.message); return; }
   DEF = await (await fetch('/obrasci-cg.json')).json();
@@ -198,6 +203,7 @@ async function pripremi() {
   $('#poruka').replaceChildren();
   try {
     if (sta === 'IMENOVANJE')     imenovanje();
+    else if (sta === 'LICA')      await spisakLica();
     else if (sta === 'P14')       await prilog14();
     else if (sta === 'POTVRDA')   await potvrde();
     else if (sta === 'ODSTUPANJA') await odstupanja();
@@ -280,6 +286,48 @@ function imenovanje() {
       + 'ko sprovodi postupke iz čl. 36 i ko postupa po čl. 28. Bez pisanog akta '
       + 'odgovornost ostaje na izvršnom direktoru. Kazne po čl. 82: pravno lice '
       + '2.000–20.000 €, odgovorno lice u pravnom licu 500–2.000 €.')));
+}
+
+// --------------------------- Spisak lica koja rukuju hranom
+// Ovo inspektor traži uz sanitarne knjižice. Nalaz pregleda se ne štampa —
+// samo broj knjižice i rok. Nalaz je podatak o zdravlju i nije naša stvar.
+async function spisakLica() {
+  const lica = await api('/api/cg/lica');
+  if (!lica.length) throw new Error(
+    'Spisak je prazan. Upiši lica na strani „Ljudi", pa se vrati ovdje.');
+
+  const istekle = lica.filter(l => l.stanje_knjizice === 'istekla').length;
+  if (istekle) poruka('alarm',
+    `${pade(istekle, "lice", "lica", "lica")} sa isteklom knjižicom na spisku`,
+    'Štampaj slobodno — ali to lice do obnove ne smije da rukuje hranom. '
+    + 'Spisak sa isteklom knjižicom na kontroli je priznanje, ne dokaz.');
+
+  $('#izlaz').replaceChildren(el('div', { class: 'list' },
+    ...zaglavlje('Spisak lica koja rukuju hranom',
+      'Sanitarne knjižice · Zakon o zaštiti stanovništva od zaraznih bolesti '
+      + '(„Sl. list CG", br. 12/2018, 64/2020), čl. 31',
+      { oznaka: 'SPISAK LICA' }),
+    el('table', { class: 'o' },
+      el('thead', {}, el('tr', {},
+        el('th', { style: 'width:5%' }, 'R. br.'),
+        el('th', { style: 'width:24%' }, 'Ime i prezime'),
+        el('th', { style: 'width:17%' }, 'Radno mjesto'),
+        el('th', { style: 'width:22%' }, 'Poslovi sa hranom'),
+        el('th', { style: 'width:15%' }, 'Broj knjižice'),
+        el('th', { style: 'width:17%' }, 'Važi do'))),
+      el('tbody', {}, ...lica.map((l, i) => el('tr',
+        { class: l.stanje_knjizice === 'istekla' ? 'odst' : '' },
+        el('td', { class: 'n' }, String(i + 1)),
+        el('td', {}, l.ime_prezime),
+        el('td', {}, l.radno_mjesto || '—'),
+        el('td', {}, l.posao_sa_hranom || '—'),
+        el('td', { class: 'n' }, l.knjizica_broj || '—'),
+        el('td', { class: 'n' }, dat(l.knjizica_vazi_do)
+          + (l.stanje_knjizice === 'istekla' ? ' — isteklo' : '')))))),
+    el('div', { style: 'font-size:10px;color:#6B7A85;margin-top:12px;line-height:1.6' },
+      'Spisak je stanje na dan štampe. Ljekarski nalaz se ne evidentira u ovoj '
+      + 'aplikaciji — samo broj knjižice i rok važenja.'),
+    potpisi('Odgovorno lice za bezbjednost hrane', 'Izvršni direktor')));
 }
 
 // --------------------------------------------------------------- Prilog 14

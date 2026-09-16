@@ -85,6 +85,7 @@
   <nav class="nav">
     <span id="koSam" style="color:#8FA6B2"></span>
     <a data-samo="vodi" href="/tabla.html">Tabla</a>
+    <a data-samo="vodi" href="/ljudi.html">Ljudi</a>
     <a class="tu" href="/podesavanje.html">Podešavanje</a>
     <a href="/promet.html">Prijem i isporuka</a>
     <a href="/zapisi.html">Dnevni zapisi</a>
@@ -244,6 +245,7 @@ const KARTICE = {
 (async function start() {
   try {
     JA = await ucitajJa();
+    if (JA) sakrijNedozvoljeno(JA);
     if (!JA) return;            // nema veze — traka dolje, čeka se
   } catch (e) { poruka('alarm', 'Ne mogu da učitam stranicu', e.message); return; }
 

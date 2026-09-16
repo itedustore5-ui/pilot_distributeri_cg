@@ -275,6 +275,32 @@ UPDATE zapis SET kreirano = datum + 3 + TIME '09:15'
  WHERE id = (SELECT id FROM zapis WHERE obrazac = 'P3' AND datum < CURRENT_DATE - 10
               ORDER BY datum DESC LIMIT 1);
 
+-- ------------------------------------------------- lica i sanitarne knjižice
+--  Traži tabelu iz 08_lica_cg.sql. Ako 08 nije pokrenut, ovaj blok se
+--  preskače umjesto da obori cio demo.
+DO $$
+BEGIN
+  IF to_regclass('public.lice') IS NULL THEN
+    RAISE NOTICE 'Tabela lice ne postoji — pokreni db/08_lica_cg.sql pa ponovo ovaj blok.';
+    RETURN;
+  END IF;
+  INSERT INTO lice (firma_id, ime_prezime, radno_mjesto, posao_sa_hranom,
+                    knjizica_broj, knjizica_izdata, knjizica_vazi_do, sifra)
+  VALUES
+    (1,'Nikola Popović','magacioner','prijem, slaganje u hladnjaču, utovar',
+       'SK-2431', CURRENT_DATE - 300, CURRENT_DATE + 65,  'M-01'),
+    (1,'Vesna Radulović','magacioner','prijem i kontrola temperature',
+       'SK-2477', CURRENT_DATE - 340, CURRENT_DATE + 25,  'M-02'),
+    (1,'Dragan Šćepanović','vozač','utovar i prevoz',
+       'SK-2502', CURRENT_DATE - 366, CURRENT_DATE - 1,   'V-01'),
+    (1,'Milica Jovanović','komercijalista','prijem reklamacija, kontakt sa kupcima',
+       NULL, NULL, NULL, 'K-01')
+  ON CONFLICT (firma_id, ime_prezime) DO NOTHING;
+END $$;
+
+--  Namjerno: jedna knjižica istekla juče, jedna ističe za 25 dana, jedno lice
+--  bez upisanog roka. Na demou se odmah vidi šta tabla javlja i zašto.
+
 COMMIT;
 
 -- ------------------------------------------------------------ kontrola

@@ -178,6 +178,44 @@ zapisiRuter.post('/api/cg/dobavljaci', vodi, uhvati(async (req, res) => {
   res.json(r.rows[0]);
 }));
 
+// ---------------------------------------------------------------- lica
+// Spisak lica koja rukuju hranom. Upisuje se broj i rok važenja sanitarne
+// knjižice — NIKAD nalaz ljekarskog pregleda. Rok je podatak o dokumentu,
+// nalaz je podatak o zdravlju i u ovoj bazi nema šta da traži.
+zapisiRuter.get('/api/cg/lica', vodi, uhvati(async (req, res) => {
+  const r = await upit(
+    `SELECT * FROM v_lica WHERE firma_id = $1
+      ORDER BY knjizica_vazi_do NULLS FIRST, ime_prezime`, [firmaZa(req)]);
+  res.json(r.rows);
+}));
+
+zapisiRuter.post('/api/cg/lica', vodi, uhvati(async (req, res) => {
+  const b = req.body;
+  if (!b.ime_prezime || !String(b.ime_prezime).trim())
+    return res.status(400).json({ greska: 'Ime i prezime su obavezni.' });
+  if (b.knjizica_vazi_do && b.knjizica_izdata && b.knjizica_vazi_do < b.knjizica_izdata)
+    return res.status(400).json({ greska: 'Rok važenja je prije datuma izdavanja.' });
+  const r = await upit(
+    `INSERT INTO lice (firma_id, ime_prezime, radno_mjesto, posao_sa_hranom,
+       knjizica_broj, knjizica_izdata, knjizica_vazi_do, sifra, napomena, aktivan)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+     ON CONFLICT (firma_id, ime_prezime) DO UPDATE SET
+       radno_mjesto     = COALESCE(EXCLUDED.radno_mjesto, lice.radno_mjesto),
+       posao_sa_hranom  = COALESCE(EXCLUDED.posao_sa_hranom, lice.posao_sa_hranom),
+       knjizica_broj    = COALESCE(EXCLUDED.knjizica_broj, lice.knjizica_broj),
+       knjizica_izdata  = COALESCE(EXCLUDED.knjizica_izdata, lice.knjizica_izdata),
+       knjizica_vazi_do = COALESCE(EXCLUDED.knjizica_vazi_do, lice.knjizica_vazi_do),
+       sifra            = COALESCE(EXCLUDED.sifra, lice.sifra),
+       napomena         = COALESCE(EXCLUDED.napomena, lice.napomena),
+       aktivan          = EXCLUDED.aktivan
+     RETURNING *`,
+    [firmaZa(req), String(b.ime_prezime).trim(), b.radno_mjesto || null,
+     b.posao_sa_hranom || null, b.knjizica_broj || null, b.knjizica_izdata || null,
+     b.knjizica_vazi_do || null, b.sifra || null, b.napomena || null,
+     b.aktivan !== false]);
+  res.json(r.rows[0]);
+}));
+
 zapisiRuter.post('/api/cg/kupci', vodi, uhvati(async (req, res) => {
   const b = req.body;
   // Telefon je obavezan: bez njega povlačenje po čl. 28 ne može da se izvede.
@@ -520,7 +558,7 @@ zapisiRuter.get('/api/cg/rupe', vodi, uhvati(async (req, res) => {
 zapisiRuter.get('/api/cg/spremnost', vodi, uhvati(async (req, res) => {
   const f = firmaZa(req);
   const neradni = neradniDani(req);
-  const [rupe, odst, granice, dob, kup, vjezba] = await Promise.all([
+  const [rupe, odst, granice, dob, kup, vjezba, knj] = await Promise.all([
     upit(`SELECT COUNT(*)::int n FROM (
             SELECT generate_series(CURRENT_DATE - 30, CURRENT_DATE - 1, '1 day')::date d
           ) g CROSS JOIN unnest(ARRAY['P3','P7','P8']) o
@@ -540,6 +578,13 @@ zapisiRuter.get('/api/cg/spremnost', vodi, uhvati(async (req, res) => {
            WHERE firma_id=$1 AND aktivan AND (telefon IS NULL OR telefon='')`, [f]),
     upit(`SELECT MAX(datum) d FROM zapis
            WHERE firma_id=$1 AND obrazac='D3'`, [f]),
+    // Sanitarne knjižice — jedina obaveza ovdje sa izričitom kaznom.
+    upit(`SELECT
+            COUNT(*) FILTER (WHERE stanje_knjizice = 'istekla')::int      istekle,
+            COUNT(*) FILTER (WHERE stanje_knjizice = 'ističe')::int       isticu,
+            COUNT(*) FILTER (WHERE stanje_knjizice = 'nema podatka')::int prazne
+          FROM v_lica WHERE firma_id=$1`, [f]).catch(() => ({
+      rows: [{ istekle: 0, isticu: 0, prazne: 0 }] })),
   ]);
 
   const nalazi = [];
@@ -560,6 +605,18 @@ zapisiRuter.get('/api/cg/spremnost', vodi, uhvati(async (req, res) => {
   dodaj('visoka', kup.rows[0].n,
     `${pade(kup.rows[0].n, 'kupac', 'kupca', 'kupaca')} bez telefona`,
     'Bez telefona povlačenje po čl. 28 nije izvodljivo.');
+
+  const k = knj.rows[0];
+  dodaj('visoka', k.istekle,
+    `${pade(k.istekle, 'lice', 'lica', 'lica')} sa isteklom sanitarnom knjižicom`,
+    'Čl. 31 Zakona o zaštiti stanovništva od zaraznih bolesti. Kazna 2.500–20.000 €. '
+    + 'Dok knjižica ne važi, to lice ne smije da rukuje hranom.');
+  dodaj('srednja', k.isticu,
+    `${pade(k.isticu, 'knjižica ističe', 'knjižice ističu', 'knjižica ističe')} u narednih 30 dana`,
+    'Zakaži pregled sada — poslije isteka je prekršaj, ne propust.');
+  dodaj('srednja', k.prazne,
+    `${pade(k.prazne, 'lice', 'lica', 'lica')} bez upisanog roka knjižice`,
+    'Upiši broj i rok važenja. Nepoznat rok se na kontroli računa kao da je nema.');
 
   const vd = vjezba.rows[0].d;
   const starost = vd ? Math.floor((Date.now() - new Date(vd)) / 86400000) : null;
@@ -604,6 +661,8 @@ const IZVOZI = {
   kupci:       { izvor: 'kupac',     red: 'naziv', opis: 'Lista kupaca' },
   artikli:     { izvor: 'artikal',   red: 'naziv', opis: 'Artikli i kritične granice' },
   vozila:      { izvor: 'vozilo',    red: 'registracija', opis: 'Vozila' },
+  lica:        { izvor: 'v_lica',    red: 'ime_prezime',
+                 opis: 'Lica koja rukuju hranom i važenje sanitarnih knjižica' },
 };
 
 // Dnevni zapisi se izvoze posebno: `podaci` je JSONB, pa se svaki obrazac

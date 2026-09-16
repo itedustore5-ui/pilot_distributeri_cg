@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="sr-Latn-ME">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ljudi — sanitarne knjižice i nalozi</title>
+<style>
+  :root{
+    --ink:#131A1F; --steel:#3A4A56; --muted:#6B7A85;
+    --paper:#EFF2F3; --list:#FFF; --linija:#CBD5D9;
+    --cold:#0B6E8C; --signal:#B4410E; --ok:#2C6B47; --alarm:#96161B;
+    --mono: ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+    --sans: system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+  .oznaka{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+  header{background:var(--ink);color:#fff;padding:16px}
+  header h1{margin:5px 0 0;font-size:19px;font-weight:600}
+  header .oznaka{color:#8FA6B2}
+  .nav{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;padding-top:10px;
+    border-top:1px solid #2C3A44;font-size:13px}
+  .nav a{color:#8FA6B2;text-decoration:none}
+  .nav a:hover,.nav a.tu{color:#fff}
+  .nav a.tu{font-weight:600}
+
+  main{max-width:1000px;margin:18px auto;padding:0 14px 90px}
+
+  .jezicci{display:flex;border-bottom:2px solid var(--linija);margin-bottom:18px;flex-wrap:wrap}
+  .jezicci button{font-family:var(--sans);font-size:14.5px;font-weight:600;padding:11px 18px;
+    border:none;background:transparent;color:var(--muted);cursor:pointer;
+    border-bottom:2px solid transparent;margin-bottom:-2px}
+  .jezicci button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--cold)}
+  .jezicci button:focus-visible{outline:2px solid var(--cold);outline-offset:-2px}
+
+  .traka{padding:12px 14px;font-size:13.5px;line-height:1.55;margin-bottom:16px;border-left:3px solid}
+  .traka.info{border-color:var(--cold);background:#E6EEF1;color:#08536B}
+  .traka.ok{border-color:var(--ok);background:#E4EFE8;color:#1C4A30}
+  .traka.pazi{border-color:var(--signal);background:#F7E9E3;color:#7A2C07}
+  .traka.alarm{border-color:var(--alarm);background:#F6E3E4;color:#6E1013}
+  .traka b{display:block;margin-bottom:2px}
+
+  .kartica{background:var(--list);border:1px solid var(--linija);padding:16px 17px;margin-bottom:16px}
+  .kartica h2{margin:0 0 4px;font-size:16px}
+  .kartica .sta{font-size:13px;color:var(--muted);margin-bottom:14px}
+
+  label{display:block;font-size:13px;font-weight:600;margin:11px 0 4px}
+  label .sitno{font-weight:400;color:var(--muted)}
+  input,select{width:100%;font-family:var(--sans);font-size:15.5px;padding:10px 11px;
+    border:1px solid var(--linija);border-radius:3px;background:#FCFDFD;color:var(--ink)}
+  .par{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .par3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  @media(max-width:620px){.par,.par3{grid-template-columns:1fr}}
+
+  .dugme{padding:12px 22px;font-size:15px;font-weight:600;border:none;border-radius:3px;
+    background:var(--cold);color:#fff;cursor:pointer;font-family:var(--sans);margin-top:16px}
+  .dugme:disabled{background:var(--muted);cursor:default}
+  .dugme.tiho{background:transparent;color:var(--steel);border:1px solid var(--linija)}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
+  th,td{border-bottom:1px solid var(--linija);padding:8px 9px;text-align:left;vertical-align:top}
+  th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);font-weight:600}
+  td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
+  td.d{font-family:var(--mono);white-space:nowrap}
+  tr.pazi td{background:#FBF4EF}
+  tr.alarm td{background:#F9EBEC}
+  .znak{font-family:var(--mono);font-size:10px;letter-spacing:.08em;padding:2px 6px;
+    border-radius:2px;text-transform:uppercase;white-space:nowrap}
+  .znak.ok{background:#D9E9DF;color:#1C4A30}
+  .znak.pazi{background:#F4DFD5;color:#7A2C07}
+  .znak.alarm{background:#F0D3D5;color:#6E1013}
+  .znak.tiho{background:#E3E8EA;color:#4A5B66}
+  .prazno{color:var(--muted);padding:22px 0;text-align:center}
+  .veza{background:none;border:none;color:var(--cold);cursor:pointer;font-size:13px;
+    font-family:var(--sans);padding:0;text-decoration:underline}
+  .sifra{font-family:var(--mono);font-size:16px;letter-spacing:.06em}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="oznaka">Ko rukuje hranom i ko ima nalog</span>
+  <h1>Ljudi</h1>
+  <nav class="nav">
+    <span id="koSam" style="color:#8FA6B2"></span>
+    <a data-samo="vodi" href="/tabla.html">Tabla</a>
+    <a class="tu" data-samo="vodi" href="/ljudi.html">Ljudi</a>
+    <a data-samo="vodi" href="/podesavanje.html">Podešavanje</a>
+    <a href="/promet.html">Prijem i isporuka</a>
+    <a href="/zapisi.html">Dnevni zapisi</a>
+    <a data-samo="vodi" href="/sledljivost.html">Sledljivost</a>
+    <a data-samo="vodi" href="/prilozi.html">Štampa priloga</a>
+    <a data-samo="vodi" href="/izvoz.html">Izvoz</a>
+  </nav>
+</header>
+
+<main>
+  <div class="jezicci" role="tablist" id="jezicci"></div>
+  <div id="poruka"></div>
+  <div id="sadrzaj"></div>
+</main>
+
+<script src="/veza.js"></script>
+<script>
+let JA = null, AKTIVAN = 'knjizice';
+
+const $  = s => document.querySelector(s);
+const el = (t, a = {}, ...d) => {
+  const n = document.createElement(t);
+  for (const [k, v] of Object.entries(a)) {
+    if (k === 'class') n.className = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else if (v !== null && v !== undefined && v !== false) n.setAttribute(k, v);
+  }
+  d.flat().forEach(x => n.append(x?.nodeType ? x : document.createTextNode(x ?? '')));
+  return n;
+};
+const poruka = (v, n, t) => { $('#poruka').replaceChildren(
+  el('div', { class: 'traka ' + v }, el('b', {}, n), t || '')); };
+const dat = s => s ? String(s).slice(0, 10).split('-').reverse().join('.') + '.' : '—';
+
+const JEZICCI = [
+  { k: 'knjizice', n: 'Sanitarne knjižice' },
+  { k: 'nalozi',   n: 'Nalozi za prijavu' },
+];
+
+(async () => {
+  JA = await ucitajJa();
+  if (!JA) return;
+  sakrijNedozvoljeno(JA);
+  $('#jezicci').replaceChildren(...JEZICCI.map(j =>
+    el('button', { type: 'button', role: 'tab', 'aria-selected': String(j.k === AKTIVAN),
+      onclick: () => { AKTIVAN = j.k; crtaj(); } }, j.n)));
+  crtaj();
+})();
+
+function crtaj() {
+  [...$('#jezicci').children].forEach((b, i) =>
+    b.setAttribute('aria-selected', String(JEZICCI[i].k === AKTIVAN)));
+  $('#poruka').replaceChildren();
+  if (AKTIVAN === 'knjizice') knjizice(); else nalozi();
+}
+
+/* ==================================================== sanitarne knjižice */
+async function knjizice() {
+  $('#sadrzaj').replaceChildren(el('div', { class: 'prazno' }, 'Učitavam…'));
+  let spisak = [];
+  try { spisak = await api('/api/cg/lica'); }
+  catch (e) { poruka('alarm', 'Ne mogu da učitam spisak', e.message); }
+
+  const forma = el('div', { class: 'kartica' },
+    el('h2', {}, 'Dodaj ili ispravi lice'),
+    el('div', { class: 'sta' },
+      'Upisuje se broj i rok važenja knjižice — nikad nalaz ljekarskog pregleda. '
+      + 'Isto ime dva puta ne pravi dupli red, nego dopunjava postojeći.'),
+    el('div', { class: 'par' },
+      el('div', {}, el('label', { for: 'ime' }, 'Ime i prezime'),
+        el('input', { id: 'ime', placeholder: 'Ime Prezime' })),
+      el('div', {}, el('label', { for: 'rm' }, 'Radno mjesto'),
+        el('input', { id: 'rm', placeholder: 'magacioner · vozač · komercijalista' }))),
+    el('div', {}, el('label', { for: 'posao' }, 'Šta radi sa hranom ',
+        el('span', { class: 'sitno' }, '— prijem, slaganje u hladnjaču, utovar, prevoz')),
+      el('input', { id: 'posao', placeholder: 'prijem i slaganje u hladnjaču' })),
+    el('div', { class: 'par3' },
+      el('div', {}, el('label', { for: 'kbroj' }, 'Broj knjižice'),
+        el('input', { id: 'kbroj' })),
+      el('div', {}, el('label', { for: 'kizd' }, 'Izdata'),
+        el('input', { id: 'kizd', type: 'date' })),
+      el('div', {}, el('label', { for: 'kvazi' }, 'Važi do'),
+        el('input', { id: 'kvazi', type: 'date' }))),
+    el('div', {}, el('label', { for: 'sifra' }, 'Šifra sa ceduljice ',
+        el('span', { class: 'sitno' }, '— ona koju upisuje u zapise, ako je ima')),
+      el('input', { id: 'sifra', placeholder: 'npr. M-04' })),
+    el('button', { type: 'button', class: 'dugme', onclick: sacuvajLice }, 'Sačuvaj'));
+
+  const red = l => {
+    const v = l.stanje_knjizice;
+    const klasa = v === 'istekla' ? 'alarm' : (v === 'ističe' || v === 'nema podatka') ? 'pazi' : '';
+    const znak = v === 'istekla' ? 'alarm' : v === 'ističe' ? 'pazi'
+               : v === 'nema podatka' ? 'tiho' : 'ok';
+    return el('tr', { class: klasa },
+      el('td', {}, el('b', {}, l.ime_prezime),
+        l.posao_sa_hranom ? el('div', { style: 'color:var(--muted);font-size:12.5px' },
+          l.posao_sa_hranom) : ''),
+      el('td', {}, l.radno_mjesto || '—'),
+      el('td', { class: 'd' }, l.knjizica_broj || '—'),
+      el('td', { class: 'd' }, dat(l.knjizica_vazi_do)),
+      el('td', {}, el('span', { class: 'znak ' + znak }, v),
+        l.dana_do_isteka !== null && l.dana_do_isteka !== undefined && v !== 'važi'
+          ? el('div', { style: 'color:var(--muted);font-size:12px;margin-top:2px' },
+              l.dana_do_isteka < 0
+                ? `prije ${pade(-l.dana_do_isteka, 'dan', 'dana', 'dana')}`
+                : `za ${pade(l.dana_do_isteka, 'dan', 'dana', 'dana')}`) : ''),
+      el('td', {}, el('button', { type: 'button', class: 'veza',
+        onclick: () => popuni(l) }, 'uredi')));
+  };
+
+  const tabela = spisak.length
+    ? el('table', {},
+        el('thead', {}, el('tr', {},
+          el('th', {}, 'Lice'), el('th', {}, 'Radno mjesto'), el('th', {}, 'Knjižica'),
+          el('th', {}, 'Važi do'), el('th', {}, 'Stanje'), el('th', {}, ''))),
+        el('tbody', {}, ...spisak.map(red)))
+    : el('div', { class: 'prazno' },
+        'Nijedno lice još nije upisano. Dok je spisak prazan, na kontroli nema čime da se '
+        + 'pokaže ko smije da rukuje hranom.');
+
+  $('#sadrzaj').replaceChildren(
+    el('div', { class: 'traka info' },
+      el('b', {}, 'Zašto ovo stoji ovdje'),
+      'Sanitarna knjižica je jedina obaveza u ovoj oblasti sa izričitom kaznom — '
+      + 'Zakon o zaštiti stanovništva od zaraznih bolesti, čl. 31, 2.500–20.000 €. '
+      + 'Lice kojem je knjižica istekla ne smije da rukuje hranom ni jedan dan.'),
+    forma,
+    el('div', { class: 'kartica' },
+      el('h2', {}, 'Lica koja rukuju hranom'),
+      el('div', { class: 'sta' }, 'Poređano po roku — prvo ono što ističe.'),
+      tabela));
+}
+
+function popuni(l) {
+  $('#ime').value   = l.ime_prezime || '';
+  $('#rm').value    = l.radno_mjesto || '';
+  $('#posao').value = l.posao_sa_hranom || '';
+  $('#kbroj').value = l.knjizica_broj || '';
+  $('#kizd').value  = (l.knjizica_izdata || '').slice(0, 10);
+  $('#kvazi').value = (l.knjizica_vazi_do || '').slice(0, 10);
+  $('#sifra').value = l.sifra || '';
+  $('#ime').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+async function sacuvajLice() {
+  const ime = $('#ime').value.trim();
+  if (!ime) return poruka('pazi', 'Ime i prezime su obavezni', '');
+  try {
+    await api('/api/cg/lica', { method: 'POST', body: JSON.stringify({
+      ime_prezime: ime,
+      radno_mjesto: $('#rm').value.trim() || null,
+      posao_sa_hranom: $('#posao').value.trim() || null,
+      knjizica_broj: $('#kbroj').value.trim() || null,
+      knjizica_izdata: $('#kizd').value || null,
+      knjizica_vazi_do: $('#kvazi').value || null,
+      sifra: $('#sifra').value.trim() || null,
+    }) });
+    poruka('ok', 'Upisano', `${ime} je na spisku.`);
+    knjizice();
+  } catch (e) { poruka('alarm', 'Nije upisano', e.message); }
+}
+
+/* ============================================================ nalozi */
+async function nalozi() {
+  $('#sadrzaj').replaceChildren(el('div', { class: 'prazno' }, 'Učitavam…'));
+  let spisak = [];
+  try { spisak = await api('/api/korisnici'); }
+  catch (e) { poruka('alarm', 'Ne mogu da učitam naloge', e.message); }
+
+  const samoOperateri = JA.uloga !== 'izvodjac';
+
+  const forma = el('div', { class: 'kartica' },
+    el('h2', {}, 'Otvori nalog'),
+    el('div', { class: 'sta' }, samoOperateri
+      ? 'Možeš da otvoriš nalog za magacin i prevoz. Naloge odgovornog lica, uprave i '
+        + 'konsultanta otvara konsultant.'
+      : 'Konsultantski nalog — bira se uloga.'),
+    el('div', { class: 'par' },
+      el('div', {}, el('label', { for: 'nEmail' }, 'E-mail'),
+        el('input', { id: 'nEmail', type: 'email', placeholder: 'ime@firma.me' })),
+      el('div', {}, el('label', { for: 'nIme' }, 'Ime i prezime'),
+        el('input', { id: 'nIme', placeholder: 'Ime Prezime' }))),
+    samoOperateri ? '' : el('div', {}, el('label', { for: 'nUloga' }, 'Uloga'),
+      el('select', { id: 'nUloga' },
+        el('option', { value: 'operater' }, 'magacin i prevoz — unosi zapise'),
+        el('option', { value: 'bzr' }, 'odgovorno lice za bezbjednost hrane'),
+        el('option', { value: 'uprava' }, 'direktor — samo pogled'),
+        el('option', { value: 'izvodjac' }, 'konsultant — sve'))),
+    el('button', { type: 'button', class: 'dugme', onclick: otvoriNalog }, 'Otvori nalog'),
+    el('div', { id: 'novaLozinka', style: 'margin-top:14px' }));
+
+  const red = k => el('tr', {},
+    el('td', {}, el('b', {}, k.ime),
+      el('div', { style: 'color:var(--muted);font-size:12.5px' }, k.email)),
+    el('td', {}, el('span', { class: 'znak ' + (k.uloga === 'operater' ? 'tiho' : 'ok') },
+      IME_ULOGE[k.uloga] || k.uloga)),
+    el('td', {}, k.aktivan
+      ? el('span', { class: 'znak ok' }, 'radi')
+      : el('span', { class: 'znak alarm' }, 'zatvoren')),
+    el('td', { class: 'd' }, k.poslednja_prijava
+      ? dat(lokalniDatum(new Date(k.poslednja_prijava))) : 'nikad'),
+    el('td', {},
+      el('button', { type: 'button', class: 'veza',
+        onclick: () => promijeni(k) }, k.aktivan ? 'zatvori' : 'otvori'),
+      ' · ',
+      el('button', { type: 'button', class: 'veza',
+        onclick: () => novaLozinka(k) }, 'nova lozinka')));
+
+  $('#sadrzaj').replaceChildren(
+    el('div', { class: 'traka info' },
+      el('b', {}, 'Nalog nije isto što i lice sa spiska'),
+      'Na spisku su svi koji rukuju hranom. Nalog dobija samo onaj ko nešto unosi u '
+      + 'aplikaciju. Dok radnik nema svoj nalog, upisuje pod tuđim imenom — a to je '
+      + 'neistinit zapis, teži od praznog dana.'),
+    forma,
+    el('div', { class: 'kartica' },
+      el('h2', {}, 'Postojeći nalozi'),
+      spisak.length
+        ? el('table', {},
+            el('thead', {}, el('tr', {},
+              el('th', {}, 'Ko'), el('th', {}, 'Uloga'), el('th', {}, 'Stanje'),
+              el('th', {}, 'Posljednja prijava'), el('th', {}, ''))),
+            el('tbody', {}, ...spisak.map(red)))
+        : el('div', { class: 'prazno' }, 'Nema naloga koje smiješ da vidiš.')));
+}
+
+async function otvoriNalog() {
+  const email = $('#nEmail').value.trim(), ime = $('#nIme').value.trim();
+  if (!email || !ime) return poruka('pazi', 'Upiši e-mail i ime', '');
+  const uloga = $('#nUloga') ? $('#nUloga').value : 'operater';
+  try {
+    const d = await api('/api/korisnici', { method: 'POST',
+      body: JSON.stringify({ email, ime, uloga }) });
+    $('#novaLozinka').replaceChildren(el('div', { class: 'traka alarm' },
+      el('b', {}, 'Zapiši lozinku sada — više se neće prikazati.'),
+      el('div', {}, email, ' · ', el('span', { class: 'sifra' }, d.lozinka)),
+      el('div', { style: 'margin-top:4px' },
+        'Mijenja je sam pri prvoj prijavi.')));
+    $('#nEmail').value = ''; $('#nIme').value = '';
+    const spisak = $('#sadrzaj').querySelector('table');
+    if (spisak) nalozi();
+  } catch (e) { poruka('alarm', 'Nalog nije otvoren', e.message); }
+}
+
+async function promijeni(k) {
+  try {
+    await api(`/api/korisnici/${k.id}/stanje`, { method: 'POST',
+      body: JSON.stringify({ aktivan: !k.aktivan }) });
+    poruka('ok', k.aktivan ? 'Nalog zatvoren' : 'Nalog otvoren',
+      k.aktivan ? `${k.ime} više ne može da se prijavi.` : `${k.ime} ponovo radi.`);
+    nalozi();
+  } catch (e) { poruka('alarm', 'Nije promijenjeno', e.message); }
+}
+
+async function novaLozinka(k) {
+  try {
+    const d = await api(`/api/korisnici/${k.id}/nova-lozinka`, { method: 'POST' });
+    poruka('alarm', 'Nova lozinka — zapiši je sada',
+      `${k.email} · ${d.lozinka}`);
+  } catch (e) { poruka('alarm', 'Nije promijenjeno', e.message); }
+}
+</script>
+</body>
+</html>
