@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Izveštaj o zadržavanju znanja</title>
+<title>Izvještaj o zadržavanju znanja</title>
 <style>
   :root{
     --ink:#131A1F; --steel:#3A4A56; --muted:#6B7A85;
@@ -74,13 +74,13 @@
 <body>
 
 <header>
-  <span class="oznaka" id="zaglavljeFirme">Merenje znanja nakon obuke</span>
+  <span class="oznaka" id="zaglavljeFirme">Mjerenje znanja nakon obuke</span>
   <h1 id="naslov">Zadržavanje znanja nakon obuke</h1>
   <div id="oznakaPaketa" class="oznaka" style="margin-top:6px;color:#8FA6B2"></div>
   <div class="alatke">
     <input id="grupa" value="1" aria-label="Broj grupe" placeholder="grupa">
     <input id="token" type="password" placeholder="pristupni token" aria-label="Token">
-    <button id="ucitaj" type="button">Prikaži izveštaj</button>
+    <button id="ucitaj" type="button">Prikaži izvještaj</button>
     <span style="flex:1"></span>
     <button class="tiho" id="stampaj" type="button">Štampaj / PDF</button>
     <button class="tiho" id="izvezi" type="button">Izvezi CSV</button>
@@ -89,33 +89,32 @@
     <span id="koSam" style="color:#8FA6B2;font-weight:400"></span>
     <a href="#" onclick="odjava();return false">odjava</a>
     <a href="/admin.html" style="font-weight:600;color:#fff">⌂ Komandna tabla</a>
-    <span>Izveštaj za kvalitet <span id="paketZnak" style="font-weight:400;opacity:.7"></span></span>
-    <a href="/obrazac6.html">Obrazac 6 →</a>
+    <span>Izvještaj za kvalitet <span id="paketZnak" style="font-weight:400;opacity:.7"></span></span>
     <a href="/evidencija.html">Evidencija →</a>
-    <a href="/uprava.html">Izveštaj za upravu →</a>
+    <a href="/uprava.html">Izvještaj za upravu →</a>
   </nav>
 </header>
 
 <main>
   <section id="sekSidra">
-    <span class="oznaka">Provera uporedivosti</span>
+    <span class="oznaka">Provjera uporedivosti</span>
     <h2>Sidrena pitanja</h2>
     <p class="pod">
       Sidro je identično u sva četiri termina, pa i ono prati učenje — zato se ne
       gleda samo po sebi. Gleda se <b>razmak</b> između sidra i rotacionih pitanja.
       Stabilan razmak znači da su forme podjednako teške i da je pad rezultata
       stvaran pad znanja. Razmak koji skače znači da razlika potiče od težine forme,
-      i ostatak izveštaja se ne tumači dok se to ne razjasni.
+      i ostatak izvještaja se ne tumači dok se to ne razjasni.
     </p>
     <div id="sidra"></div>
   </section>
 
   <section>
     <span class="oznaka">Glavni nalaz</span>
-    <h2>Rezultat po temama kroz vreme</h2>
+    <h2>Rezultat po temama kroz vrijeme</h2>
     <p class="pod">
-      Prag se primenjuje na temu, ne na zaposlenog. Tema ispod praga znači da se taj
-      deo obuke ponavlja za celu smenu.
+      Prag se primjenjuje na temu, ne na zaposlenog. Tema ispod praga znači da se taj
+      dio obuke ponavlja za celu smenu.
     </p>
     <div id="teme"></div>
   </section>
@@ -124,7 +123,7 @@
     <span class="oznaka">Odluka</span>
     <h2>Šta je obuka podigla i šta se zadržalo</h2>
     <p class="pod">
-      Dobitak je efekat obuke odmah. Zadržano je ono što je preživelo tri meseca.
+      Dobitak je efekat obuke odmah. Zadržano je ono što je preživelo tri mjeseca.
       Osip pokazuje koliko se izgubilo — i tu se planira ponavljanje.
     </p>
     <div id="zaboravljanje"></div>
@@ -133,18 +132,18 @@
   <section>
     <span class="oznaka">Kontrola sprovođenja</span>
     <h2>Odziv po terminima</h2>
-    <p class="pod">Odziv ispod 80% oslabljuje nalaz i mora biti naveden u izveštaju.</p>
+    <p class="pod">Odziv ispod 80% oslabljuje nalaz i mora biti naveden u izvještaju.</p>
     <div id="ucesce"></div>
   </section>
   <section>
     <span class="oznaka">Zaštita nalaza</span>
     <h2>Analiza pitanja</h2>
     <p class="pod">
-      Pre nego što izjaviš da je neka tema slaba, proveri da pitanja iz nje nisu pokvarena.
-      <b>Težina</b> je procenat tačnih odgovora. <b>Razdvajanje</b> pokazuje da li pitanje
+      Prije nego što izjaviš da je neka tema slaba, provjeri da pitanja iz nje nisu pokvarena.
+      <b>Težina</b> je procjenat tačnih odgovora. <b>Razdvajanje</b> pokazuje da li pitanje
       razlikuje one koji znaju od onih koji ne znaju; negativna vrednost skoro uvek znači
       pogrešno označen tačan odgovor. Pri ovako malom broju ispitanika sve između −0,2 i +0,2
-      je statistički šum, pa su nalazi signal za ručnu proveru, a ne dokaz.
+      je statistički šum, pa su nalazi signal za ručnu provjeru, a ne dokaz.
     </p>
     <div id="stavke"></div>
   </section>

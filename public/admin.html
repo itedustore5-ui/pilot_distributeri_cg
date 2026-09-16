@@ -99,7 +99,7 @@
 <body>
 
 <header>
-  <span class="oznaka">Merenje osposobljenosti zaposlenih</span>
+  <span class="oznaka">Mjerenje osposobljenosti zaposlenih</span>
   <h1>Komandna tabla</h1>
   <div class="vrh">
     <input id="token" type="password" placeholder="pristupni token" aria-label="Token">
@@ -115,7 +115,7 @@
 <main>
   <!-- ============ gde ide ko ============ -->
   <section>
-    <span class="oznaka">Gde ide ko</span>
+    <span class="oznaka">Gdje ide ko</span>
     <h2>Stranice</h2>
     <p class="pod">Svaka stranica je za drugu osobu. Adresu za zaposlene daj nadzorniku;
       ostale zadrži za sebe i lice za BZR.</p>
@@ -135,8 +135,8 @@
     <span class="oznaka">Samo izvođač</span>
     <h2>Ko sme šta</h2>
     <p class="pod">
-      <b>Lice za BZR / menadžer kvaliteta</b> vidi imena, štampa Obrazac 6, vodi merenje i
-      evidenciju. <b>Uprava</b> vidi isključivo zbirni izveštaj — nijedno ime i nijednu šifru,
+      <b>Lice za BZR / menadžer kvaliteta</b> vidi imena, štampa priloge, vodi mjerenje i
+      evidenciju. <b>Uprava</b> vidi isključivo zbirni izvještaj — nijedno ime i nijednu šifru,
       ni preko adrese ni preko izvoza. <b>Izvođač</b> dodatno pravi korisnike.
     </p>
     <div class="polja">
@@ -144,7 +144,7 @@
       <div><label for="kIme">Ime i prezime</label><input id="kIme" placeholder="Ime Prezime"></div>
       <div><label for="kUloga">Uloga</label><select id="kUloga">
         <option value="bzr">lice za BZR / menadžer kvaliteta</option>
-        <option value="uprava">uprava — samo zbirni izveštaj</option>
+        <option value="uprava">uprava — samo zbirni izvještaj</option>
         <option value="izvodjac">izvođač — sve</option></select></div>
       <div style="display:flex;align-items:flex-end">
         <button class="glavno" id="dodajKorisnika" type="button">Napravi korisnika</button></div>
@@ -158,12 +158,12 @@
     <span class="oznaka">Korak 1</span>
     <h2>Šifre zaposlenih</h2>
     <p class="pod">
-      Zaposleni nema nalog ni lozinku — ima samo šifru sa ceduljice. Tako merenje ostaje
+      Zaposleni nema nalog ni lozinku — ima samo šifru sa ceduljice. Tako mjerenje ostaje
       anonimno: u bazi nema imena, a spisak šifra→ime drži poslodavac kod sebe.
-      Isti čovek koristi <b>istu šifru u svim terminima</b>.
+      Isti čovjek koristi <b>istu šifru u svim terminima</b>.
     </p>
     <div class="polja">
-      <div><label for="rmNaziv">Radno mesto</label>
+      <div><label for="rmNaziv">Radno mjesto</label>
         <input id="rmNaziv" list="rmLista" placeholder="npr. Rasecanje"></div>
       <datalist id="rmLista"></datalist>
       <div><label for="rmSmena">Smena</label>
@@ -185,7 +185,7 @@
     <h2>Održana obuka</h2>
     <p class="pod">
       Zapis o tome da je obuka izvedena i ko joj je prisustvovao. <b>To je prvi dokument
-      koji inspektor traži</b> — provera znanja je tek druga kolona u evidenciji.
+      koji inspektor traži</b> — provjera znanja je tek druga kolona u evidenciji.
     </p>
     <div id="postojeceObuke"></div>
     <div class="polja">
@@ -203,12 +203,12 @@
         <input id="obSati" type="number" min="0.5" max="40" step="0.5" value="4"></div>
       <div><label for="obPrakticna">Datum praktičnog dela</label><input id="obPrakticna" type="date"></div>
       <div><label for="obLzo">Datum obuke za zaštitnu opremu</label><input id="obLzo" type="date"></div>
-      <div><label for="obMesto">Mesto</label><input id="obMesto" placeholder="Sala za obuku, pogon"></div>
+      <div><label for="obMesto">Mjesto</label><input id="obMesto" placeholder="Sala za obuku, pogon"></div>
       <div><label for="obIzvodjac">Izvođač</label><input id="obIzvodjac" placeholder="Ime i prezime"></div>
       <div><label for="obSvojstvo">U svojstvu</label>
         <input id="obSvojstvo" placeholder="lice za BZR / spoljni izvođač"></div>
       <div class="siroko"><label for="obMaterijal">Materijal na osnovu kog je obuka održana</label>
-        <textarea id="obMaterijal" placeholder="HACCP plan v3.2; Dobra higijenska praksa; Akt o proceni rizika"></textarea></div>
+        <textarea id="obMaterijal" placeholder="HACCP plan v3.2; Dobra higijenska praksa; Akt o procjeni rizika"></textarea></div>
       <div class="siroko"><label>Obuhvaćene teme</label>
         <div id="obTeme" style="display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px"></div></div>
     </div>
@@ -246,10 +246,10 @@
   <!-- ============ termini ============ -->
   <section id="sekTermini">
     <span class="oznaka">Korak 4</span>
-    <h2>Termini merenja</h2>
+    <h2>Termini mjerenja</h2>
     <p class="pod">
-      Otvori samo termin koji je na redu i zatvori ga posle. Zatvoren termin se ne vidi
-      zaposlenima, pa niko ne može da uradi merenje van dogovorenog dana.
+      Otvori samo termin koji je na redu i zatvori ga poslije. Zatvoren termin se ne vidi
+      zaposlenima, pa niko ne može da uradi mjerenje van dogovorenog dana.
     </p>
     <div id="termini"></div>
   </section>
@@ -257,18 +257,18 @@
   <!-- ============ radna mesta ============ -->
   <section id="sekRM">
     <span class="oznaka">Korak 5</span>
-    <h2>Radna mesta iz Akta o proceni rizika</h2>
+    <h2>Radna mjesta iz Akta o procjeni rizika</h2>
     <p class="pod">
-      Opis poslova, šifre opasnosti i mere ne zavise od čoveka nego od radnog mesta.
-      Unose se jednom i posle se automatski uparuju sa svakim zaposlenim na tom mestu
+      Opis poslova, šifre opasnosti i mjere ne zavise od čovjeka nego od radnog mjesta.
+      Unose se jednom i poslije se automatski uparuju sa svakim zaposlenim na tom mjestu
       prilikom štampe Obrasca 6.
     </p>
     <div id="radnaMesta"></div>
     <div class="dugmad" style="margin-top:12px">
-      <button class="mali" id="povezi" type="button">Poveži zaposlene sa radnim mestima</button>
+      <button class="mali" id="povezi" type="button">Poveži zaposlene sa radnim mjestima</button>
     </div>
     <div class="savet">
-      Sadržaj radnih mesta se uređuje u fajlu <b>db/banka.json</b>, blok <b>radna_mesta</b>,
+      Sadržaj radnih mjesta se uređuje u fajlu <b>db/banka.json</b>, blok <b>radna_mesta</b>,
       pa se učita komandom <b>npm run seed:svez</b>. Ovde ih samo povezuješ sa zaposlenima.
     </div>
   </section>
@@ -368,7 +368,6 @@ function crtajPlocice(){
   const osn = stanje.zag.paket === 'osnovno';
   const p = [
     ['/', 'Test za zaposlene', 'Ovu adresu daj nadzorniku. Otvara se na tabletu ili telefonu.', false, 'radnik'],
-    ['/obrazac6.html', 'Obrazac 6', 'Popunjen obrazac po zaposlenom, za štampu i potpis.', false, ''],
     ['/evidencija.html', 'Evidencija', 'Ko je prisustvovao, ko je proveren, kome treba dopuna.', false, ''],
     ['/izvestaj.html', 'Izveštaj za kvalitet', 'Rezultat po temama, analiza pitanja, raširene zablude.', osn, ''],
     ['/uprava.html', 'Izveštaj za upravu', 'Jedna strana za direktora, bez imena, sa mestom za potpis.', false, ''],
@@ -401,7 +400,7 @@ function crtajKorake(){
      otvoren ? `Otvoreno: ${s.termini.filter(t=>t.otvoren).map(t=>t.oznaka).join(', ')}`
              : merено ? 'Merenja postoje, svi termini zatvoreni' : 'Nijedan termin nije otvoren'],
     [povezano, 'Radna mesta povezana',
-     povezano ? 'Zaposleni su povezani sa radnim mestima' : 'Obrazac 6 će izaći sa prazninama'],
+     povezano ? 'Zaposleni su povezani sa radnim mjestima' : 'Prilozi će izaći sa prazninama'],
   ];
   let prviNegotov = k.findIndex(x => !x[0]);
   $('koraci').innerHTML = k.map(([g,n,o],i) => `

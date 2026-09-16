@@ -109,7 +109,7 @@
 
 <header>
   <span class="oznaka">Poverljivo · samo lice za BZR i menadžer kvaliteta</span>
-  <h1>Evidencija o proveri osposobljenosti</h1>
+  <h1>Evidencija o provjeri osposobljenosti</h1>
   <div class="kontrole nestampa">
     <input id="grupa" value="1" placeholder="grupa" aria-label="Grupa">
     <input id="token" type="password" placeholder="pristupni token" aria-label="Token">
@@ -122,25 +122,24 @@
     <a href="#" onclick="odjava();return false">odjava</a>
     <a href="/admin.html" style="font-weight:600;color:#fff">⌂ Komandna tabla</a>
     <span>Evidencija · BZR <span id="paketZnak" style="font-weight:400;opacity:.7"></span></span>
-    <a href="/obrazac6.html">Obrazac 6 →</a>
-    <a href="/izvestaj.html" data-paket="prosireno">Izveštaj za kvalitet →</a>
-    <a href="/uprava.html">Izveštaj za upravu →</a>
+    <a href="/izvestaj.html" data-paket="prosireno">Izvještaj za kvalitet →</a>
+    <a href="/uprava.html">Izvještaj za upravu →</a>
   </nav>
 </header>
 
 <main>
   <div class="upozorenje nestampa">
     Ova stranica prikazuje rezultate po zaposlenom i, u pojedinačnom pregledu, tačne odgovore.
-    Ne otvara se pred zaposlenima dok svi termini merenja nisu završeni, i ne prosleđuje se
-    upravi ni šefovima smena. Uprava dobija zbirni izveštaj bez imena.
+    Ne otvara se pred zaposlenima dok svi termini mjerenja nisu završeni, i ne prosleđuje se
+    upravi ni šefovima smena. Uprava dobija zbirni izvještaj bez imena.
   </div>
 
   <section id="sekObuka">
     <span class="oznaka">Prvi dokument koji inspektor traži</span>
-    <h2>Evidencija o osposobljavanju i proveri</h2>
+    <h2>Evidencija o osposobljavanju i provjeri</h2>
     <p class="pod">Spaja dve stvari koje se u praksi vode odvojeno i zato se često ne poklapaju:
       da je obuka <b>održana</b> i da je zaposleni <b>prisustvovao</b>, i da je znanje
-      <b>provereno</b> i sa kojim rezultatom. Bez prve polovine druga ne stoji.</p>
+      <b>provjereno</b> i sa kojim rezultatom. Bez prve polovine druga ne stoji.</p>
 
     <div id="zaglavljeObuke"></div>
 
@@ -161,16 +160,16 @@
 
     <div class="potpisi" id="potpisiObuka" style="display:none">
       <div class="potpis"><div class="linija-potpisa"></div>Izvođač obuke</div>
-      <div class="potpis"><div class="linija-potpisa"></div>Lice za bezbednost i zdravlje na radu, mesto i datum</div>
+      <div class="potpis"><div class="linija-potpisa"></div>Lice za bezbjednost i zdravlje na radu, mjesto i datum</div>
     </div>
   </section>
 
   <section>
     <span class="oznaka">Zapis za auditora</span>
     <h2>Evidencija po zaposlenom</h2>
-    <p class="pod"><b>Zbirno</b> — jedan red po zaposlenom, kolone su termini merenja.
+    <p class="pod"><b>Zbirno</b> — jedan red po zaposlenom, kolone su termini mjerenja.
       <b>Pojedinačno</b> — svaki test zasebno, sa datumom; to je oblik koji se prilaže auditoru.
-      Firma ovo štampa, potpisuje i ulaže u svoju dokumentaciju. Klik na red otvara ceo test.</p>
+      Firma ovo štampa, potpisuje i ulaže u svoju dokumentaciju. Klik na red otvara cio test.</p>
 
     <div class="traka nestampa">
       <div class="prekidac">
@@ -179,7 +178,7 @@
       </div>
       <label for="fSmena">Smena</label>
       <select id="fSmena"><option value="">sve</option></select>
-      <label for="fMesto">Radno mesto</label>
+      <label for="fMesto">Radno mjesto</label>
       <select id="fMesto"><option value="">sva</option></select>
       <label for="fStatus">Status</label>
       <select id="fStatus">
@@ -200,12 +199,12 @@
   <section>
     <span class="oznaka">Radni spisak</span>
     <h2>Kome treba dopunska obuka</h2>
-    <p class="pod">Zaposleni koji su na poslednjem merenju ispod praga. Služi za organizovanje
-      ponavljanja — ne za ocenjivanje rada.<br>
+    <p class="pod">Zaposleni koji su na posljednjem mjerenju ispod praga. Služi za organizovanje
+      ponavljanja — ne za ocjenjivanje rada.<br>
       Tema se ovde ocenjuje po pojedincu samo ako u formi ima <b>najmanje tri pitanja</b>.
       Kod teme sa jednim pitanjem rezultat pojedinca može biti isključivo 0% ili 100%,
-      pa bi jedan promašaj neopravdano oborio čoveka ispod praga. Zbirni rezultat te teme
-      za celu grupu ostaje valjan i vidi se u izveštaju za menadžera kvaliteta.</p>
+      pa bi jedan promašaj neopravdano oborio čovjeka ispod praga. Zbirni rezultat te teme
+      za celu grupu ostaje valjan i vidi se u izvještaju za menadžera kvaliteta.</p>
 
     <div class="traka nestampa">
       <div class="prekidac">
@@ -228,9 +227,9 @@
   <section>
     <span class="oznaka">Kontrola</span>
     <h2>Kvalitet unetih podataka</h2>
-    <p class="pod">Vreme koje je zaposleni proveo na testu, po pitanju. Ispod pet sekundi po
-      pitanju znači da tekst nije čitan. Takve sesije se ne brišu tiho — navode se u izveštaju,
-      jer bi inače nalaz stajao na podacima koji ništa ne mere.</p>
+    <p class="pod">Vrijeme koje je zaposleni proveo na testu, po pitanju. Ispod pet sekundi po
+      pitanju znači da tekst nije čitan. Takve sesije se ne brišu tiho — navode se u izvještaju,
+      jer bi inače nalaz stajao na podacima koji ništa ne mjere.</p>
     <div class="traka nestampa">
       <div class="prekidac">
         <button id="kSumnjive" type="button" aria-pressed="true">Samo sumnjive</button>
@@ -247,13 +246,13 @@
     <h2>Rok čuvanja i anonimizacija</h2>
     <p class="pod">
       Ovaj rok se odnosi <b>samo na radne podatke u sistemu</b>. Zakonsku evidenciju
-      (Obrazac 6) čuva poslodavac u štampanom obliku 40 godina — to nema veze sa ovim rokom.<br>
+      čuva poslodavac u štampanom obliku — to nema veze sa ovim rokom.<br>
       Po isteku roka podaci se <b>anonimizuju</b>, ne brišu: uklanja se veza prema osobi,
-      a merenja ostaju upotrebljiva za analizu. Time podaci prestaju da budu podaci o ličnosti.
+      a mjerenja ostaju upotrebljiva za analizu. Time podaci prestaju da budu podaci o ličnosti.
     </p>
     <div id="rok"></div>
     <div class="traka nestampa" style="border-bottom:none;padding-bottom:0;margin-top:14px">
-      <label for="rokMeseci">Rok čuvanja (meseci)</label>
+      <label for="rokMeseci">Rok čuvanja (mjeseci)</label>
       <input id="rokMeseci" type="number" min="1" max="120" style="max-width:90px">
       <button class="mali" id="sacuvajRok" type="button">Sačuvaj rok</button>
       <span style="flex:1"></span>
@@ -262,7 +261,7 @@
     </div>
     <div class="potpisi" id="potpisiAnon" style="display:none">
       <div class="potpis"><div class="linija-potpisa"></div>Obrađivač — izvršio anonimizaciju</div>
-      <div class="potpis"><div class="linija-potpisa"></div>Rukovalac — poslodavac, mesto i datum</div>
+      <div class="potpis"><div class="linija-potpisa"></div>Rukovalac — poslodavac, mjesto i datum</div>
     </div>
   </section>
 
@@ -675,7 +674,7 @@ $('sacuvajRok').onclick = async () => {
 $('anonimizuj').onclick = async () => {
   if(!confirm('Ovo je NEPOVRATNO.\n\nŠifre se zamenjuju oznakama ANON-0001…, brišu se imena, ' +
               'radna mesta i smene. Merenja ostaju.\n\nPre ovoga odštampaj i predaj poslodavcu ' +
-              'evidenciju i Obrazac 6 — posle anonimizacije se više ne mogu izdati.\n\nNastaviti?')) return;
+              'evidenciju i potvrde — poslije anonimizacije se više ne mogu izdati.\n\nNastaviti?')) return;
   const ko = prompt('Ime i prezime osobe koja izvršava anonimizaciju:');
   if(!ko) return;
   const o = await fetch(`/api/admin/anonimizuj/${Number($('grupa').value)}`, {
