@@ -20,6 +20,11 @@
   header h1{margin:6px 0 0;font-size:22px;font-weight:600;letter-spacing:-.01em}
   header .oznaka{color:#8FA6B2}
   .vrh{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:15px}
+  .nav{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;padding-top:11px;
+    border-top:1px solid #2C3A44;font-size:13px}
+  .nav a{color:#8FA6B2;text-decoration:none}
+  .nav a:hover,.nav a.tu{color:#fff}
+  .nav a.tu{font-weight:600}
   .vrh input,.vrh select{font-family:var(--mono);font-size:14px;padding:9px 12px;border-radius:3px;
     border:1px solid #2C3A44;background:#1C262D;color:#fff;min-width:150px}
   .vrh select{font-family:var(--sans)}
@@ -110,6 +115,17 @@
     <button class="mali" type="button" onclick="odjava()"
       style="background:transparent;color:#8FA6B2;border:1px solid #2C3A44">odjava</button>
   </div>
+  <nav class="nav">
+    <a href="/tabla.html">Tabla</a>
+    <a href="/ljudi.html">Ljudi</a>
+    <a href="/podesavanje.html">Podešavanje</a>
+    <a href="/promet.html">Prijem i isporuka</a>
+    <a href="/zapisi.html">Dnevni zapisi</a>
+    <a href="/sledljivost.html">Sledljivost</a>
+    <a href="/prilozi.html">Štampa priloga</a>
+    <a href="/izvoz.html">Izvoz</a>
+    <a class="tu" href="/admin.html">Komandna tabla</a>
+  </nav>
 </header>
 
 <main>

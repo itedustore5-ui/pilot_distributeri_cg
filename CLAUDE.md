@@ -52,8 +52,9 @@ Zato se sistem predaje ovim redom:
 | 1 | Direktor potpiše rješenje o imenovanju | `prilozi.html` → prva stavka u spisku |
 | 2 | Imenovanom licu se otvara nalog `bzr` | `alati/prvi-korisnik.mjs` / komandna tabla |
 | 3 | To lice dobija `tabla.html` kao prvu stranu | automatski, po ulozi |
-| 4 | Magacioneri i vozači dobijaju `operater` naloge i ceduljice sa šiframa | komandna tabla, korak 5 |
-| 5 | Direktor dobija `uprava` — samo pogled, bez unosa | po potrebi |
+| 4 | Upisuje lica koja rukuju hranom i rokove sanitarnih knjižica | `ljudi.html` → Sanitarne knjižice |
+| 5 | Magacioneri i vozači dobijaju `operater` naloge — **otvara ih sam** | `ljudi.html` → Nalozi |
+| 6 | Direktor dobija `uprava` — samo pogled, bez unosa | po potrebi |
 
 **Rješenje o imenovanju nije zakonski obrazac** i tako se i predstavlja. Ono je pisani
 trag ko sprovodi postupke iz čl. 36 i ko javlja UBH po čl. 28. Bez njega inspektor pita
@@ -208,6 +209,7 @@ app.use(zapisiRuter);                         // odmah ispod
 | `05_demo_cg.sql` | demo podaci. **Samo na demo bazi.** |
 | `06_ispravke_cg.sql` | ispravke zapisa + uloga `operater`. Ne dira podatke, bezbjedno na živoj bazi. |
 | `07_dopune_cg.sql` | oznaka naknadnog unosa, pogledi za izvoz i dnevni pregled, zabrana prazne korektivne mjere. Ne dira podatke. **Ako ikad ponovo pokreneš 06, odmah poslije pokreni i 07.** |
+| `08_lica_cg.sql` | tabela `lice` i pogled `v_lica` — ko rukuje hranom i dokad važi sanitarna knjižica. Ne dira podatke, bezbjedno na živoj bazi. |
 
 ### Server
 
@@ -220,6 +222,7 @@ app.use(zapisiRuter);                         // odmah ispod
 |---|---|---|
 | `index.html` | ulazna strana — vodi na prijavu; provjera znanja je sporedna vrata | svi |
 | `tabla.html` | **odgovorno lice za bezbjednost hrane** — prva strana poslije prijave za ulogu `bzr` | računar |
+| `ljudi.html` | odgovorno lice — spisak lica koja rukuju hranom (sanitarne knjižice) i nalozi magacina | računar |
 | `admin.html` | konsultant — komandna tabla (uloga `izvodjac`) | računar |
 | `podesavanje.html` | konsultant | računar |
 | `promet.html` | magacioner, vozač — prijem (KKT 1) i isporuka (KKT 3) | **telefon** |
@@ -238,6 +241,7 @@ Poslije izmjene obavezno `node test_pravila.mjs`.
 | `alati/prvi-korisnik.mjs` | pravi nalog konsultanta poslije instalacije |
 | `alati/napravi-licencu.mjs` | licencni ključ |
 | `alati/dnevni-pregled.mjs` | stanje SVIH klijenata u jednom ispisu; izlazni kod 1 ako je neko u zastoju |
+| `alati/dopune.mjs` | primjenjuje SQL dopune 07 i 08 na bazu iz `.env`. Radi i u cmd-u. Idempotentno — već primijenjeno preskače. Nikad ne dira 04 ni 05. |
 | `alati/bekap.ps1` | `pg_dump` po klijentu u `bekap/`, briše starije od 90 dana |
 
 Oba posljednja čitaju `alati/klijenti.txt` (`Naziv = postgresql://...`, po jedan red).
@@ -272,6 +276,14 @@ Oba posljednja čitaju `alati/klijenti.txt` (`Naziv = postgresql://...`, po jeda
 11. **Dan se računa po podgoričkom vremenu**, ne po UTC-u — `danasCG()` na serveru,
     `lokalniDatum()` u pregledaču. `toISOString()` se za datum ne koristi nigdje.
 12. **`ADMIN_TOKEN` se prima samo iz zaglavlja `x-admin-token`.** Nikad iz adrese.
+13. **Odgovorno lice (`bzr`) otvara naloge samo ulozi `operater` i samo u svojoj firmi.**
+    Nikad sebi ravan ni iznad sebe. Sprovedeno u `smijeNadUlogom()` i `ciljKorisnik()`
+    u `server/index.js` — ne u pregledaču.
+14. **Banka pitanja je samo izvođačeva** (`bankaPitanja` u `server/index.js`): stavke,
+    distraktori, analiza kvaliteta, pregled sesije, paket, šifarnik. Ko zna pitanja,
+    ne mjeri više znanje. Rezultate i evidenciju obuke odgovorno lice vidi normalno.
+15. **U `lice` se upisuje broj i rok sanitarne knjižice — nikad nalaz pregleda.**
+    Rok je podatak o dokumentu, nalaz je podatak o zdravlju.
 
 ---
 
@@ -282,6 +294,7 @@ Oba posljednja čitaju `alati/klijenti.txt` (`Naziv = postgresql://...`, po jeda
 | `Cannot read properties of undefined (reading 'email')` | obrisan `app.use(express.json())` pri dodavanju rutera | mora postojati i biti **prije** ruta |
 | `syntax error at or near "db"` u Supabase | nalijepljeno **ime fajla** umjesto sadržaja | `Get-Content db\x.sql -Raw -Encoding UTF8 \| Set-Clipboard` |
 | kvačice se prikazuju kao `Ä‡` | kopirano bez `-Encoding UTF8` | uvijek sa tim dodatkom |
+| `'Get-Content' is not recognized` | naredba iz uputstva nalijepljena u **cmd**, a to je PowerShell cmdlet | dopune ide `node alati\dopune.mjs` — radi u oba |
 | magacioner ne može da se prijavi | `/api/lozinka` nije dozvoljavao ulogu `operater`, a `mora_promeniti` je TRUE | uloga dodata u `dozvoli(...)` |
 | operater završi na `/admin.html` | `gde()` u `prijava.html` nije poznavao ulogu | operater → `/promet.html` |
 | `invalid input value for enum uloga_t: "operater"` | `ALTER TYPE` nije prošao | `ALTER TYPE uloga_t ADD VALUE IF NOT EXISTS 'operater';` kao **samostalna** naredba |

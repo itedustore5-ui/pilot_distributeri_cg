@@ -78,10 +78,12 @@ try {
     "SELECT count(*)::int n FROM information_schema.tables WHERE table_schema='public'");
   const v = await k.query(
     "SELECT to_regclass('public.v_dnevni_pregled') IS NOT NULL AS ima07");
+  const l = await k.query(
+    "SELECT to_regclass('public.lice') IS NOT NULL AS ima08");
   const f = await k.query('SELECT count(*)::int n FROM firma');
   const u = await k.query("SELECT count(*)::int n FROM korisnik WHERE aktivan");
   console.log(JSON.stringify({
-    ok: true, tabela: t.rows[0].n, ima07: v.rows[0].ima07,
+    ok: true, tabela: t.rows[0].n, ima07: v.rows[0].ima07, ima08: l.rows[0].ima08,
     firmi: f.rows[0].n, korisnika: u.rows[0].n }));
 } catch (e) {
   console.log(JSON.stringify({ ok: false, greska: e.message }));
@@ -103,14 +105,21 @@ if (-not $r -or -not $r.ok) {
 }
 Zelen "Baza radi — $($r.tabela) tabela, $($r.firmi) firma, $($r.korisnika) aktivnih naloga"
 
-if (-not $r.ima07) {
-  Red 'Nedostaje db\07_dopune_cg.sql — ekran Izvoz neće raditi.'
-  Sivo 'Uradi ovo, pa pokreni ponovo:'
-  Sivo '   Get-Content db\07_dopune_cg.sql -Raw -Encoding UTF8 | Set-Clipboard'
-  Sivo '   Supabase -> SQL Editor -> New query -> Ctrl+V -> Run'
-  Write-Host ''; exit 2
+if (-not $r.ima07 -or -not $r.ima08) {
+  # Nema kopiranja u Supabase i nema `Get-Content` — primjenjuje se odavde.
+  # Pokreću se samo dopune koje ne diraju podatke (07 i 08).
+  Sivo 'Nedostaje neka SQL dopuna — primjenjujem je sada.'
+  node (Join-Path $PSScriptRoot 'alati\dopune.mjs')
+  if ($LASTEXITCODE -ne 0) {
+    Red 'Dopuna nije prošla. Aplikacija se ne pokreće dok se to ne riješi.'
+    Sivo 'Ako ne ide ni iz drugog pokušaja, isti fajl možeš nalijepiti ručno:'
+    Sivo '   Supabase -> SQL Editor -> New query -> sadržaj db\08_lica_cg.sql -> Run'
+    Write-Host ''; exit 2
+  }
+  Zelen 'SQL dopune primijenjene'
+} else {
+  Zelen 'Sve SQL dopune primijenjene'
 }
-Zelen 'Sve SQL dopune primijenjene'
 
 if ($r.korisnika -eq 0) {
   Red 'Nema nijednog naloga — nećeš moći da se prijaviš.'
