@@ -55,6 +55,9 @@ function samoMojeIsporuke(req, potpis) {
 
 const uhvati = fn => (req, res) =>
   fn(req, res).catch(e => {
+    // Greška sa postavljenim `status` je očekivana (npr. duplirana šifra) —
+    // korisniku ide njena poruka, a ne 500 koji izgleda kao kvar.
+    if (e.status) return res.status(e.status).json({ greska: e.message });
     console.error(e);
     res.status(500).json({ greska: e.message });
   });
@@ -249,26 +252,37 @@ zapisiRuter.post('/api/cg/lica', vodi, uhvati(async (req, res) => {
     return res.status(400).json({ greska: 'Ime i prezime su obavezni.' });
   if (b.knjizica_vazi_do && b.knjizica_izdata && b.knjizica_vazi_do < b.knjizica_izdata)
     return res.status(400).json({ greska: 'Rok važenja je prije datuma izdavanja.' });
+  const dataSifra = Object.prototype.hasOwnProperty.call(b, 'sifra');
+  const sifra = dataSifra ? (String(b.sifra ?? '').trim() || null) : null;
   const r = await upit(
     `INSERT INTO lice (firma_id, ime_prezime, radno_mjesto, posao_sa_hranom,
        knjizica_broj, knjizica_izdata, knjizica_vazi_do, sifra, napomena, aktivan,
        rukuje_hranom)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+     -- $12 govori da li je šifra izričito poslata (vidi CASE ispod)
      ON CONFLICT (firma_id, ime_prezime) DO UPDATE SET
        radno_mjesto     = COALESCE(EXCLUDED.radno_mjesto, lice.radno_mjesto),
        posao_sa_hranom  = COALESCE(EXCLUDED.posao_sa_hranom, lice.posao_sa_hranom),
        knjizica_broj    = COALESCE(EXCLUDED.knjizica_broj, lice.knjizica_broj),
        knjizica_izdata  = COALESCE(EXCLUDED.knjizica_izdata, lice.knjizica_izdata),
        knjizica_vazi_do = COALESCE(EXCLUDED.knjizica_vazi_do, lice.knjizica_vazi_do),
-       sifra            = COALESCE(EXCLUDED.sifra, lice.sifra),
+       -- Šifra se mijenja samo kad je pregledač stvarno pošalje. Prazno
+       -- poslato namjerno znači BRISANJE, a izostavljeno polje ne dira staru.
+       sifra            = CASE WHEN $12::bool THEN EXCLUDED.sifra
+                               ELSE COALESCE(EXCLUDED.sifra, lice.sifra) END,
        napomena         = COALESCE(EXCLUDED.napomena, lice.napomena),
        aktivan          = EXCLUDED.aktivan,
        rukuje_hranom    = EXCLUDED.rukuje_hranom
      RETURNING *`,
     [firmaZa(req), String(b.ime_prezime).trim(), b.radno_mjesto || null,
      b.posao_sa_hranom || null, b.knjizica_broj || null, b.knjizica_izdata || null,
-     b.knjizica_vazi_do || null, b.sifra || null, b.napomena || null,
-     b.aktivan !== false, b.rukuje_hranom !== false]);
+     b.knjizica_vazi_do || null, sifra, b.napomena || null,
+     b.aktivan !== false, b.rukuje_hranom !== false, dataSifra])
+    .catch(e => {
+      if (e.code === '23505' && /sifra/.test(e.constraint || ''))
+        { const g = new Error('Ta šifra već pripada drugom zaposlenom.'); g.status = 409; throw g; }
+      throw e;
+    });
   res.json(r.rows[0]);
 }));
 

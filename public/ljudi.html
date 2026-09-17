@@ -82,6 +82,10 @@
   button.filter{font-family:var(--sans);font-size:12.5px;padding:6px 11px;cursor:pointer;
     border:1px solid var(--linija);background:#FCFDFD;color:var(--steel);border-radius:3px}
   button.filter.tu{background:var(--ink);color:#fff;border-color:var(--ink)}
+  button.sifraDugme{font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+    text-transform:uppercase;padding:3px 8px;cursor:pointer;border-radius:2px;
+    border:1px dashed var(--linija);background:#D9E9DF;color:#1C4A30}
+  button.sifraDugme:hover{border-style:solid;border-color:var(--cold)}
 </style>
 </head>
 <body>
@@ -365,9 +369,11 @@ async function knjizice() {
       el('td', {}, l.radno_mjesto || '—',
         l.rukuje_hranom ? '' : el('div', { style: 'color:var(--muted);font-size:12px' },
           'ne rukuje hranom')),
-      el('td', { class: 'd' }, l.sifra
-        ? el('span', { class: 'znak ok' }, l.sifra)
-        : el('span', { class: 'znak tiho' }, 'nema')),
+      el('td', { class: 'd' },
+        el('button', { type: 'button', class: 'sifraDugme',
+          title: 'Klik mijenja šifru',
+          onclick: () => promijeniSifru(l) },
+          l.sifra || 'dodaj')),
       el('td', {}, l.ima_nalog
         ? el('span', { class: 'znak ok' }, 'ima nalog')
         : el('span', { class: 'znak tiho' }, 'bez naloga')),
@@ -424,6 +430,24 @@ function popuni(l) {
   $('#sifra').value = l.sifra || '';
   $('#hrana').checked = l.rukuje_hranom !== false;
   $('#ime').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// Šifra se mijenja jednim klikom iz spiska — to je jedina stvar koju
+// odgovorno lice mijenja često, pa ne treba da prolazi kroz cijelu formu.
+// Prazno = briše šifru; isto što i „nema".
+async function promijeniSifru(l) {
+  const nova = prompt(
+    `Šifra za ${l.ime_prezime}.\n\n`
+    + 'Njome se potpisuju zapisi i ona stoji na ceduljici. '
+    + 'Ostavi prazno da je obrišeš.', l.sifra || '');
+  if (nova === null) return;
+  try {
+    await api('/api/cg/lica', { method: 'POST', body: JSON.stringify({
+      ime_prezime: l.ime_prezime, sifra: nova.trim() }) });
+    poruka('ok', nova.trim() ? 'Šifra promijenjena' : 'Šifra obrisana',
+      `${l.ime_prezime}${nova.trim() ? ' · ' + nova.trim() : ''}`);
+    knjizice();
+  } catch (e) { poruka('alarm', 'Šifra nije promijenjena', e.message); }
 }
 
 async function sacuvajLice() {
