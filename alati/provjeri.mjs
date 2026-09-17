@@ -93,7 +93,10 @@ if (!veza) {
     if (!u.length) { crven('Nema nijednog aktivnog naloga'); problemi.push('node alati\\prvi-korisnik.mjs ...'); }
     else zelen('Nalozi: ' + u.map(x => `${x.uloga} ${x.n}`).join(' · '));
     const bez = u.find(x => x.uloga === 'bzr');
-    if (!bez) zuti('Nema naloga sa ulogom `bzr` — odgovorno lice ne postoji, pa nema ko ni da otvara naloge.');
+    if (!bez) {
+      zuti('Nema naloga sa ulogom `bzr` — odgovorno lice ne postoji, pa nema ko ni da otvara naloge.');
+      sivo('   node alati\\nalog.mjs odg@firma.me bzr "Ime Prezime"');
+    }
   } catch (e) {
     crven('Ne mogu na bazu: ' + e.message);
     problemi.push('Provjeri DATABASE_URL u .env, ili je Supabase projekat pauziran.');
