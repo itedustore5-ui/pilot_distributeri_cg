@@ -264,7 +264,73 @@ async function planObuke() {
         : el('div', { class: 'prazno' },
             `Za ${GODINA}. nema nijedne stavke plana. Dodaj bar jednu — obuka bez plana `
             + 'se na kontroli čita kao improvizacija.')),
-    forma);
+    forma,
+    el('div', { class: 'kartica', id: 'omotSifara' }));
+
+  sifreZaposlenih();
+}
+
+/**
+ * Šifre za potpisivanje zapisa — ime, radno mjesto, šifra i ništa više.
+ * Stoji uz plan obuke jer se dijeli na istom mjestu gdje se drži obuka:
+ * čovjek dobije ceduljicu i njome potpisuje ono što je toga dana naučio.
+ * Ovo NISU lozinke za prijavu i tako i piše na ispisu.
+ */
+async function sifreZaposlenih() {
+  const omot = $('#omotSifara');
+  if (!omot) return;
+  let lica = [];
+  try { lica = await api('/api/cg/lica'); } catch { return; }
+  const sa = lica.filter(l => l.sifra);
+  const bez = lica.filter(l => !l.sifra);
+
+  omot.replaceChildren(
+    el('h2', {}, 'Šifre zaposlenih'),
+    el('div', { class: 'sta' },
+      'Šifrom se potpisuje zapis — ona stoji u polju „izvršilac". '
+      + 'Nije lozinka za prijavu. Mijenja se na jezičku „Svi zaposleni".'),
+    sa.length
+      ? el('table', { id: 'tabSifre' },
+          el('thead', {}, el('tr', {},
+            el('th', {}, 'Ime i prezime'), el('th', {}, 'Radno mjesto'),
+            el('th', {}, 'Šifra'))),
+          el('tbody', {}, ...sa.map(l => el('tr', {},
+            el('td', {}, l.ime_prezime),
+            el('td', {}, l.radno_mjesto || '—'),
+            el('td', {}, el('b', {}, l.sifra))))))
+      : el('div', { class: 'prazno' },
+          'Nijedan zaposleni nema upisanu šifru. Upiši ih na jezičku „Svi zaposleni".'),
+    bez.length
+      ? el('div', { class: 'traka pazi', style: 'margin-top:12px' },
+          el('b', {}, `${pade(bez.length, 'zaposleni', 'zaposlena', 'zaposlenih')} bez šifre`),
+          bez.map(l => l.ime_prezime).join(' · ')
+          + ' — njihovi zapisi se potpisuju punim imenom.')
+      : '',
+    sa.length
+      ? el('button', { type: 'button', class: 'dugme', style: 'margin-top:12px',
+          onclick: () => stampajSifre(sa) }, 'Odštampaj spisak šifara')
+      : '');
+}
+
+function stampajSifre(lica) {
+  const w = window.open('', '_blank');
+  if (!w) return poruka('pazi', 'Pregledač je zaustavio novi prozor',
+    'Dozvoli iskačuće prozore za ovu adresu pa pokušaj ponovo.');
+  const red = l => `<tr><td>${l.ime_prezime}</td>`
+    + `<td>${l.radno_mjesto || '&mdash;'}</td><td><b>${l.sifra}</b></td></tr>`;
+  w.document.write(`<!doctype html><meta charset="utf-8"><title>Šifre zaposlenih</title>
+  <style>body{font:13.5px/1.5 Georgia,serif;margin:28px;color:#16202A}
+  h1{font-size:19px;margin:0 0 4px}p{color:#5B6B77;margin:0 0 16px;font-size:12.5px}
+  table{border-collapse:collapse;width:100%}th,td{border:1px solid #C9D4DC;padding:7px 10px;text-align:left}
+  th{background:#EEF3F6;font-size:12px;text-transform:uppercase;letter-spacing:.04em}</style>
+  <h1>Šifre za potpisivanje zapisa</h1>
+  <p>Šifra stoji u polju „izvršilac" na zapisima. <b>Nije lozinka za prijavu u aplikaciju.</b><br>
+  Datum ispisa: ${dat(new Date().toISOString())}</p>
+  <table><thead><tr><th>Ime i prezime</th><th>Radno mjesto</th><th>Šifra</th></tr></thead>
+  <tbody>${lica.map(red).join('')}</tbody></table>`);
+  w.document.close();
+  w.focus();
+  w.print();
 }
 
 function popuniStavku(s) {
@@ -508,7 +574,8 @@ async function nalozi() {
       el('select', { id: 'nLice', onchange: osvjeziIzbor },
         el('option', { value: '' }, bezNaloga.length
           ? '— izaberi lice —' : '— svi sa spiska već imaju nalog —'),
-        ...bezNaloga.map(l => el('option', { value: String(l.id) },
+        ...bezNaloga.map(l => el('option',
+          { value: String(l.id), 'data-rm': l.radno_mjesto || '' },
           `${l.ime_prezime}${l.sifra ? ' · ' + l.sifra : ' · bez šifre'}`
           + `${l.radno_mjesto ? ' · ' + l.radno_mjesto : ''}`)),
         el('option', { value: 'rucno' }, '— nije na spisku, dodaj ga sad —'))),
@@ -540,7 +607,9 @@ async function nalozi() {
           el('select', { id: 'nUloga', onchange: osvjeziIzbor },
             el('option', { value: 'operater' }, 'magacin — prijem i dnevni zapisi'),
             el('option', { value: 'vozac' }, 'vozač — isporuka i kontrola vozila')),
-          el('div', { id: 'objasnjenje', class: 'sta', style: 'margin:8px 0 0' }))
+          el('div', { id: 'objasnjenje', class: 'sta', style: 'margin:8px 0 0' }),
+          el('div', { id: 'nesklad', class: 'traka pazi', hidden: true,
+            style: 'margin:8px 0 0' }))
       : el('div', {},
           el('label', { for: 'nUloga' }, 'Uloga'),
           el('select', { id: 'nUloga', onchange: osvjeziIzbor },
@@ -549,7 +618,9 @@ async function nalozi() {
             el('option', { value: 'bzr' }, 'odgovorno lice za bezbjednost hrane'),
             el('option', { value: 'uprava' }, 'direktor — samo pogled'),
             el('option', { value: 'izvodjac' }, 'konsultant — sve')),
-          el('div', { id: 'objasnjenje', class: 'sta', style: 'margin:8px 0 0' })),
+          el('div', { id: 'objasnjenje', class: 'sta', style: 'margin:8px 0 0' }),
+          el('div', { id: 'nesklad', class: 'traka pazi', hidden: true,
+            style: 'margin:8px 0 0' })),
 
     el('button', { type: 'button', class: 'dugme', onclick: otvoriNalog }, 'Otvori nalog'),
     el('div', { id: 'novaLozinka', style: 'margin-top:14px' }));
@@ -559,9 +630,26 @@ async function nalozi() {
       el('div', { style: 'color:var(--muted);font-size:12.5px' }, k.email),
       k.radno_mjesto
         ? el('div', { style: 'color:var(--muted);font-size:12.5px' }, k.radno_mjesto) : ''),
-    el('td', { class: 'd' }, k.sifra
-      ? el('span', { class: 'znak ok' }, k.sifra)
-      : el('div', {},
+    // Lozinka se NE može prikazati — u bazi stoji samo njen otisak (heš),
+    // jednosmjerno. Zato ovdje stoji njeno STANJE: je li još privremena,
+    // je li je čovjek promijenio, je li se uopšte prijavio.
+    el('td', { class: 'd' },
+      k.mora_promeniti
+        ? el('div', {},
+            el('span', { class: 'znak pazi' }, 'privremena'),
+            el('div', { style: 'color:var(--muted);font-size:12px;margin-top:3px' },
+              'Mijenja je sam pri prvoj prijavi.'))
+        : k.poslednja_prijava
+          ? el('div', {},
+              el('span', { class: 'znak ok' }, 'svoja'),
+              el('div', { style: 'color:var(--muted);font-size:12px;margin-top:3px' },
+                'Zna je samo on. Ako je zaboravi — „nova lozinka".'))
+          : el('div', {},
+              el('span', { class: 'znak tiho' }, 'postavljena'),
+              el('div', { style: 'color:var(--muted);font-size:12px;margin-top:3px' },
+                'Još se nije prijavio.')),
+      !k.sifra
+      ? el('div', { style: 'margin-top:6px' },
           el('span', { class: 'znak tiho', title: 'Nalog nije vezan za lice sa spiska' },
             'bez šifre'),
           bezNaloga.length
@@ -573,12 +661,25 @@ async function nalozi() {
                 el('button', { type: 'button', class: 'veza',
                   style: 'margin-top:4px;display:block',
                   onclick: () => povezi(k) }, 'poveži'))
-            : '')),
+            : '')
+      : ''),
     el('td', {}, el('span',
       { class: 'znak ' + (['operater', 'vozac'].includes(k.uloga) ? 'tiho' : 'ok') },
       IME_ULOGE[k.uloga] || k.uloga),
       el('div', { style: 'color:var(--muted);font-size:12px;margin-top:3px;max-width:30ch' },
-        STA_VIDI[k.uloga] || '')),
+        STA_VIDI[k.uloga] || ''),
+      // Uloga, a ne radno mjesto, odlučuje koju tablu čovjek vidi. Kad se
+      // njih dvoje raziđu, ovdje se to vidi i ovdje se ispravlja.
+      ['operater', 'vozac'].includes(k.uloga)
+        ? el('div', { style: 'margin-top:5px' },
+            el('button', { type: 'button', class: 'veza',
+              onclick: () => promijeniUlogu(k) },
+              k.uloga === 'operater' ? 'prebaci na vozača' : 'prebaci na magacin'),
+            k.radno_mjesto && neslaganje(k)
+              ? el('div', { class: 'znak pazi', style: 'margin-top:4px' },
+                  `radno mjesto kaže „${k.radno_mjesto}"`)
+              : '')
+        : ''),
     el('td', {}, k.aktivan
       ? el('span', { class: 'znak ok' }, 'radi')
       : el('span', { class: 'znak alarm' }, 'zatvoren'),
@@ -596,8 +697,18 @@ async function nalozi() {
 
   $('#sadrzaj').replaceChildren(
     el('div', { class: 'traka info' },
+      el('b', {}, 'Lozinka se ne može vidjeti — ni tebi, ni meni'),
+      'U bazi ne stoji lozinka nego njen otisak, iz kojeg se ne može vratiti unazad. '
+      + 'Zato ovdje piše samo STANJE lozinke. Kad neko ne može da uđe, klikni '
+      + '„nova lozinka": ili je sistem izmisli, ili je upišeš sama '),
+    el('div', { class: 'traka info' },
+      el('b', {}, 'Lozinka ima najmanje 10 znakova'),
+      'Kraću server odbija. Ako je sistem izmisli, čovjek je mijenja pri prvoj '
+      + 'prijavi. Ako je upišeš ti, ostaje takva kakva jeste — onda je zapiši, '
+      + 'jer se poslije nigdje ne vidi.'),
+    el('div', { class: 'traka info' },
       el('b', {}, 'Nalog nije isto što i lice sa spiska'),
-      'Na spisku su svi koji rukuju hranom. Nalog dobija samo onaj ko nešto unosi u '
+      'Na spisku su svi zaposleni. Nalog dobija samo onaj ko nešto unosi u '
       + 'aplikaciju. Nalog se veže za lice sa spiska, pa se ime i šifra čitaju sa '
       + 'jednog mjesta i ne mogu se razići.'),
     bezSifre ? el('div', { class: 'traka pazi' },
@@ -608,11 +719,13 @@ async function nalozi() {
     forma,
     el('div', { class: 'kartica' },
       el('h2', {}, 'Postojeći nalozi'),
-      el('div', { class: 'sta' }, 'Ko se prijavljuje, čime potpisuje zapise i šta smije da vidi.'),
+      el('div', { class: 'sta' }, 'Ko se prijavljuje, čime, i šta smije da vidi. '
+        + 'Šifre za potpisivanje zapisa su na jezičku „Godišnji plan obuke".'),
       spisak.length
         ? el('table', {},
             el('thead', {}, el('tr', {},
-              el('th', {}, 'Ko'), el('th', {}, 'Šifra'), el('th', {}, 'Uloga i šta vidi'),
+              el('th', {}, 'Ko · e-mail · radno mjesto'), el('th', {}, 'Lozinka'),
+              el('th', {}, 'Uloga i šta vidi'),
               el('th', {}, 'Stanje'), el('th', {}, ''))),
             el('tbody', {}, ...spisak.map(red)))
         : el('div', { class: 'prazno' }, 'Nema naloga koje smiješ da vidiš.')));
@@ -621,15 +734,37 @@ async function nalozi() {
 }
 
 // Ručni unos imena ima smisla samo kad lice nije sa spiska (npr. konsultant).
-function osvjeziIzbor() {
-  const lice = $('#nLice') ? $('#nLice').value : '';
+function osvjeziIzbor(dog) {
+  const sel = $('#nLice');
+  const lice = sel ? sel.value : '';
   const omot = $('#omotIme');
   if (omot) omot.hidden = lice !== 'rucno';
   const novi = $('#omotNovi');
+
+  // Kad se izabere čovjek sa spiska, uloga se predlaže iz njegovog radnog
+  // mjesta. Uloga odlučuje koju tablu vidi, radno mjesto ne odlučuje ništa —
+  // pa je lako izabrati magacionera i ostaviti ulogu vozača.
+  if (sel && dog && dog.target === sel && $('#nUloga')) {
+    const rm = (sel.selectedOptions[0]?.dataset.rm || '').toLowerCase();
+    if (/voza|šofer|sofer|prevoz/.test(rm)) $('#nUloga').value = 'vozac';
+    else if (/magac|skladi|viljuš|viljus/.test(rm)) $('#nUloga').value = 'operater';
+  }
+
   const uloga = $('#nUloga') ? $('#nUloga').value : 'operater';
   if (novi) novi.hidden = !(lice === 'rucno' && uloga !== 'izvodjac');
   const o = $('#objasnjenje');
-  if (o && $('#nUloga')) o.textContent = STA_VIDI[$('#nUloga').value] || '';
+  if (o && $('#nUloga')) o.textContent = STA_VIDI[uloga] || '';
+
+  // Upozorenje kad se izbor i radno mjesto raziđu.
+  const u = $('#nesklad');
+  if (u) {
+    const rm = sel && sel.value !== 'rucno'
+      ? (sel.selectedOptions[0]?.dataset.rm || '') : '';
+    const kosi = rm && neslaganje({ radno_mjesto: rm, uloga });
+    u.hidden = !kosi;
+    if (kosi) u.textContent = `Radno mjesto je „${rm}", a biraš ulogu `
+      + `„${IME_ULOGE[uloga]}". Tablu određuje uloga — provjeri je li to namjerno.`;
+  }
 }
 
 async function otvoriNalog() {
@@ -674,6 +809,36 @@ async function povezi(k) {
   } catch (e) { poruka('alarm', 'Nije povezano', e.message); }
 }
 
+/**
+ * Radno mjesto sa spiska i uloga naloga su dvije stvari. Radno mjesto je
+ * podatak o čovjeku, uloga odlučuje koju tablu vidi. Kad pišu suprotno,
+ * bolje je da to piše na ekranu nego da se traži zašto magacioner nema
+ * jezičak „Prijem".
+ */
+function neslaganje(k) {
+  const rm = String(k.radno_mjesto || '').toLowerCase();
+  if (/voza|šofer|sofer|prevoz/.test(rm)) return k.uloga !== 'vozac';
+  if (/magac|skladi|viljuš|viljus/.test(rm)) return k.uloga !== 'operater';
+  return false;
+}
+
+async function promijeniUlogu(k) {
+  const nova = k.uloga === 'operater' ? 'vozac' : 'operater';
+  const kako = nova === 'vozac'
+    ? 'Vidjeće SAMO isporuku kupcu i kontrolu vozila (D1). Prijem robe gubi.'
+    : 'Vidjeće prijem robe, isporuku i dnevne zapise (P3, P7, P8, D1).';
+  if (!confirm(`${k.ime}: ${IME_ULOGE[k.uloga]} → ${IME_ULOGE[nova]}\n\n${kako}\n\n`
+    + 'Zapisi koje je već unio ostaju njegovi i ne mijenjaju se.\n'
+    + 'Ako je trenutno prijavljen, biće odjavljen.')) return;
+  try {
+    await api(`/api/korisnici/${k.id}/uloga`, { method: 'POST',
+      body: JSON.stringify({ uloga: nova }) });
+    poruka('ok', 'Uloga promijenjena',
+      `${k.ime} je sada ${IME_ULOGE[nova]}. Neka se prijavi ponovo.`);
+    nalozi();
+  } catch (e) { poruka('alarm', 'Uloga nije promijenjena', e.message); }
+}
+
 async function promijeni(k) {
   try {
     await api(`/api/korisnici/${k.id}/stanje`, { method: 'POST',
@@ -690,8 +855,13 @@ async function novaLozinka(k) {
   const nova = prompt(
     `Nova lozinka za ${k.ime} (${k.email}).\n\n`
     + 'Ostavi prazno pa će je aplikacija smisliti, ili upiši svoju '
-    + '(najmanje 10 znakova).', '');
+    + '(NAJMANJE 10 ZNAKOVA — kraću server odbija).', '');
   if (nova === null) return;
+  const z = nova.trim();
+  if (z && z.length < 10)
+    return poruka('pazi', 'Lozinka je prekratka',
+      `Upisala si ${pade(z.length, 'znak', 'znaka', 'znakova')}, a treba najmanje 10. `
+      + 'Pokušaj ponovo, ili ostavi polje prazno pa će je aplikacija smisliti sama.');
   try {
     const d = await api(`/api/korisnici/${k.id}/nova-lozinka`, { method: 'POST',
       body: JSON.stringify({ nova: nova.trim() || undefined }) });

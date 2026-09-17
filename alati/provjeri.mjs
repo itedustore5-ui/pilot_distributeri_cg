@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 
 const koren = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
-const IZDANJE_OCEKIVANO = '2026-09-18-lozinke';
+const IZDANJE_OCEKIVANO = '2026-09-19-uloge';
 
 const zelen = t => console.log('\x1b[32m  OK  \x1b[0m ' + t);
 const crven = t => console.log('\x1b[31m FALI \x1b[0m ' + t);

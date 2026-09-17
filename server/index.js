@@ -1047,6 +1047,28 @@ app.post('/api/korisnici/:id/stanje', dozvoli('izvodjac', 'bzr'), uhvati(async (
   res.json({ ok: true });
 }));
 
+/**
+ * Mijenja ulogu postojećeg naloga. Uloga odlučuje KOJU TABLU čovjek vidi —
+ * ne radno mjesto sa spiska. Magacioner kome je greškom dodijeljena uloga
+ * `vozac` vidi vozačku tablu dok se ovo ne ispravi. Ranije je jedini izlaz
+ * bio zatvoriti nalog i otvoriti nov sa drugim e-mailom.
+ */
+app.post('/api/korisnici/:id/uloga', dozvoli('izvodjac', 'bzr'), uhvati(async (req, res) => {
+  const { greska, status } = await ciljKorisnik(req);
+  if (greska) return res.status(status).json({ greska });
+  const uloga = String(req.body?.uloga || '');
+  if (!['izvodjac','bzr','uprava','operater','vozac'].includes(uloga))
+    return res.status(400).json({ greska: 'Nepoznata uloga.' });
+  const ne = await smijeNadUlogom(req, uloga);   // bzr smije samo operater/vozac
+  if (ne) return res.status(403).json({ greska: ne });
+  if (Number(req.params.id) === Number(req.korisnik.id))
+    return res.status(400).json({ greska: 'Svoju ulogu ne možeš da mijenjaš.' });
+  await upit(`UPDATE korisnik SET uloga = $2 WHERE id = $1`, [req.params.id, uloga]);
+  // Stara sesija nosi staru ulogu — dok se ne odjavi, vidio bi staru tablu.
+  await upit(`DELETE FROM sesija_korisnika WHERE korisnik_id = $1`, [req.params.id]);
+  res.json({ ok: true, uloga });
+}));
+
 /** Veže postojeći nalog za lice sa spiska — za naloge otvorene prije spiska. */
 app.post('/api/korisnici/:id/lice', dozvoli('izvodjac', 'bzr'), uhvati(async (req, res) => {
   const { greska, status } = await ciljKorisnik(req);
@@ -1104,7 +1126,7 @@ app.get('/api/izvestaj/:grupaId/dopuna-zbirno', iUprava, uhvati(async (req, res)
 
 // Oznaka izdanja. Mijenja se kad se doda nešto što traži restart ili SQL
 // dopunu — po njoj `alati/provjeri.mjs` vidi vrti li se stari kod.
-const IZDANJE = '2026-09-18-lozinke';
+const IZDANJE = '2026-09-19-uloge';
 
 app.get('/api/zdravlje', uhvati(async (_req, res) => {
   await upit('SELECT 1');

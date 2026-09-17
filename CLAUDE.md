@@ -347,6 +347,22 @@ Oba posljednja čitaju `alati/klijenti.txt` (`Naziv = postgresql://...`, po jeda
 | svi demo zapisi nose oznaku „naknadno" | `kreirano` je trenutak pokretanja skripte, a datumi su unazad | `05_demo_cg.sql` na kraju poravnava `kreirano` sa `datum` |
 | odstupanje „sa mjerom" koja je prazan razmak | `CHECK` je tražio samo `IS NOT NULL` | `COALESCE(btrim(...),'') <> ''`, `NOT VALID` da ne padne na živoj bazi |
 
+### Gdje se zapravo testira
+
+**Vlasnica radi na ŽIVOJ aplikaciji na Renderu, ne lokalno.** Iz toga slijedi:
+
+- Izmjena fajla na njenom računaru **ne mijenja ništa** dok ne ode
+  `git add -A && git commit && git push`, pa Render → Manual Deploy.
+- SQL dopune (`node alati\dopune.mjs`) idu na **istu Supabase bazu** koju
+  koristi Render, pa one djeluju odmah — a kod ne. Otuda stalna zbrka
+  „baza je zelena, a aplikacija se ponaša staro".
+- `alati/provjeri.mjs` prima adresu:
+  `node alati\provjeri.mjs https://moja-app.onrender.com`, ili `APP_URL=` u
+  `.env`. Bez toga gleda `localhost` i javlja da server ne radi — što je tačno,
+  ali beskorisno.
+- Oznaka izdanja u `/api/zdravlje` (`IZDANJE` u `server/index.js`) je jedini
+  pouzdan način da se vidi je li deploy stvarno prošao.
+
 ### Okruženje
 
 - **Supabase: obavezno Session pooler, port 5432.** Direct connection radi samo preko IPv6
