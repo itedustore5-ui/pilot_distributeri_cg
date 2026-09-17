@@ -409,7 +409,11 @@ async function knjizice() {
     forma,
     el('div', { class: 'kartica' },
       el('h2', {}, 'Spisak zaposlenih'),
-      el('div', { class: 'sta' }, 'Poređano po roku knjižice — prvo ono što ističe.'),
+      el('div', { class: 'sta' },
+        'Poređano po roku knjižice — prvo ono što ističe. ',
+        el('b', {}, 'Šifra nije lozinka'),
+        ' — njome se potpisuju zapisi. U aplikaciju se ulazi e-mailom i lozinkom, '
+        + 'a oni stoje na jezičku „Nalozi za prijavu".'),
       el('div', { class: 'filteri' },
         ...[['svi', `svi — ${sviRedovi.length}`],
             ['hrana', `rukuju hranom — ${sviRedovi.filter(x => x.rukuje_hranom).length}`],
