@@ -211,6 +211,10 @@ app.use(zapisiRuter);                         // odmah ispod
 | `07_dopune_cg.sql` | oznaka naknadnog unosa, pogledi za izvoz i dnevni pregled, zabrana prazne korektivne mjere. Ne dira podatke. **Ako ikad ponovo pokreneš 06, odmah poslije pokreni i 07.** |
 | `08_lica_cg.sql` | tabela `lice` i pogled `v_lica` — ko rukuje hranom i dokad važi sanitarna knjižica. Ne dira podatke, bezbjedno na živoj bazi. |
 | `09_nalog_lice_cg.sql` | `korisnik.lice_id` + pogled `v_nalozi` — nalog za prijavu vezan za lice sa spiska, pa nalog nosi šifru i radno mjesto. Ne dira podatke. |
+| `10_plan_obuke_cg.sql` | tabela `plan_obuke` + pogled `v_plan_obuke` — Prilog 13 kao plan sa stanjem (planirano/uskoro/kasni/urađeno), ne kao dnevni zapis. Ne dira podatke. |
+| `11_zaposleni_cg.sql` | `lice.rukuje_hranom` + prošireni `v_lica` (`ima_nalog`) — spisak postaje spisak SVIH zaposlenih. Ne dira podatke. |
+| `12_ko_je_unio_cg.sql` | `uneo_korisnik_id` na `zapis`, `prijem`, `isporuka` — nalog sa kojeg je zapis poslat. Ne dira podatke. |
+| `13_uloga_vozac_cg.sql` | `uloga_t` dobija `vozac`. **`ALTER TYPE ... ADD VALUE` mora biti samostalna naredba.** |
 
 ### Server
 
@@ -223,7 +227,8 @@ app.use(zapisiRuter);                         // odmah ispod
 |---|---|---|
 | `index.html` | ulazna strana — vodi na prijavu; provjera znanja je sporedna vrata | svi |
 | `tabla.html` | **odgovorno lice za bezbjednost hrane** — prva strana poslije prijave za ulogu `bzr` | računar |
-| `ljudi.html` | odgovorno lice — spisak lica koja rukuju hranom (sanitarne knjižice) i nalozi magacina | računar |
+| `ljudi.html` | odgovorno lice — svi zaposleni, godišnji plan obuke, nalozi | računar |
+| `moja.html` | **svaka uloga** — svoja šifra, svoja knjižica, svoj rad, šta danas fali | telefon i računar |
 | `admin.html` | konsultant — komandna tabla (uloga `izvodjac`) | računar |
 | `podesavanje.html` | konsultant | računar |
 | `promet.html` | magacioner, vozač — prijem (KKT 1) i isporuka (KKT 3) | **telefon** |
@@ -290,6 +295,30 @@ Oba posljednja čitaju `alati/klijenti.txt` (`Naziv = postgresql://...`, po jeda
     Stari nalozi bez veze prikazuju „bez šifre" i vezuju se dugmetom „poveži".
 17. **Lozinka nije šifra.** Lozinkom se prijavljuje (`korisnik.lozinka_hash`),
     šifrom potpisuje zapise (`lice.sifra`, polje `izvrsilac`). Ne miješati u tekstu.
+18. **Prilog 13 je plan, ne zapis.** Živi u `plan_obuke`, unosi se na `ljudi.html`
+    → Godišnji plan obuke, štampa iz `prilozi.html`. Stavka koja je prošla bez
+    obuke se NE briše — označi se kao „kasni" i tako i izlazi na štampu.
+19. **Odjava i promjena lozinke se dodaju iz `veza.js`**, u `dodajOdjavu()`, na
+    kraj `.nav` svake stranice. Ne dopisivati ih ručno po stranicama.
+20. **Jedan spisak ljudi, ne dva.** `lice` je spisak SVIH zaposlenih;
+    `rukuje_hranom` odlučuje za koga važe knjižica i obuka. Druga tabela
+    „zaposleni" se ne pravi — dvije liste ljudi se razilaze prvim preimenovanjem.
+21. **Polje „izvršilac" se ne kuca.** Server ga postavlja iz sesije
+    (`izvrsilacZa()` u `zapisi.js`): operateru UVIJEK njegovo ime, bez obzira
+    šta pošalje pregledač; `bzr` i `izvodjac` smiju upisati drugo lice, jer
+    unose i za one koji nemaju nalog, i dobijaju spisak zaposlenih za izbor.
+22. **`izvrsilac` i `uneo_korisnik_id` nisu isto.** Prvi je KO JE OBAVIO radnju
+    (može biti i bez naloga), drugi je NALOG sa kojeg je zapis poslat. „Moja
+    tabla" broji po nalogu; stari zapisi bez naloga se i dalje traže po imenu.
+23. **`potpis` u `/api/ja` je IME, ne šifra.** Zapis čita inspektor, a „M-01"
+    mu ne znači ništa. Pregledač i server rade isti račun — ne smiju se razići.
+24. **Pet uloga, ne četiri.** `operater` = magacin (prijem + P3/P7/P8/D1),
+    `vozac` = prevoz (samo isporuka + D1). Obje su „na terenu": prozor od
+    jednog dana, potpis zaključan, `NA_TERENU` u `zapisi.js`. Firma u kojoj
+    isti čovjek prima i vozi koristi `operater` — podjela se ne nameće.
+25. **Obrazac nosi `uloga` u `obrasci-cg.json`.** Po njoj se filtriraju pločice:
+    vozač vidi samo D1, magacin svoje i vozačke, odgovorno lice sve. Nov
+    obrazac bez `uloga` neće se pojaviti terenskim ulogama.
 
 ---
 

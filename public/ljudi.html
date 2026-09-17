@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ljudi — sanitarne knjižice i nalozi</title>
+<title>Ljudi — zaposleni, obuka i nalozi</title>
 <style>
   :root{
     --ink:#131A1F; --steel:#3A4A56; --muted:#6B7A85;
@@ -76,12 +76,18 @@
   .veza{background:none;border:none;color:var(--cold);cursor:pointer;font-size:13px;
     font-family:var(--sans);padding:0;text-decoration:underline}
   .sifra{font-family:var(--mono);font-size:16px;letter-spacing:.06em}
+  .kvadratic{display:flex;align-items:center;gap:9px;margin-top:12px;font-size:14.5px}
+  .kvadratic input{width:19px;height:19px;flex:0 0 auto}
+  .filteri{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px}
+  button.filter{font-family:var(--sans);font-size:12.5px;padding:6px 11px;cursor:pointer;
+    border:1px solid var(--linija);background:#FCFDFD;color:var(--steel);border-radius:3px}
+  button.filter.tu{background:var(--ink);color:#fff;border-color:var(--ink)}
 </style>
 </head>
 <body>
 
 <header>
-  <span class="oznaka">Ko rukuje hranom i ko ima nalog</span>
+  <span class="oznaka">Zaposleni · knjižice · obuka · nalozi</span>
   <h1>Ljudi</h1>
   <nav class="nav">
     <span id="koSam" style="color:#8FA6B2"></span>
@@ -122,7 +128,7 @@ const poruka = (v, n, t) => { $('#poruka').replaceChildren(
 const dat = s => s ? String(s).slice(0, 10).split('-').reverse().join('.') + '.' : '—';
 
 const JEZICCI = [
-  { k: 'knjizice', n: 'Sanitarne knjižice' },
+  { k: 'knjizice', n: 'Svi zaposleni' },
   { k: 'plan',     n: 'Godišnji plan obuke' },
   { k: 'nalozi',   n: 'Nalozi za prijavu' },
 ];
@@ -303,17 +309,30 @@ async function oznaciOdrzano(s, datum = undefined) {
 }
 
 /* ==================================================== sanitarne knjižice */
+let FILTER = 'svi';   // svi · hrana · nalog
+
 async function knjizice() {
   $('#sadrzaj').replaceChildren(el('div', { class: 'prazno' }, 'Učitavam…'));
-  let spisak = [];
-  try { spisak = await api('/api/cg/lica'); }
+  let sviRedovi = [];
+  try { sviRedovi = await api('/api/cg/lica'); }
   catch (e) { poruka('alarm', 'Ne mogu da učitam spisak', e.message); }
+  const spisak = sviRedovi.filter(l =>
+    FILTER === 'hrana' ? l.rukuje_hranom
+    : FILTER === 'nalog' ? l.ima_nalog
+    : true);
 
   const forma = el('div', { class: 'kartica' },
-    el('h2', {}, 'Dodaj ili ispravi lice'),
+    el('h2', {}, 'Dodaj ili ispravi zaposlenog'),
     el('div', { class: 'sta' },
-      'Upisuje se broj i rok važenja knjižice — nikad nalaz ljekarskog pregleda. '
-      + 'Isto ime dva puta ne pravi dupli red, nego dopunjava postojeći.'),
+      'Ovdje idu SVI zaposleni. Kvačica „rukuje hranom" odlučuje za koga važe '
+      + 'sanitarna knjižica i evidencija obuke. Upisuje se broj i rok knjižice — '
+      + 'nikad nalaz ljekarskog pregleda. Isto ime dva puta ne pravi dupli red.'),
+    el('div', { class: 'kvadratic' },
+      el('input', { id: 'hrana', type: 'checkbox', checked: 'checked' }),
+      el('label', { for: 'hrana', style: 'margin:0;font-weight:600' },
+        'Rukuje hranom ',
+        el('span', { class: 'sitno' },
+          '— prijem, skladištenje, utovar, prevoz. Isključi za kancelariju.'))),
     el('div', { class: 'par' },
       el('div', {}, el('label', { for: 'ime' }, 'Ime i prezime'),
         el('input', { id: 'ime', placeholder: 'Ime Prezime' })),
@@ -343,9 +362,14 @@ async function knjizice() {
       el('td', {}, el('b', {}, l.ime_prezime),
         l.posao_sa_hranom ? el('div', { style: 'color:var(--muted);font-size:12.5px' },
           l.posao_sa_hranom) : ''),
-      el('td', {}, l.radno_mjesto || '—'),
-      el('td', { class: 'd' }, l.knjizica_broj || '—'),
-      el('td', { class: 'd' }, dat(l.knjizica_vazi_do)),
+      el('td', {}, l.radno_mjesto || '—',
+        l.rukuje_hranom ? '' : el('div', { style: 'color:var(--muted);font-size:12px' },
+          'ne rukuje hranom')),
+      el('td', {}, l.ima_nalog
+        ? el('span', { class: 'znak ok' }, 'ima nalog')
+        : el('span', { class: 'znak tiho' }, 'bez naloga')),
+      el('td', { class: 'd' }, l.rukuje_hranom ? (l.knjizica_broj || '—') : '—'),
+      el('td', { class: 'd' }, l.rukuje_hranom ? dat(l.knjizica_vazi_do) : '—'),
       el('td', {}, el('span', { class: 'znak ' + znak }, v),
         l.dana_do_isteka !== null && l.dana_do_isteka !== undefined && v !== 'važi'
           ? el('div', { style: 'color:var(--muted);font-size:12px;margin-top:2px' },
@@ -359,8 +383,9 @@ async function knjizice() {
   const tabela = spisak.length
     ? el('table', {},
         el('thead', {}, el('tr', {},
-          el('th', {}, 'Lice'), el('th', {}, 'Radno mjesto'), el('th', {}, 'Knjižica'),
-          el('th', {}, 'Važi do'), el('th', {}, 'Stanje'), el('th', {}, ''))),
+          el('th', {}, 'Zaposleni'), el('th', {}, 'Radno mjesto'), el('th', {}, 'Pristup'),
+          el('th', {}, 'Knjižica'), el('th', {}, 'Važi do'), el('th', {}, 'Stanje'),
+          el('th', {}, ''))),
         el('tbody', {}, ...spisak.map(red)))
     : el('div', { class: 'prazno' },
         'Nijedno lice još nije upisano. Dok je spisak prazan, na kontroli nema čime da se '
@@ -374,8 +399,15 @@ async function knjizice() {
       + 'Lice kojem je knjižica istekla ne smije da rukuje hranom ni jedan dan.'),
     forma,
     el('div', { class: 'kartica' },
-      el('h2', {}, 'Lica koja rukuju hranom'),
-      el('div', { class: 'sta' }, 'Poređano po roku — prvo ono što ističe.'),
+      el('h2', {}, 'Spisak zaposlenih'),
+      el('div', { class: 'sta' }, 'Poređano po roku knjižice — prvo ono što ističe.'),
+      el('div', { class: 'filteri' },
+        ...[['svi', `svi — ${sviRedovi.length}`],
+            ['hrana', `rukuju hranom — ${sviRedovi.filter(x => x.rukuje_hranom).length}`],
+            ['nalog', `imaju nalog — ${sviRedovi.filter(x => x.ima_nalog).length}`]]
+          .map(([k, n]) => el('button', {
+            type: 'button', class: 'filter' + (FILTER === k ? ' tu' : ''),
+            onclick: () => { FILTER = k; knjizice(); } }, n))),
       tabela));
 }
 
@@ -387,6 +419,7 @@ function popuni(l) {
   $('#kizd').value  = (l.knjizica_izdata || '').slice(0, 10);
   $('#kvazi').value = (l.knjizica_vazi_do || '').slice(0, 10);
   $('#sifra').value = l.sifra || '';
+  $('#hrana').checked = l.rukuje_hranom !== false;
   $('#ime').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
@@ -402,6 +435,7 @@ async function sacuvajLice() {
       knjizica_izdata: $('#kizd').value || null,
       knjizica_vazi_do: $('#kvazi').value || null,
       sifra: $('#sifra').value.trim() || null,
+      rukuje_hranom: $('#hrana').checked,
     }) });
     poruka('ok', 'Upisano', `${ime} je na spisku.`);
     knjizice();
@@ -412,8 +446,10 @@ async function sacuvajLice() {
 
 // Šta koja uloga stvarno vidi. Stoji ovdje da se ne pogađa iz naziva.
 const STA_VIDI = {
-  operater: 'Prijem, isporuka i dnevni zapisi — i to samo posljednja dva dana. '
-          + 'Ne vidi sledljivost, izvoz, podešavanje ni ovu stranu.',
+  operater: 'Prijem robe, isporuka i dnevni zapisi (P3, P7, P8, D1) — i to samo '
+          + 'posljednja dva dana. Ne vidi sledljivost, izvoz ni ovu stranu.',
+  vozac:    'Samo isporuka kupcu i kontrola vozila prije utovara (D1), '
+          + 'posljednja dva dana. Ne vidi prijem robe ni ostale zapise.',
   bzr:      'Sve o hrani: tabla, zapisi, sledljivost, štampa, izvoz, podešavanje '
           + 'i ovu stranu. Ne vidi banku pitanja.',
   uprava:   'Samo zbirni izvještaj za direktora — bez imena i bez šifara. Ne unosi ništa.',
@@ -456,14 +492,16 @@ async function nalozi() {
 
     samoOperateri
       ? el('div', {},
-          el('label', {}, 'Uloga'),
-          el('div', { style: 'padding:10px 11px;border:1px solid var(--linija);'
-            + 'background:#F2F5F6;border-radius:3px;font-size:14.5px' },
-            el('b', {}, 'magacin i prevoz'), ' — ', STA_VIDI.operater))
+          el('label', { for: 'nUloga' }, 'Uloga'),
+          el('select', { id: 'nUloga', onchange: osvjeziIzbor },
+            el('option', { value: 'operater' }, 'magacin — prijem i dnevni zapisi'),
+            el('option', { value: 'vozac' }, 'vozač — isporuka i kontrola vozila')),
+          el('div', { id: 'objasnjenje', class: 'sta', style: 'margin:8px 0 0' }))
       : el('div', {},
           el('label', { for: 'nUloga' }, 'Uloga'),
           el('select', { id: 'nUloga', onchange: osvjeziIzbor },
-            el('option', { value: 'operater' }, 'magacin i prevoz — unosi zapise'),
+            el('option', { value: 'operater' }, 'magacin — prijem i dnevni zapisi'),
+            el('option', { value: 'vozac' }, 'vozač — isporuka i kontrola vozila'),
             el('option', { value: 'bzr' }, 'odgovorno lice za bezbjednost hrane'),
             el('option', { value: 'uprava' }, 'direktor — samo pogled'),
             el('option', { value: 'izvodjac' }, 'konsultant — sve')),
@@ -492,7 +530,8 @@ async function nalozi() {
                   style: 'margin-top:4px;display:block',
                   onclick: () => povezi(k) }, 'poveži'))
             : '')),
-    el('td', {}, el('span', { class: 'znak ' + (k.uloga === 'operater' ? 'tiho' : 'ok') },
+    el('td', {}, el('span',
+      { class: 'znak ' + (['operater', 'vozac'].includes(k.uloga) ? 'tiho' : 'ok') },
       IME_ULOGE[k.uloga] || k.uloga),
       el('div', { style: 'color:var(--muted);font-size:12px;margin-top:3px;max-width:30ch' },
         STA_VIDI[k.uloga] || '')),

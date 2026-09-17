@@ -887,12 +887,24 @@ app.get('/api/ja', uhvati(async (req, res) => {
   const c = (req.headers.cookie || '').match(/(?:^|; )sesija=([^;]*)/);
   const k = c ? await nadjiSesiju(decodeURIComponent(c[1])) : null;
   if (!k) return res.status(401).json({ greska: 'Niste prijavljeni.' });
-  res.json({ ime: k.ime, uloga: k.uloga, mora_promeniti: k.mora_promeniti });
+  // `potpis` je ono čime se ovaj nalog potpisuje na zapisu. Uzima se ime sa
+  // spiska zaposlenih ako je nalog vezan — ime, ne šifra, jer zapis čita
+  // inspektor, a njemu „M-01" ne znači ništa. Server pri upisu radi isti
+  // račun, pa se prikazano i upisano ne mogu razići.
+  let potpis = k.ime;
+  try {
+    const r = await upit(
+      `SELECT COALESCE(l.ime_prezime, u.ime) p FROM korisnik u
+         LEFT JOIN lice l ON l.id = u.lice_id WHERE u.id = $1`, [k.id]);
+    if (r.rows[0]?.p) potpis = r.rows[0].p;
+  } catch { /* stara baza bez lice_id — ostaje ime */ }
+  res.json({ ime: k.ime, uloga: k.uloga, potpis,
+    mora_promeniti: k.mora_promeniti });
 }));
 
 // Operater MORA biti ovdje: svaki nov nalog ima mora_promeniti = TRUE,
 // pa bez ovoga magacioner zaglavi na prvoj prijavi i ne može ući.
-app.post('/api/lozinka', dozvoli('izvodjac','bzr','uprava','operater'), uhvati(async (req, res) => {
+app.post('/api/lozinka', dozvoli('izvodjac','bzr','uprava','operater','vozac'), uhvati(async (req, res) => {
   const nova = String(req.body.nova || '');
   if (nova.length < 10)
     return res.status(400).json({ greska: 'Lozinka mora imati bar 10 znakova.' });
@@ -913,10 +925,13 @@ app.post('/api/lozinka', dozvoli('izvodjac','bzr','uprava','operater'), uhvati(a
 const jeIzvodjac = req => req.korisnik?.uloga === 'izvodjac';
 
 /** Vraća null ako smije, ili poruku o odbijanju. */
+// Odgovorno lice otvara naloge ISPOD sebe: magacin i vozače. Nikad sebi ravan.
+const NALOZI_ISPOD = ['operater', 'vozac'];
+
 function smijeNadUlogom(req, uloga) {
   if (jeIzvodjac(req)) return null;
-  if (uloga !== 'operater')
-    return 'Odgovorno lice smije da otvori samo nalog za magacin i prevoz.';
+  if (!NALOZI_ISPOD.includes(uloga))
+    return 'Odgovorno lice smije da otvori samo nalog za magacin ili za vozača.';
   if (!req.korisnik?.firma_id)
     return 'Tvoj nalog nije vezan za firmu, pa ne može da otvara naloge.';
   return null;
@@ -928,7 +943,7 @@ async function ciljKorisnik(req) {
     `SELECT id, uloga, firma_id FROM korisnik WHERE id = $1`, [req.params.id]);
   if (!c) return { greska: 'Korisnik ne postoji.', status: 404 };
   if (jeIzvodjac(req)) return { cilj: c };
-  if (c.uloga !== 'operater' || c.firma_id !== req.korisnik?.firma_id)
+  if (!NALOZI_ISPOD.includes(c.uloga) || c.firma_id !== req.korisnik?.firma_id)
     return { greska: 'Nad tim nalogom nemaš ovlašćenje.', status: 403 };
   return { cilj: c };
 }
@@ -947,7 +962,7 @@ app.get('/api/korisnici', dozvoli('izvodjac', 'bzr'), uhvati(async (req, res) =>
          FROM korisnik k LEFT JOIN firma f ON f.id = k.firma_id`;
   const { rows } = await upit(
     `SELECT * FROM (${izvor}) v
-      WHERE NOT $1::bool OR (v.uloga = 'operater' AND v.firma_id = $2)
+      WHERE NOT $1::bool OR (v.uloga IN ('operater','vozac') AND v.firma_id = $2)
       ORDER BY v.uloga, v.ime`,
     [samoMoji, req.korisnik?.firma_id || null]);
   rows.forEach(r => { delete r.firma_id; });
@@ -958,7 +973,7 @@ app.get('/api/korisnici', dozvoli('izvodjac', 'bzr'), uhvati(async (req, res) =>
 app.post('/api/korisnici', dozvoli('izvodjac', 'bzr'), uhvati(async (req, res) => {
   const { email, uloga } = req.body;
   let ime = req.body.ime;
-  if (!email || !['izvodjac','bzr','uprava','operater'].includes(uloga))
+  if (!email || !['izvodjac','bzr','uprava','operater','vozac'].includes(uloga))
     return res.status(400).json({ greska: 'Potrebni su email i ispravna uloga.' });
   const ne = smijeNadUlogom(req, uloga);
   if (ne) return res.status(403).json({ greska: ne });
@@ -1057,7 +1072,7 @@ app.get('/api/izvestaj/:grupaId/dopuna-zbirno', iUprava, uhvati(async (req, res)
 
 // Oznaka izdanja. Mijenja se kad se doda nešto što traži restart ili SQL
 // dopunu — po njoj `alati/provjeri.mjs` vidi vrti li se stari kod.
-const IZDANJE = '2026-09-17-plan';
+const IZDANJE = '2026-09-17-moje';
 
 app.get('/api/zdravlje', uhvati(async (_req, res) => {
   await upit('SELECT 1');

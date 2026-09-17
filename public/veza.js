@@ -140,12 +140,59 @@ const IME_ULOGE = {
   izvodjac: 'konsultant',
   bzr: 'odgovorno lice za bezbjednost hrane',
   uprava: 'direktor',
-  operater: 'magacin i prevoz',
+  operater: 'magacin',
+  vozac: 'vozač',
 };
+
+/* Kako se prijavljeni potpisuje na zapisu: šifra sa ceduljice ako je ima,
+   inače ime. Server upisuje isto — ovo je samo da čovjek vidi šta ide. */
+let MOJ_POTPIS = '';
+
+/* Polje „izvršilac / vozač" se ne kuca: popunjava se iz naloga. Magacioneru
+   je zaključano — zapis koji potpisuješ tuđim imenom nije dokaz nego problem.
+   Odgovorno lice i konsultant smiju upisati drugo lice, jer unose i za one
+   koji nemaju nalog. */
+function potpisPolje(input, ja) {
+  if (!input) return;
+  input.value = MOJ_POTPIS || ja?.ime || '';
+  if (['operater', 'vozac'].includes(ja?.uloga)) {
+    input.readOnly = true;
+    input.style.background = '#F2F5F6';
+    input.title = 'Popunjeno iz tvog naloga — potpisuješ se sam.';
+    return;
+  }
+  // Odgovorno lice i konsultant unose i za druge — dobijaju spisak zaposlenih
+  // da biraju umjesto da kucaju. Kucanje slobodnog teksta ostaje moguće, jer
+  // radnju je mogao obaviti i neko ko nije na spisku.
+  ponudiZaposlene(input);
+}
+
+let _zaposleni = null;
+async function ponudiZaposlene(input) {
+  try {
+    if (!_zaposleni) _zaposleni = await api('/api/cg/lica');
+  } catch { return; }              // bez spiska ostaje obično polje
+  if (!_zaposleni.length) return;
+  const id = 'spisakZaposlenih';
+  if (!document.getElementById(id)) {
+    const dl = document.createElement('datalist');
+    dl.id = id;
+    for (const l of _zaposleni) {
+      const o = document.createElement('option');
+      o.value = l.ime_prezime;
+      o.label = [l.radno_mjesto, l.sifra].filter(Boolean).join(' · ');
+      dl.append(o);
+    }
+    document.body.append(dl);
+  }
+  input.setAttribute('list', id);
+  input.placeholder = 'izaberi sa spiska ili upiši ime';
+}
 
 async function ucitajJa() {
   try {
     const ja = await api('/api/ja');
+    MOJ_POTPIS = ja.potpis || ja.ime || '';
     const e = document.querySelector('#koSam');
     if (e) e.textContent = ja.ime
       ? `${ja.ime} · ${IME_ULOGE[ja.uloga] || ja.uloga}` : '';
@@ -165,6 +212,14 @@ async function ucitajJa() {
 function dodajOdjavu() {
   const nav = document.querySelector('.nav');
   if (!nav || nav.querySelector('.odjava')) return;
+  // „Moja tabla" ima svako ko ima nalog — i magacioner. Dodaje se ovdje da
+  // se ne dopisuje na svaku stranicu posebno.
+  if (!nav.querySelector('a[href="/moja.html"]')) {
+    const m = document.createElement('a');
+    m.href = '/moja.html';
+    m.textContent = 'Moja tabla';
+    nav.append(m);
+  }
   nav.append(
     el_('a', 'lozinka', 'promijeni lozinku', promijeniLozinku),
     el_('a', 'odjava', 'odjava', odjava));
@@ -206,6 +261,8 @@ function sakrijNedozvoljeno(ja) {
   // pisane tebi, a ne klijentu — zato se gleda cio dokument, ne samo meni.
   if (ja?.uloga !== 'izvodjac')
     document.querySelectorAll('[data-samo="konsultant"]').forEach(a => a.remove());
-  if (ja?.uloga !== 'operater') return;
+  // Magacin i vozač vide samo svoj posao — ostalo im vraća 403, pa bi klik
+  // izgledao kao kvar.
+  if (!['operater', 'vozac'].includes(ja?.uloga)) return;
   document.querySelectorAll('.nav a[data-samo="vodi"]').forEach(a => a.remove());
 }

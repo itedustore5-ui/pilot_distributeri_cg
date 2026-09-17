@@ -23,8 +23,35 @@ import { dozvoli } from './auth.js';
 
 export const zapisiRuter = express.Router();
 
-const unosi   = dozvoli('izvodjac', 'bzr', 'operater');
+// Ko šta smije. `operater` je magacin — prima robu, vodi dnevne zapise i
+// po potrebi utovara. `vozac` je uža uloga: samo isporuka i kontrola vozila.
+// Firma u kojoj isti čovjek radi oboje koristi `operater` i podjela je ne dira.
+const unosi   = dozvoli('izvodjac', 'bzr', 'operater', 'vozac');
+const prima   = dozvoli('izvodjac', 'bzr', 'operater');            // KKT 1 prijem
+const vozi    = dozvoli('izvodjac', 'bzr', 'operater', 'vozac');   // KKT 3 isporuka
 const vodi    = dozvoli('izvodjac', 'bzr');
+
+// Uloge koje rade na terenu — vide samo posljednja dva dana, potpisuju se same
+// i u listama vide SAMO SVOJE unose. Odgovorno lice i konsultant vide sve.
+const NA_TERENU = ['operater', 'vozac'];
+
+// Filter „samo moje". Dva uslova, jer stari zapisi nemaju `uneo_korisnik_id`:
+//   · nalog kojim je poslat, ili
+//   · potpis (ime) kad naloga nema — inače bi čovjeku nestala istorija.
+// `id` dolazi iz sesije i provlači se kroz Number(), pa se ne ubacuje tekst.
+function samoMoje(req, potpis) {
+  if (!NA_TERENU.includes(req.korisnik?.uloga)) return '';
+  const id = Number(req.korisnik?.id);
+  if (!Number.isInteger(id)) return '';
+  const ime = String(potpis || '').replace(/'/g, "''");
+  return `AND (uneo_korisnik_id = ${id}`
+       + ` OR (uneo_korisnik_id IS NULL AND izvrsilac = '${ime}'))`;
+}
+
+// Isporuka nema `izvrsilac` nego `vozac` — isti račun, druga kolona.
+function samoMojeIsporuke(req, potpis) {
+  return samoMoje(req, potpis).replace('izvrsilac =', 'vozac =');
+}
 
 const uhvati = fn => (req, res) =>
   fn(req, res).catch(e => {
@@ -34,13 +61,40 @@ const uhvati = fn => (req, res) =>
 
 const ko = req => req.korisnik?.ime || 'nepoznato';
 
+// Ko je zapis unio — nalog iz sesije. Pregledač na ovo ne utiče.
+const unioId = req => req.korisnik?.id || null;
+
+// Čime se taj nalog potpisuje: ime sa spiska zaposlenih, inače ime naloga.
+// Traži se jednom po zahtjevu i pamti, da se ne pita baza po svakom polju.
+async function potpisNaloga(req) {
+  if (req._potpis !== undefined) return req._potpis;
+  const id = unioId(req);
+  if (!id) { req._potpis = ko(req); return req._potpis; }
+  try {
+    const r = await upit(
+      `SELECT COALESCE(l.ime_prezime, k.ime) p FROM korisnik k
+         LEFT JOIN lice l ON l.id = k.lice_id WHERE k.id = $1`, [id]);
+    req._potpis = r.rows[0]?.p || ko(req);
+  } catch { req._potpis = ko(req); }
+  return req._potpis;
+}
+
+// Operater potpisuje sam sebe i ne može upisati tuđe ime — inače zapis
+// prestaje biti dokaz ko je radio. Odgovorno lice i konsultant smiju upisati
+// drugo lice, jer unose i za one koji nemaju nalog.
+async function izvrsilacZa(req, trazeno) {
+  const moj = await potpisNaloga(req);
+  if (NA_TERENU.includes(req.korisnik?.uloga)) return moj;
+  return (trazeno && String(trazeno).trim()) || moj;
+}
+
 // Operater ne smije da vidi istoriju — samo današnji i jučerašnji dan.
 // Ne zbog tajnosti, nego da se zapis ne „usklađuje“ unazad.
 // Kolona se prosljeđuje jer se ne zove svuda isto: `zapis.datum`,
 // ali `v_sledljivost_nazad.datum_prijema`. Ranije je bilo zakucano „datum“
 // pa je operateru lista prijema pucala sa greškom 500.
 const ogranicenje = (req, kolona = 'datum') =>
-  req.korisnik?.uloga === 'operater' ? `AND ${kolona} >= CURRENT_DATE - 1` : '';
+  NA_TERENU.includes(req.korisnik?.uloga) ? `AND ${kolona} >= CURRENT_DATE - 1` : '';
 
 const broj = v => (v === '' || v === null || v === undefined ? null : Number(v));
 
@@ -100,7 +154,7 @@ zapisiRuter.use('/api/cg', async (req, _res, next) => {
 //  Zapis unesen kasnije od svog datuma i dalje se PREPOZNAJE:
 //  `datum < kreirano::date`. Ne krije se — vidi se u pregledu.
 // =====================================================================
-const PROZOR = { operater: 1, bzr: 7, izvodjac: 30 };
+const PROZOR = { operater: 1, vozac: 1, bzr: 7, izvodjac: 30 };
 
 // Server na Renderu radi po UTC-u, a magacin po podgoričkom vremenu.
 // Razlika je sat ili dva, ali oko ponoći to je CIJEL DAN: zapis unesen
@@ -197,8 +251,9 @@ zapisiRuter.post('/api/cg/lica', vodi, uhvati(async (req, res) => {
     return res.status(400).json({ greska: 'Rok važenja je prije datuma izdavanja.' });
   const r = await upit(
     `INSERT INTO lice (firma_id, ime_prezime, radno_mjesto, posao_sa_hranom,
-       knjizica_broj, knjizica_izdata, knjizica_vazi_do, sifra, napomena, aktivan)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+       knjizica_broj, knjizica_izdata, knjizica_vazi_do, sifra, napomena, aktivan,
+       rukuje_hranom)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
      ON CONFLICT (firma_id, ime_prezime) DO UPDATE SET
        radno_mjesto     = COALESCE(EXCLUDED.radno_mjesto, lice.radno_mjesto),
        posao_sa_hranom  = COALESCE(EXCLUDED.posao_sa_hranom, lice.posao_sa_hranom),
@@ -207,13 +262,73 @@ zapisiRuter.post('/api/cg/lica', vodi, uhvati(async (req, res) => {
        knjizica_vazi_do = COALESCE(EXCLUDED.knjizica_vazi_do, lice.knjizica_vazi_do),
        sifra            = COALESCE(EXCLUDED.sifra, lice.sifra),
        napomena         = COALESCE(EXCLUDED.napomena, lice.napomena),
-       aktivan          = EXCLUDED.aktivan
+       aktivan          = EXCLUDED.aktivan,
+       rukuje_hranom    = EXCLUDED.rukuje_hranom
      RETURNING *`,
     [firmaZa(req), String(b.ime_prezime).trim(), b.radno_mjesto || null,
      b.posao_sa_hranom || null, b.knjizica_broj || null, b.knjizica_izdata || null,
      b.knjizica_vazi_do || null, b.sifra || null, b.napomena || null,
-     b.aktivan !== false]);
+     b.aktivan !== false, b.rukuje_hranom !== false]);
   res.json(r.rows[0]);
+}));
+
+// ------------------------------------------------------- moja tabla
+// Svako ko ima nalog vidi svoje: šta je danas unio, dokad mu važi knjižica,
+// i šta se od njega očekuje. Magacioner do sada nije imao nijedan ekran sa
+// svojim imenom — samo obrasce.
+zapisiRuter.get('/api/cg/moje', unosi, uhvati(async (req, res) => {
+  const f = firmaZa(req);
+  const k = req.korisnik || {};
+  let lice = null;
+  if (k.id) {
+    const r = await upit(
+      `SELECT l.* FROM v_lica l JOIN korisnik u ON u.lice_id = l.id
+        WHERE u.id = $1`, [k.id]).catch(() => ({ rows: [] }));
+    lice = r.rows[0] || null;
+  }
+  const potpis = lice?.sifra || k.ime || null;
+
+  // Broji se po NALOGU (`uneo_korisnik_id`), ne po otkucanom imenu — to je
+  // jedino pouzdano. Stari zapisi nemaju nalog, pa se za njih i dalje gleda
+  // potpis (šifra ili ime), inače bi čovjeku nestala istorija.
+  const kljucevi = [lice?.sifra, k.ime].filter(Boolean);
+  const moji = await upit(
+    `SELECT obrazac, datum, vrijeme FROM zapis
+      WHERE firma_id = $1
+        AND (uneo_korisnik_id = $2
+             OR (uneo_korisnik_id IS NULL AND izvrsilac = ANY($3::text[])))
+        AND datum >= CURRENT_DATE - 7
+        AND NOT EXISTS (SELECT 1 FROM zapis n WHERE n.ispravlja_id = zapis.id)
+      ORDER BY datum DESC, vrijeme DESC NULLS LAST LIMIT 40`,
+    [f, k.id || null, kljucevi.length ? kljucevi : ['']]).catch(() => ({ rows: [] }));
+
+  const danas = danasCG();
+  // `datum` iz pg-a je Date, a String(Date) daje „Thu Sep 17 2026…" — poređenje
+  // sa „2026-09-17" nikad ne bi prošlo i tabla bi uvijek pisala nula za danas.
+  const uDan = d => (d instanceof Date
+    ? new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Podgorica',
+        year: 'numeric', month: '2-digit', day: '2-digit' }).format(d)
+    : String(d).slice(0, 10));
+  const danasnji = moji.rows.filter(z => uDan(z.datum) === danas);
+
+  // Šta se danas još ne vidi ni od koga — magacioneru je to radni spisak.
+  const fali = await upit(
+    `SELECT o FROM unnest(ARRAY['P3','P7','P8']) o
+      WHERE NOT EXISTS (SELECT 1 FROM zapis z
+                         WHERE z.firma_id = $1 AND z.datum = $2::date AND z.obrazac = o
+                           AND NOT EXISTS (SELECT 1 FROM zapis n WHERE n.ispravlja_id = z.id))`,
+    [f, danas]);
+
+  res.json({
+    ime: k.ime || null,
+    uloga: k.uloga || null,
+    lice,
+    potpis,
+    danas: danasnji.length,
+    sedam_dana: moji.rows.length,
+    posljednji: moji.rows.slice(0, 8),
+    fali_danas: fali.rows.map(x => x.o),
+  });
 }));
 
 // ------------------------------------------------- godišnji plan obuke
@@ -344,7 +459,7 @@ zapisiRuter.get('/api/cg/nepotvrdjene-granice', vodi, uhvati(async (req, res) =>
 //  KKT 1 — PRIJEM  (ujedno korak nazad, čl. 27)
 // =====================================================================
 
-zapisiRuter.post('/api/cg/prijem', unosi, uhvati(async (req, res) => {
+zapisiRuter.post('/api/cg/prijem', prima, uhvati(async (req, res) => {
   const b = req.body;
   const lozDatum = greskaDatuma(req, b.datum);
   if (lozDatum) return res.status(400).json({ greska: lozDatum });
@@ -389,13 +504,15 @@ zapisiRuter.post('/api/cg/prijem', unosi, uhvati(async (req, res) => {
   const r = await upit(
     `INSERT INTO prijem (firma_id, datum, vrijeme, dobavljac_id, artikal_id, lot,
        kolicina, rok_trajanja, broj_otpremnice, temperatura, granica_primjenjena,
-       ishod, korektivna_mjera, vozilo_dobavljaca, izvrsilac, napomena, ispravlja_id)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+       ishod, korektivna_mjera, vozilo_dobavljaca, izvrsilac, napomena, ispravlja_id,
+       uneo_korisnik_id)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
      RETURNING *`,
     [firmaZa(req), b.datum || new Date(), b.vrijeme || null, b.dobavljac_id,
      b.artikal_id, b.lot.trim(), broj(b.kolicina), b.rok_trajanja || null,
      b.broj_otpremnice, t, granica, ishod, b.korektivna_mjera || null,
-     b.vozilo_dobavljaca, b.izvrsilac || ko(req), b.napomena, b.ispravlja_id || null]);
+     b.vozilo_dobavljaca, await izvrsilacZa(req, b.izvrsilac), b.napomena,
+     b.ispravlja_id || null, unioId(req)]);
 
   res.json({ prijem: r.rows[0], upozorenja });
 }));
@@ -404,7 +521,19 @@ zapisiRuter.get('/api/cg/prijem', unosi, uhvati(async (req, res) => {
   const r = await upit(
     `SELECT * FROM v_sledljivost_nazad
       WHERE firma_id = $1 ${ogranicenje(req, 'datum_prijema')}
+        ${samoMoje(req, await potpisNaloga(req))}
       ORDER BY datum_prijema DESC, prijem_id DESC LIMIT $2`,
+    [firmaZa(req), Number(req.query.limit) || 200]);
+  res.json(r.rows);
+}));
+
+// Spisak isporuka. Vozač vidi svoje ture, odgovorno lice sve.
+zapisiRuter.get('/api/cg/isporuka', unosi, uhvati(async (req, res) => {
+  const r = await upit(
+    `SELECT * FROM v_sledljivost_napred
+      WHERE firma_id = $1 ${ogranicenje(req, 'datum_isporuke')}
+        ${samoMojeIsporuke(req, await potpisNaloga(req))}
+      ORDER BY datum_isporuke DESC, isporuka_id DESC LIMIT $2`,
     [firmaZa(req), Number(req.query.limit) || 200]);
   res.json(r.rows);
 }));
@@ -413,7 +542,7 @@ zapisiRuter.get('/api/cg/prijem', unosi, uhvati(async (req, res) => {
 //  KKT 3 — ISPORUKA  (korak naprijed, čl. 27)
 // =====================================================================
 
-zapisiRuter.post('/api/cg/isporuka', unosi, uhvati(async (req, res) => {
+zapisiRuter.post('/api/cg/isporuka', vozi, uhvati(async (req, res) => {
   const b = req.body;
   const lozDatum = greskaDatuma(req, b.datum);
   if (lozDatum) return res.status(400).json({ greska: lozDatum });
@@ -444,13 +573,15 @@ zapisiRuter.post('/api/cg/isporuka', unosi, uhvati(async (req, res) => {
   const r = await upit(
     `INSERT INTO isporuka (firma_id, datum, kupac_id, prijem_id, kolicina,
        broj_otpremnice, vozilo_id, vozac, temp_utovar, temp_isporuka,
-       vozilo_provjereno, odstupanje, korektivna_mjera, preuzeo, ispravlja_id)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+       vozilo_provjereno, odstupanje, korektivna_mjera, preuzeo, ispravlja_id,
+       uneo_korisnik_id)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
      RETURNING *`,
     [firmaZa(req), b.datum || new Date(), b.kupac_id, b.prijem_id,
-     broj(b.kolicina), b.broj_otpremnice, b.vozilo_id || null, b.vozac || ko(req),
+     broj(b.kolicina), b.broj_otpremnice, b.vozilo_id || null,
+     await izvrsilacZa(req, b.vozac),
      tu, ti, !!b.vozilo_provjereno, odstupanje, b.korektivna_mjera || null,
-     b.preuzeo, b.ispravlja_id || null]);
+     b.preuzeo, b.ispravlja_id || null, unioId(req)]);
 
   res.json({ isporuka: r.rows[0], upozorenja });
 }));
@@ -528,11 +659,11 @@ zapisiRuter.post('/api/cg/zapis', unosi, uhvati(async (req, res) => {
 
   const r = await upit(
     `INSERT INTO zapis (firma_id, obrazac, datum, vrijeme, podaci, odstupanje,
-       korektivna_mjera, izvrsilac, ispravlja_id)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+       korektivna_mjera, izvrsilac, ispravlja_id, uneo_korisnik_id)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
     [firmaZa(req), b.obrazac, b.datum || new Date(), b.vrijeme || null,
      JSON.stringify(b.podaci || {}), !!b.odstupanje, b.korektivna_mjera || null,
-     b.izvrsilac || ko(req), b.ispravlja_id || null]);
+     await izvrsilacZa(req, b.izvrsilac), b.ispravlja_id || null, unioId(req)]);
   res.json(r.rows[0]);
 }));
 
@@ -546,6 +677,7 @@ zapisiRuter.get('/api/cg/zapis/:obrazac', unosi, uhvati(async (req, res) => {
       WHERE firma_id = $1 AND obrazac = $2
         AND NOT EXISTS (SELECT 1 FROM zapis n WHERE n.ispravlja_id = zapis.id)
         ${ogranicenje(req)}
+        ${samoMoje(req, await potpisNaloga(req))}
         ${req.query.od ? 'AND datum >= $4' : ''}
         ${req.query.do ? `AND datum <= $${req.query.od ? 5 : 4}` : ''}
       ORDER BY datum DESC, id DESC LIMIT $3`,

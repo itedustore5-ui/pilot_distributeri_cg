@@ -11,6 +11,10 @@
  *     08_lica_cg.sql         lica koja rukuju hranom i sanitarne knjižice
  *     09_nalog_lice_cg.sql   nalog vezan za lice, šifra uz nalog
  *     10_plan_obuke_cg.sql   godišnji plan obuke (Prilog 13)
+ *     11_zaposleni_cg.sql    spisak svih zaposlenih (lice.rukuje_hranom)
+ *     12_ko_je_unio_cg.sql   nalog koji je unio zapis (uneo_korisnik_id)
+ *     13_uloga_vozac_cg.sql  vozač kao zasebna uloga
+ *     14_moje_liste_cg.sql   pogledi nose uneo_korisnik_id („vidim samo svoje")
  *
  * NIKAD ne pokreće 04_zapisi_cg.sql (počinje sa DROP TABLE) ni 05_demo_cg.sql
  * (demo podaci). Te dvije se pokreću ručno i samo kad znaš zašto.
@@ -35,6 +39,14 @@ const DOPUNE = [
     sta: 'nalog za prijavu vezan za lice sa spiska' },
   { fajl: '10_plan_obuke_cg.sql', objekat: 'plan_obuke',
     sta: 'godišnji plan obuke kao plan, a ne kao dnevni zapis' },
+  { fajl: '11_zaposleni_cg.sql', kolona: ['lice', 'rukuje_hranom'],
+    sta: 'spisak svih zaposlenih, ne samo onih koji rukuju hranom' },
+  { fajl: '12_ko_je_unio_cg.sql', kolona: ['zapis', 'uneo_korisnik_id'],
+    sta: 'ko je zapis stvarno unio — nalog, ne otkucano ime' },
+  { fajl: '13_uloga_vozac_cg.sql', enumVrijednost: ['uloga_t', 'vozac'],
+    sta: 'vozač kao zasebna uloga' },
+  { fajl: '14_moje_liste_cg.sql', kolona: ['v_sledljivost_napred', 'uneo_korisnik_id'],
+    sta: 'pogledi nose nalog koji je unio — „vidim samo svoje"' },
 ];
 
 const veza = process.env.DATABASE_URL;
@@ -59,8 +71,19 @@ try {
 let primijenjeno = 0, preskoceno = 0;
 try {
   for (const d of DOPUNE) {
-    const { rows: [r] } = await k.query(
-      'SELECT to_regclass($1) IS NOT NULL AS ima', ['public.' + d.objekat]);
+    // Dopuna koja samo dodaje kolonu se prepoznaje po koloni, ne po tabeli.
+    const { rows: [r] } = d.enumVrijednost
+      ? await k.query(
+          `SELECT EXISTS (SELECT 1 FROM pg_enum e JOIN pg_type t ON t.oid = e.enumtypid
+                           WHERE t.typname = $1 AND e.enumlabel = $2) AS ima`,
+          d.enumVrijednost)
+      : d.kolona
+      ? await k.query(
+          `SELECT EXISTS (SELECT 1 FROM information_schema.columns
+                           WHERE table_schema='public' AND table_name=$1
+                             AND column_name=$2) AS ima`, d.kolona)
+      : await k.query(
+          'SELECT to_regclass($1) IS NOT NULL AS ima', ['public.' + d.objekat]);
     if (r.ima) {
       console.log(`  preskačem  ${d.fajl} — već primijenjeno (${d.sta})`);
       preskoceno++;

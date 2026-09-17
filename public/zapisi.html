@@ -170,7 +170,12 @@ const poruka = (vrsta, naslov, tekst) => {
   } catch (e) { poruka('alarm', 'Ne mogu da učitam stranicu', e.message); return; }
 
   DEF = await (await fetch('/obrasci-cg.json')).json();
-  const rucni = DEF.obrasci.filter(o => !o.generisan);
+  // Svako vidi obrasce svog posla. Magacin radi i svoje i vozačke (utovar je
+  // njegov posao kad nema vozača); vozač vidi samo svoje. Odgovorno lice sve.
+  const MOJI = { operater: ['operater', 'vozac'], vozac: ['vozac'] };
+  const dozvoljeni = MOJI[JA?.uloga] || null;
+  const rucni = DEF.obrasci.filter(o =>
+    !o.generisan && (!dozvoljeni || dozvoljeni.includes(o.uloga)));
 
   // Magacioner na rampi ne treba spisak od dvanaest obrazaca. Ovo su četiri
   // koja se popunjavaju svakodnevno; ostalo je povremeno i stoji sklopljeno.
@@ -208,7 +213,7 @@ const poruka = (vrsta, naslov, tekst) => {
   osvjezi();
 
   // Ako je operater, prvo mu pokaži šta je danas ostalo.
-  if (JA.uloga === 'operater') {
+  if (['operater', 'vozac'].includes(JA.uloga)) {
     poruka('info', 'Unosi se samo ono što je stvarno izmjereno.',
       'Prazan dan je manji problem od izmišljenog zapisa. Zapis se ne može obrisati poslije unosa.');
   } else {
@@ -271,6 +276,17 @@ function nacrtajFormu() {
     el('h2', {}, `Prilog ${o.oznaka} — ${o.naziv}`),
     el('div', { class: 'osnov' }, `${o.osnov} · ${o.ucestalost} · popunjava: ${o.ko}`));
 
+  // Ko ovo obično unosi, i šta znači kad unosi neko drugi. Bez ovoga je
+  // obrazac tehnički ispravan, a niko u firmi ne zna čiji je posao.
+  const MOJA = { operater: 'magacin i prevoz', bzr: 'odgovorno lice',
+                 izvodjac: 'konsultant', uprava: 'direktor' };
+  const trazena = o.uloga === 'operater' ? 'magacin i prevoz' : 'odgovorno lice';
+  if (JA && MOJA[JA.uloga] !== trazena && JA.uloga !== 'operater')
+    k.append(el('div', { class: 'traka info' },
+      el('b', {}, `Ovaj obrazac obično unosi: ${trazena}`),
+      'Ti ga smiješ unijeti umjesto njega — u polju „Izvršilac" izaberi ko je '
+      + 'radnju stvarno obavio. U bazi ostaje zapisano da si ga unio/unijela ti.'));
+
   if (o.pravilo) k.append(el('div', { class: 'traka info' },
     el('b', {}, 'Pravilo'), o.pravilo));
 
@@ -296,7 +312,9 @@ function nacrtajFormu() {
     placeholder: 'Šta je konkretno urađeno, ko je to uradio i kada.' }));
 
   k.append(el('label', { for: 'z_izvrsilac' }, 'Izvršilac'));
-  k.append(el('input', { id: 'z_izvrsilac', value: JA?.ime || '' }));
+  const polje = el('input', { id: 'z_izvrsilac' });
+  potpisPolje(polje, JA);
+  k.append(polje);
 
   k.append(el('button', { class: 'dugme', id: 'z_snimi', type: 'button', onclick: snimi },
     'Snimi zapis'));
@@ -477,8 +495,10 @@ async function ucitajIstoriju() {
           // Zapis upisan kasnije od dana na koji se odnosi. Nije zabranjeno,
           // ali inspektor to gleda — pa se ni ovdje ne krije.
           z.naknadno ? el('span', { class: 'znak pazi', style: 'margin-left:5px',
-            title: `Upisano ${z.dana_kasnije} ${z.dana_kasnije === 1 ? 'dan' : 'dana'} poslije`
-          }, `naknadno +${z.dana_kasnije}`) : ''),
+            title: `Zapis se odnosi na ${z.datum.slice(0, 10)}, a upisan je `
+                 + `${pade(z.dana_kasnije, 'dan', 'dana', 'dana')} kasnije. `
+                 + 'Nije zabranjeno, ali inspektor gleda razliku.'
+          }, `upisano ${pade(z.dana_kasnije, 'dan', 'dana', 'dana')} kasnije`) : ''),
         el('td', {}, z.izvrsilac),
         el('td', {}, el('button', { class: 'ispravi', type: 'button',
           onclick: () => zapocniIspravku(z) }, 'ispravi'))))));

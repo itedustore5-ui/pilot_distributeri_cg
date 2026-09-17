@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 
 const koren = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
-const IZDANJE_OCEKIVANO = '2026-09-17-plan';
+const IZDANJE_OCEKIVANO = '2026-09-17-moje';
 
 const zelen = t => console.log('\x1b[32m  OK  \x1b[0m ' + t);
 const crven = t => console.log('\x1b[31m FALI \x1b[0m ' + t);
@@ -57,6 +57,33 @@ if (!veza) {
     }
     if (t.ima09) zelen('09_nalog_lice_cg.sql primijenjen — nalog nosi šifru lica');
     else { crven('09_nalog_lice_cg.sql NIJE primijenjen — nalozi nemaju šifru');
+           problemi.push('node alati\\dopune.mjs'); }
+    const { rows: [c] } = await k.query(
+      `SELECT EXISTS (SELECT 1 FROM information_schema.columns
+                       WHERE table_schema='public' AND table_name='lice'
+                         AND column_name='rukuje_hranom') AS ima11`);
+    const { rows: [c14] } = await k.query(
+      `SELECT EXISTS (SELECT 1 FROM information_schema.columns
+                       WHERE table_schema='public' AND table_name='v_sledljivost_napred'
+                         AND column_name='uneo_korisnik_id') AS ima14`);
+    if (c14.ima14) zelen('14_moje_liste_cg.sql primijenjen — svako vidi svoje unose');
+    else { crven('14_moje_liste_cg.sql NIJE primijenjen — vozač vidi tuđe isporuke');
+           problemi.push('node alati\\dopune.mjs'); }
+    const { rows: [e13] } = await k.query(
+      `SELECT EXISTS (SELECT 1 FROM pg_enum e JOIN pg_type t ON t.oid = e.enumtypid
+                       WHERE t.typname = 'uloga_t' AND e.enumlabel = 'vozac') AS ima13`);
+    if (e13.ima13) zelen('13_uloga_vozac_cg.sql primijenjen — vozač je zasebna uloga');
+    else { crven('13_uloga_vozac_cg.sql NIJE primijenjen — nalog vozača se ne može otvoriti');
+           problemi.push('node alati\\dopune.mjs'); }
+    const { rows: [c2] } = await k.query(
+      `SELECT EXISTS (SELECT 1 FROM information_schema.columns
+                       WHERE table_schema='public' AND table_name='zapis'
+                         AND column_name='uneo_korisnik_id') AS ima12`);
+    if (c2.ima12) zelen('12_ko_je_unio_cg.sql primijenjen — zapis nosi nalog koji ga je unio');
+    else { crven('12_ko_je_unio_cg.sql NIJE primijenjen — „Moja tabla" broji po otkucanom imenu');
+           problemi.push('node alati\\dopune.mjs'); }
+    if (c.ima11) zelen('11_zaposleni_cg.sql primijenjen — spisak svih zaposlenih');
+    else { crven('11_zaposleni_cg.sql NIJE primijenjen — spisak prima samo lica koja rukuju hranom');
            problemi.push('node alati\\dopune.mjs'); }
     if (t.ima10) zelen('10_plan_obuke_cg.sql primijenjen — godišnji plan obuke');
     else { crven('10_plan_obuke_cg.sql NIJE primijenjen — Prilog 13 nema odakle da se puni');

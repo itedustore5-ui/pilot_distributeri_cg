@@ -74,6 +74,8 @@ function gde(uloga){
   if (dalje) return dalje;
   if (uloga === 'uprava')   return '/uprava.html';
   if (uloga === 'operater') return '/promet.html';
+  // Vozač ne prima robu — pada pravo na isporuku.
+  if (uloga === 'vozac')    return '/promet.html#isporuka';
   // Odgovorno lice ide na svoju tablu, ne na konsultantsku komandnu tablu.
   // Njegov posao su zapisi o hrani, ne podešavanje obuke i banke pitanja.
   if (uloga === 'bzr')      return '/tabla.html';

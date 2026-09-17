@@ -153,9 +153,20 @@ const dat = s => s ? String(s).slice(0, 10).split('-').reverse().join('.') : '�
     if (!JA) return;            // nema veze — traka dolje, čeka se
     sakrijNedozvoljeno(JA);
   } catch (e) { poruka('alarm', 'Ne mogu da učitam stranicu', e.message); return; }
+  // Vozač ne prima robu — jezičak prijema mu se sklanja, jer bi klik završio
+  // greškom 403 i izgledao kao kvar aplikacije.
+  if (JA.uloga === 'vozac') {
+    $('#tab_prijem').remove();
+    document.querySelector('h1').textContent = 'Isporuka kupcu';
+  }
   await ucitajSifarnike();
-  prebaci('prijem');
+  // Dozvoljava dolazak pravo na isporuku: /promet.html#isporuka.
+  // Odgovorno lice sa svoje table otvara tačno ono što unosi.
+  prebaci(JA.uloga === 'vozac' || location.hash === '#isporuka' ? 'isporuka' : 'prijem');
 })();
+
+window.addEventListener('hashchange', () =>
+  prebaci(location.hash === '#isporuka' ? 'isporuka' : 'prijem'));
 
 async function ucitajSifarnike() {
   [DOBAVLJACI, KUPCI, VOZILA, ARTIKLI, ZALIHE] = await Promise.all([
@@ -170,8 +181,9 @@ async function ucitajSifarnike() {
 function prebaci(sta) {
   AKTIVAN = sta;
   ISPRAVLJA = null;
-  $('#tab_prijem').setAttribute('aria-selected', String(sta === 'prijem'));
-  $('#tab_isporuka').setAttribute('aria-selected', String(sta === 'isporuka'));
+  // Vozaču je jezičak prijema uklonjen, pa ga ovdje možda nema.
+  $('#tab_prijem')?.setAttribute('aria-selected', String(sta === 'prijem'));
+  $('#tab_isporuka')?.setAttribute('aria-selected', String(sta === 'isporuka'));
   $('#osnov').textContent = sta === 'prijem'
     ? 'KKT 1 · čl. 27 — korak nazad: od koga je roba došla'
     : 'KKT 3 · čl. 27 — korak naprijed: kome je roba otišla';
@@ -241,7 +253,9 @@ function formaPrijem() {
     placeholder: 'Šta je urađeno sa pošiljkom, ko je obaviješten i kada.' }));
 
   k.append(el('label', { for: 'izvrsilac' }, 'Ko je primio'));
-  k.append(el('input', { id: 'izvrsilac', value: JA?.ime || '' }));
+  const poljePrijem = el('input', { id: 'izvrsilac' });
+  potpisPolje(poljePrijem, JA);
+  k.append(poljePrijem);
 
   k.append(el('button', { class: 'dugme', type: 'button', id: 'snimi',
     onclick: snimiPrijem }, 'Snimi prijem'));
@@ -427,7 +441,7 @@ function formaIsporuka() {
     el('div', {}, el('label', { for: 'otpremnica' }, 'Broj otpremnice'),
       el('input', { id: 'otpremnica' })),
     el('div', {}, el('label', { for: 'vozac' }, 'Vozač'),
-      el('input', { id: 'vozac', value: JA?.ime || '' }))));
+      (() => { const v = el('input', { id: 'vozac' }); potpisPolje(v, JA); return v; })())));
 
   k.append(el('label', { for: 'preuzeo' }, 'Ko je preuzeo kod kupca'));
   k.append(el('input', { id: 'preuzeo' }));
@@ -541,20 +555,52 @@ async function ucitajIstoriju() {
               onclick: () => zapocniIspravku(x) }, 'ispravi'))))))
           : el('div', { class: 'prazno' }, 'Još nema prijema.')));
     } else {
-      $('#istorija').replaceChildren(el('div', { class: 'kartica' },
+      // Vozač vidi svoje ture, odgovorno lice sve — filter je na serveru.
+      const moje = await api('/api/cg/isporuka?limit=15').catch(() => []);
+      const svoje = ['operater', 'vozac'].includes(JA.uloga);
+
+      const kartaIsporuka = el('div', { class: 'kartica' },
+        el('h2', { style: 'font-size:14px' },
+          svoje ? 'Moje isporuke' : 'Posljednje isporuke'),
+        svoje
+          ? el('div', { style: 'font-size:12px;color:var(--muted);margin:-4px 0 8px' },
+              'Vidiš samo ono što si sam/sama unio/unijela. Odgovorno lice vidi sve.')
+          : '',
+        moje.length
+          ? el('table', {},
+              el('thead', {}, el('tr', {},
+                el('th', {}, 'Datum'), el('th', {}, 'Serija'), el('th', {}, 'Kupac'),
+                el('th', {}, 'Količina'), el('th', {}, 'Vozač'), el('th', {}, 'Stanje'))),
+              el('tbody', {}, ...moje.map(x => el('tr',
+                { class: x.odstupanje ? 'odst' : '' },
+                el('td', { class: 'n' }, dat(x.datum_isporuke)),
+                el('td', { class: 'n' }, x.lot),
+                el('td', {}, x.kupac),
+                el('td', { class: 'n' }, String(x.isporuceno)),
+                el('td', {}, x.vozac || '—'),
+                el('td', {}, el('span',
+                  { class: 'znak ' + (x.odstupanje ? 'alarm' : 'ok') },
+                  x.odstupanje ? 'odstupanje' : 'u redu'))))))
+          : el('div', { class: 'prazno' },
+              svoje ? 'Još nemaš nijednu isporuku.' : 'Još nema isporuka.'));
+
+      const kartaZaliha = el('div', { class: 'kartica' },
         el('h2', { style: 'font-size:14px' }, 'Trenutne zalihe po serijama'),
-        ZALIHE.length ? el('table', {},
-          el('thead', {}, el('tr', {},
-            el('th', {}, 'Serija'), el('th', {}, 'Artikal'), el('th', {}, 'Rok'),
-            el('th', {}, 'Primljeno'), el('th', {}, 'Isporučeno'), el('th', {}, 'Ostalo'))),
-          el('tbody', {}, ...ZALIHE.map(z => el('tr', {},
-            el('td', { class: 'n' }, z.lot),
-            el('td', {}, z.artikal),
-            el('td', { class: 'n' }, dat(z.rok_trajanja)),
-            el('td', { class: 'n' }, String(z.primljeno)),
-            el('td', { class: 'n' }, String(z.isporuceno)),
-            el('td', { class: 'n' }, String(z.ostalo))))))
-          : el('div', { class: 'prazno' }, 'Nema robe na zalihama.')));
+        ZALIHE.length
+          ? el('table', {},
+              el('thead', {}, el('tr', {},
+                el('th', {}, 'Serija'), el('th', {}, 'Artikal'), el('th', {}, 'Rok'),
+                el('th', {}, 'Primljeno'), el('th', {}, 'Isporučeno'), el('th', {}, 'Ostalo'))),
+              el('tbody', {}, ...ZALIHE.map(z => el('tr', {},
+                el('td', { class: 'n' }, z.lot),
+                el('td', {}, z.artikal),
+                el('td', { class: 'n' }, dat(z.rok_trajanja)),
+                el('td', { class: 'n' }, String(z.primljeno)),
+                el('td', { class: 'n' }, String(z.isporuceno)),
+                el('td', { class: 'n' }, String(z.ostalo))))))
+          : el('div', { class: 'prazno' }, 'Nema robe na zalihama.'));
+
+      $('#istorija').replaceChildren(kartaIsporuka, kartaZaliha);
     }
   } catch (e) {
     $('#istorija').replaceChildren(el('div', { class: 'traka alarm' },

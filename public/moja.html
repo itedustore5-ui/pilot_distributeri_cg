@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="sr-Latn-ME">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moja tabla</title>
+<style>
+  :root{
+    --ink:#131A1F; --steel:#3A4A56; --muted:#6B7A85;
+    --paper:#EFF2F3; --list:#FFF; --linija:#CBD5D9;
+    --cold:#0B6E8C; --signal:#B4410E; --ok:#2C6B47; --alarm:#96161B;
+    --mono: ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+    --sans: system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+    font-size:16px;line-height:1.5;-webkit-text-size-adjust:100%}
+  .oznaka{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted)}
+
+  header{background:var(--ink);color:#fff;padding:14px 16px}
+  header .omot{max-width:760px;margin:0 auto}
+  header h1{margin:5px 0 0;font-size:19px;font-weight:600}
+  header .oznaka{color:#8FA6B2}
+  .nav{display:flex;gap:13px;flex-wrap:wrap;margin-top:11px;padding-top:10px;
+    border-top:1px solid #2C3A44;font-size:13px}
+  .nav a{color:#8FA6B2;text-decoration:none}
+  .nav a:hover,.nav a.tu{color:#fff}
+  .nav a.tu{font-weight:600}
+
+  main{max-width:760px;margin:0 auto;padding:18px 16px 90px}
+
+  .kartica{background:var(--list);border:1px solid var(--linija);padding:18px 20px;margin-bottom:14px}
+  .kartica h2{margin:0 0 3px;font-size:15px;font-weight:600}
+  .kartica .sta{font-size:13px;color:var(--muted);margin:0 0 14px}
+
+  .pozdrav{padding:20px 22px;margin-bottom:16px;border-left:4px solid var(--cold);
+    background:var(--list)}
+  .pozdrav .veliko{font-size:21px;font-weight:600;display:block;line-height:1.25;margin-bottom:4px}
+  .pozdrav p{margin:0;font-size:14px;color:var(--steel)}
+
+  .brojke{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;
+    background:var(--linija);border:1px solid var(--linija)}
+  .broj{background:var(--list);padding:13px 15px}
+  .broj .n{font-family:var(--mono);font-size:22px;display:block;line-height:1.1}
+  .broj .n.dobro{color:var(--ok)}
+  .broj .n.lose{color:var(--alarm)}
+  .broj .k{font-size:12px;color:var(--muted);display:block;margin-top:3px}
+
+  .fali{display:flex;flex-wrap:wrap;gap:7px}
+  .fali a{font-family:var(--mono);font-size:13px;padding:9px 13px;text-decoration:none;
+    background:#F7E9E3;color:#7A2C07;border:1px solid #E4C6B8}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{border-bottom:1px solid var(--linija);padding:8px 9px;text-align:left}
+  th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);font-weight:600}
+  td.d{font-family:var(--mono);white-space:nowrap}
+  .znak{font-family:var(--mono);font-size:10px;letter-spacing:.08em;padding:2px 6px;
+    border-radius:2px;text-transform:uppercase;white-space:nowrap}
+  .znak.ok{background:#D9E9DF;color:#1C4A30}
+  .znak.pazi{background:#F4DFD5;color:#7A2C07}
+  .znak.alarm{background:#F0D3D5;color:#6E1013}
+  .znak.tiho{background:#E3E8EA;color:#4A5B66}
+  .traka{padding:12px 14px;font-size:13.5px;line-height:1.55;margin-bottom:14px;border-left:3px solid}
+  .traka.alarm{border-color:var(--alarm);background:#F6E3E4;color:#6E1013}
+  .traka.pazi{border-color:var(--signal);background:#F7E9E3;color:#7A2C07}
+  .traka b{display:block;margin-bottom:2px}
+  .prazno{color:var(--muted);padding:18px 0;text-align:center;font-size:14px}
+  .par{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px}
+  .par dt{color:var(--muted)}
+  .par dd{margin:0}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="omot">
+    <span class="oznaka">Tvoj nalog</span>
+    <h1>Moja tabla</h1>
+    <nav class="nav">
+      <span id="koSam" style="color:#8FA6B2"></span>
+      <a class="tu" href="/moja.html">Moja tabla</a>
+      <a href="/promet.html">Prijem i isporuka</a>
+      <a href="/zapisi.html">Dnevni zapisi</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div id="pozdrav" class="pozdrav">
+    <span class="veliko">Učitavam…</span>
+    <p>Gledam šta si unio/unijela.</p>
+  </div>
+  <div id="sadrzaj"></div>
+</main>
+
+<script src="/veza.js"></script>
+<script>
+const $  = s => document.querySelector(s);
+const el = (t, a = {}, ...d) => {
+  const n = document.createElement(t);
+  for (const [k, v] of Object.entries(a)) {
+    if (k === 'class') n.className = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else if (v !== null && v !== undefined && v !== false) n.setAttribute(k, v);
+  }
+  d.flat().forEach(x => n.append(x?.nodeType ? x : document.createTextNode(x ?? '')));
+  return n;
+};
+const dat = s => s ? String(s).slice(0, 10).split('-').reverse().join('.') + '.' : '—';
+
+(async () => {
+  const ja = await ucitajJa();
+  if (!ja) return;
+  sakrijNedozvoljeno(ja);
+
+  let d;
+  try { d = await api('/api/cg/moje'); }
+  catch (e) {
+    $('#pozdrav').replaceChildren(el('span', { class: 'veliko' }, 'Ne mogu da učitam'),
+      el('p', {}, e.message));
+    return;
+  }
+
+  $('#pozdrav').replaceChildren(
+    el('span', { class: 'veliko' }, d.ime || 'Zdravo'),
+    el('p', {}, d.danas
+      ? `Danas si unio/unijela ${pade(d.danas, 'zapis', 'zapisa', 'zapisa')}.`
+      : 'Danas još nemaš nijedan zapis.'));
+
+  const dijelovi = [];
+
+  // --- sanitarna knjižica: svako vidi SVOJU, i to je jedino mjesto gdje je vidi
+  if (d.lice) {
+    const v = d.lice.stanje_knjizice;
+    if (v === 'istekla') dijelovi.push(el('div', { class: 'traka alarm' },
+      el('b', {}, 'Sanitarna knjižica ti je istekla'),
+      `Isteklo ${dat(d.lice.knjizica_vazi_do)}. Dok ne obnoviš, ne smiješ rukovati hranom. `
+      + 'Javi odgovornom licu danas.'));
+    else if (v === 'ističe') dijelovi.push(el('div', { class: 'traka pazi' },
+      el('b', {}, 'Sanitarna knjižica uskoro ističe'),
+      `Važi do ${dat(d.lice.knjizica_vazi_do)} — zakaži pregled na vrijeme.`));
+
+    dijelovi.push(el('div', { class: 'kartica' },
+      el('h2', {}, 'Moji podaci'),
+      el('p', { class: 'sta' }, 'Ovo vidiš samo ti i odgovorno lice.'),
+      el('dl', { class: 'par' },
+        el('dt', {}, 'Radno mjesto'), el('dd', {}, d.lice.radno_mjesto || '—'),
+        el('dt', {}, 'Poslovi sa hranom'), el('dd', {}, d.lice.posao_sa_hranom || '—'),
+        el('dt', {}, 'Šifra za zapise'),
+        el('dd', {}, d.lice.sifra
+          ? el('span', { class: 'znak ok' }, d.lice.sifra)
+          : el('span', { class: 'znak tiho' }, 'nema')),
+        ...(d.lice.rukuje_hranom ? [
+          el('dt', {}, 'Sanitarna knjižica'),
+          el('dd', {}, d.lice.knjizica_broj || '—', d.lice.knjizica_vazi_do
+            ? ` · važi do ${dat(d.lice.knjizica_vazi_do)}` : ''),
+        ] : []))));
+  } else {
+    dijelovi.push(el('div', { class: 'traka pazi' },
+      el('b', {}, 'Tvoj nalog nije vezan za spisak zaposlenih'),
+      'Zato ovdje ne piše tvoja šifra ni rok knjižice. Odgovorno lice to veže na '
+      + 'strani „Ljudi" → Nalozi → poveži.'));
+  }
+
+  // --- šta danas fali (svima korisno, magacioneru najviše)
+  if (d.fali_danas.length) dijelovi.push(el('div', { class: 'kartica' },
+    el('h2', {}, 'Danas još nije uneseno'),
+    el('p', { class: 'sta' },
+      'Unosi se samo ono što je stvarno izmjereno — prazan dan je manji problem '
+      + 'od izmišljenog zapisa.'),
+    el('div', { class: 'fali' }, ...d.fali_danas.map(o =>
+      el('a', { href: `/zapisi.html#${o}` }, `${o} · ${dat(danas())}`)))));
+
+  // --- moj rad
+  dijelovi.push(el('div', { class: 'kartica' },
+    el('h2', {}, 'Moj rad'),
+    el('p', { class: 'sta' }, 'Zapisi koji nose tvoju šifru ili tvoje ime.'),
+    el('div', { class: 'brojke' },
+      el('div', { class: 'broj' },
+        el('span', { class: 'n ' + (d.danas ? 'dobro' : '') }, String(d.danas)),
+        el('span', { class: 'k' }, 'danas')),
+      el('div', { class: 'broj' },
+        el('span', { class: 'n' }, String(d.sedam_dana)),
+        el('span', { class: 'k' }, 'u posljednjih 7 dana')))));
+
+  if (d.posljednji.length) dijelovi.push(el('div', { class: 'kartica' },
+    el('h2', {}, 'Posljednji zapisi'),
+    el('table', {},
+      el('thead', {}, el('tr', {},
+        el('th', {}, 'Obrazac'), el('th', {}, 'Datum'), el('th', {}, 'Vrijeme'))),
+      el('tbody', {}, ...d.posljednji.map(z => el('tr', {},
+        el('td', { class: 'd' }, z.obrazac),
+        el('td', { class: 'd' }, dat(z.datum)),
+        el('td', { class: 'd' }, z.vrijeme ? String(z.vrijeme).slice(0, 5) : '—')))))));
+  else dijelovi.push(el('div', { class: 'kartica' },
+    el('h2', {}, 'Posljednji zapisi'),
+    el('div', { class: 'prazno' },
+      'Nema zapisa sa tvojom šifrom u posljednjih 7 dana.')));
+
+  $('#sadrzaj').replaceChildren(...dijelovi);
+})();
+</script>
+</body>
+</html>
