@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 
 const koren = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
-const IZDANJE_OCEKIVANO = '2026-09-17-moje';
+const IZDANJE_OCEKIVANO = '2026-09-17-firma';
 
 const zelen = t => console.log('\x1b[32m  OK  \x1b[0m ' + t);
 const crven = t => console.log('\x1b[31m FALI \x1b[0m ' + t);
@@ -46,6 +46,12 @@ if (!veza) {
              to_regclass('public.lice')             IS NOT NULL AS ima08,
              to_regclass('public.v_nalozi')         IS NOT NULL AS ima09,
              to_regclass('public.plan_obuke')       IS NOT NULL AS ima10`);
+    const { rows: [e06] } = await k.query(
+      `SELECT EXISTS (SELECT 1 FROM pg_enum e JOIN pg_type t ON t.oid = e.enumtypid
+                       WHERE t.typname = 'uloga_t' AND e.enumlabel = 'operater') AS ima06`);
+    if (e06.ima06) zelen('06b_uloga_operater_cg.sql primijenjen — uloga `operater` postoji');
+    else { crven('Tip uloga_t nema vrijednost `operater` — nalog magacina se ne može otvoriti');
+           problemi.push('node alati\\dopune.mjs'); }
     if (t.ima07) zelen('07_dopune_cg.sql primijenjen');
     else { crven('07_dopune_cg.sql NIJE primijenjen'); problemi.push('node alati\\dopune.mjs'); }
     if (t.ima08) {
@@ -92,6 +98,17 @@ if (!veza) {
       `SELECT uloga, count(*)::int n FROM korisnik WHERE aktivan GROUP BY uloga ORDER BY uloga`);
     if (!u.length) { crven('Nema nijednog aktivnog naloga'); problemi.push('node alati\\prvi-korisnik.mjs ...'); }
     else zelen('Nalozi: ' + u.map(x => `${x.uloga} ${x.n}`).join(' · '));
+    // Nalog bez firme ne može da otvara naloge kad u bazi ima više firmi.
+    const { rows: [nf] } = await k.query(
+      `SELECT count(*) FILTER (WHERE firma_id IS NULL AND uloga <> 'izvodjac')::int bez_firme,
+              (SELECT count(*)::int FROM firma) firmi
+         FROM korisnik WHERE aktivan`);
+    if (nf.bez_firme && nf.firmi !== 1) {
+      crven(`${nf.bez_firme} nalog(a) nije vezan za firmu, a u bazi ima ${nf.firmi} firmi`);
+      problemi.push('Veži naloge za firmu — inače ne mogu da otvaraju druge naloge.');
+    } else if (nf.bez_firme) {
+      zuti(`${nf.bez_firme} nalog(a) nema upisanu firmu — radi, jer je u bazi samo jedna firma.`);
+    }
     const bez = u.find(x => x.uloga === 'bzr');
     if (!bez) {
       zuti('Nema naloga sa ulogom `bzr` — odgovorno lice ne postoji, pa nema ko ni da otvara naloge.');

@@ -7,6 +7,7 @@
  * u Supabase, nema `Get-Content`, nema clipboarda.
  *
  * Primjenjuje SAMO dopune koje ne diraju podatke:
+ *     06b_uloga_operater_cg.sql  uloga `operater` (dio 06 koji često ne prođe)
  *     07_dopune_cg.sql       pogledi za izvoz i dnevni pregled, naknadan unos
  *     08_lica_cg.sql         lica koja rukuju hranom i sanitarne knjižice
  *     09_nalog_lice_cg.sql   nalog vezan za lice, šifra uz nalog
@@ -31,6 +32,8 @@ import pg from 'pg';
 const koren = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const DOPUNE = [
+  { fajl: '06b_uloga_operater_cg.sql', enumVrijednost: ['uloga_t', 'operater'],
+    sta: 'uloga `operater` — dio 06 koji često ne prođe pri ručnom lijepljenju' },
   { fajl: '07_dopune_cg.sql', objekat: 'v_dnevni_pregled',
     sta: 'pogledi za izvoz i dnevni pregled' },
   { fajl: '08_lica_cg.sql',   objekat: 'lice',

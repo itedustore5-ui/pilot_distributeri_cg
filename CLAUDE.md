@@ -215,6 +215,7 @@ app.use(zapisiRuter);                         // odmah ispod
 | `11_zaposleni_cg.sql` | `lice.rukuje_hranom` + prošireni `v_lica` (`ima_nalog`) — spisak postaje spisak SVIH zaposlenih. Ne dira podatke. |
 | `12_ko_je_unio_cg.sql` | `uneo_korisnik_id` na `zapis`, `prijem`, `isporuka` — nalog sa kojeg je zapis poslat. Ne dira podatke. |
 | `13_uloga_vozac_cg.sql` | `uloga_t` dobija `vozac`. **`ALTER TYPE ... ADD VALUE` mora biti samostalna naredba.** |
+| `14_moje_liste_cg.sql` | `v_sledljivost_nazad` i `v_sledljivost_napred` nose `uneo_korisnik_id` — bez toga filter „vidim samo svoje" nema po čemu da radi. `v_izvoz_sledljivost` se obnavlja **nepromijenjen** (njegove kolone su zaglavlja CSV-a). |
 
 ### Server
 
@@ -319,6 +320,10 @@ Oba posljednja čitaju `alati/klijenti.txt` (`Naziv = postgresql://...`, po jeda
 25. **Obrazac nosi `uloga` u `obrasci-cg.json`.** Po njoj se filtriraju pločice:
     vozač vidi samo D1, magacin svoje i vozačke, odgovorno lice sve. Nov
     obrazac bez `uloga` neće se pojaviti terenskim ulogama.
+26. **Terenske uloge u listama vide SAMO SVOJE unose** — `samoMoje()` i
+    `samoMojeIsporuke()` u `zapisi.js`. Filtrira se po `uneo_korisnik_id`, a
+    za stare zapise bez naloga po potpisu, da čovjeku ne nestane istorija.
+    Odgovorno lice i konsultant vide sve i to se nigdje ne ograničava.
 
 ---
 
