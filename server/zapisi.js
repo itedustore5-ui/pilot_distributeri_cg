@@ -216,6 +216,60 @@ zapisiRuter.post('/api/cg/lica', vodi, uhvati(async (req, res) => {
   res.json(r.rows[0]);
 }));
 
+// ------------------------------------------------- godišnji plan obuke
+// Plan, ne zapis: pravi se unaprijed, ima stanje i ostaje u evidenciji i kad
+// se ne ostvari. Prilog 13 Vodiča UBH; nije zakonom propisan obrazac.
+zapisiRuter.get('/api/cg/plan-obuke', vodi, uhvati(async (req, res) => {
+  const godina = Number(req.query.godina) || new Date().getFullYear();
+  const r = await upit(
+    `SELECT * FROM v_plan_obuke WHERE firma_id = $1 AND godina = $2
+      ORDER BY planirani_termin NULLS LAST, ciljna_grupa`, [firmaZa(req), godina]);
+  const godine = await upit(
+    `SELECT DISTINCT godina FROM plan_obuke WHERE firma_id = $1 ORDER BY godina DESC`,
+    [firmaZa(req)]);
+  res.json({ godina, stavke: r.rows, godine: godine.rows.map(x => x.godina) });
+}));
+
+zapisiRuter.post('/api/cg/plan-obuke', vodi, uhvati(async (req, res) => {
+  const b = req.body;
+  if (!b.ciljna_grupa || !String(b.ciljna_grupa).trim())
+    return res.status(400).json({ greska: 'Ciljna grupa je obavezna — ko ide na obuku.' });
+  if (!b.tema || !String(b.tema).trim())
+    return res.status(400).json({ greska: 'Tema je obavezna.' });
+  const godina = Number(b.godina) || new Date().getFullYear();
+  if (b.id) {
+    const r = await upit(
+      `UPDATE plan_obuke SET ciljna_grupa=$2, tema=$3, oblik=$4, planirani_termin=$5,
+              trajanje_sati=$6, izvodjac=$7, odgovoran=$8, napomena=$9
+        WHERE id=$1 AND firma_id=$10 RETURNING *`,
+      [b.id, b.ciljna_grupa.trim(), b.tema.trim(), b.oblik || null,
+       b.planirani_termin || null, b.trajanje_sati || null, b.izvodjac || null,
+       b.odgovoran || null, b.napomena || null, firmaZa(req)]);
+    if (!r.rowCount) return res.status(404).json({ greska: 'Stavka plana ne postoji.' });
+    return res.json(r.rows[0]);
+  }
+  const r = await upit(
+    `INSERT INTO plan_obuke (firma_id, godina, ciljna_grupa, tema, oblik,
+       planirani_termin, trajanje_sati, izvodjac, odgovoran, napomena)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+    [firmaZa(req), godina, b.ciljna_grupa.trim(), b.tema.trim(), b.oblik || null,
+     b.planirani_termin || null, b.trajanje_sati || null, b.izvodjac || null,
+     b.odgovoran || null, b.napomena || null]);
+  res.json(r.rows[0]);
+}));
+
+// Obuka održana — stavka se ne briše, nego dobija datum izvršenja.
+zapisiRuter.post('/api/cg/plan-obuke/:id/izvrseno', vodi, uhvati(async (req, res) => {
+  const d = req.body.izvrseno || null;
+  if (d && d > danasCG())
+    return res.status(400).json({ greska: 'Datum održavanja ne može biti u budućnosti.' });
+  const r = await upit(
+    `UPDATE plan_obuke SET izvrseno = $2 WHERE id = $1 AND firma_id = $3 RETURNING *`,
+    [req.params.id, d, firmaZa(req)]);
+  if (!r.rowCount) return res.status(404).json({ greska: 'Stavka plana ne postoji.' });
+  res.json(r.rows[0]);
+}));
+
 zapisiRuter.post('/api/cg/kupci', vodi, uhvati(async (req, res) => {
   const b = req.body;
   // Telefon je obavezan: bez njega povlačenje po čl. 28 ne može da se izvede.
@@ -663,6 +717,8 @@ const IZVOZI = {
   vozila:      { izvor: 'vozilo',    red: 'registracija', opis: 'Vozila' },
   lica:        { izvor: 'v_lica',    red: 'ime_prezime',
                  opis: 'Lica koja rukuju hranom i važenje sanitarnih knjižica' },
+  plan_obuke:  { izvor: 'v_plan_obuke', red: 'godina DESC, planirani_termin',
+                 opis: 'Godišnji plan obuke — planirano, održano, propušteno' },
 };
 
 // Dnevni zapisi se izvoze posebno: `podaci` je JSONB, pa se svaki obrazac

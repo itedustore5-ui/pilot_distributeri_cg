@@ -65,6 +65,12 @@
   .znak.ok{background:#D9E9DF;color:#1C4A30}
   .znak.pazi{background:#F4DFD5;color:#7A2C07}
   .znak.alarm{background:#EFD4D5;color:#6E1013}
+  .znak.tiho{background:#E3E8EA;color:#4A5B66}
+  .prekidac{background:none;border:none;color:var(--cold);cursor:pointer;font-size:12.5px;
+    font-family:var(--sans);padding:0;text-decoration:underline}
+  button.lot{font-family:var(--mono);font-size:13px;background:none;border:none;padding:0;
+    color:var(--cold);cursor:pointer;text-decoration:underline;font-weight:600}
+  tr.potroseno td{color:var(--muted)}
 
   .traka{padding:12px 14px;font-size:13.5px;line-height:1.55;margin-bottom:14px;border-left:3px solid}
   .traka.info{border-color:var(--cold);background:#E6EEF1;color:#08536B}
@@ -94,7 +100,7 @@
     <span id="koSam" style="color:#8FA6B2"></span>
     <a data-samo="vodi" href="/tabla.html">Tabla</a>
     <a data-samo="vodi" href="/ljudi.html">Ljudi</a>
-    <a href="/podesavanje.html">Podešavanje</a>
+    <a href="/podesavanje.html">Dobavljači i kupci</a>
     <a href="/promet.html">Prijem i isporuka</a>
     <a href="/zapisi.html">Zapisi</a>
     <a class="tu" href="/sledljivost.html">Sledljivost</a>
@@ -122,6 +128,17 @@
       prelistavanjem otpremnica, sistem ne radi — bez obzira na to što papiri postoje.
     </div>
   </div>
+
+  <div class="kartica nestampa" id="serijeBox" style="margin-top:16px">
+    <h2 style="margin:0 0 3px;font-size:16px">Serije u magacinu</h2>
+    <p style="margin:0 0 12px;font-size:13px;color:var(--muted)">
+      Poređane po roku — prvo ističe, prvo izlazi (FEFO). Klik na seriju je pretraga,
+      ne moraš da prepisuješ broj.
+      <button type="button" class="prekidac" id="prekidac" onclick="prebaci()"
+        style="margin-left:6px">prikaži i potrošene</button>
+    </p>
+    <div id="serije"><div class="prazno">Učitavam…</div></div>
+  </div>
 </main>
 
 <script src="/veza.js"></script>
@@ -146,7 +163,62 @@ const el = (t, a = {}, ...d) => {
   JA = await ucitajJa();
   if (JA) sakrijNedozvoljeno(JA);
   if (!JA) return;              // nema veze — traka dolje, čeka se
+  crtajSerije();
 })();
+
+// ------------------------------------------------------ serije u magacinu
+// Bez ovoga se pretraga mogla pokrenuti samo ako broj serije već znaš napamet
+// ili ga prepišeš sa papira — a na vježbi povlačenja se serija bira nasumično.
+let SVE = false;
+
+function prebaci() { SVE = !SVE; crtajSerije(); }
+
+const datS = s => s ? String(s).slice(0, 10).split('-').reverse().join('.') + '.' : '—';
+
+async function crtajSerije() {
+  $('#prekidac').textContent = SVE ? 'prikaži samo ono što je na stanju'
+                                   : 'prikaži i potrošene';
+  try {
+    const red = await api('/api/cg/zalihe' + (SVE ? '?sve=1' : ''));
+    if (!red.length) {
+      $('#serije').replaceChildren(el('div', { class: 'prazno' },
+        SVE ? 'Nema nijednog prijema.'
+            : 'Nema serija na stanju. Sve je isporučeno ili prijem još nije unesen.'));
+      return;
+    }
+    const danas = new Date(danas_() + 'T00:00:00');
+    const rok = r => {
+      if (!r.rok_trajanja) return el('span', { class: 'znak tiho' }, 'bez roka');
+      const d = Math.round((new Date(String(r.rok_trajanja).slice(0, 10)) - danas) / 86400000);
+      if (d < 0)  return el('span', { class: 'znak alarm' }, 'isteklo');
+      if (d <= 7) return el('span', { class: 'znak pazi' }, `${d} d`);
+      return el('span', { class: 'znak ok' }, `${d} d`);
+    };
+    $('#serije').replaceChildren(el('table', {},
+      el('thead', {}, el('tr', {},
+        el('th', {}, 'Serija'), el('th', {}, 'Artikal'), el('th', {}, 'Dobavljač'),
+        el('th', {}, 'Primljeno'), el('th', {}, 'Rok'), el('th', {}, 'Na stanju'))),
+      el('tbody', {}, ...red.map(r => el('tr',
+        { class: Number(r.ostalo) > 0 ? '' : 'potroseno' },
+        el('td', {}, el('button', { type: 'button', class: 'lot',
+          onclick: () => { $('#lot').value = r.lot; trazi(); window.scrollTo({ top: 0, behavior: 'smooth' }); } },
+          r.lot)),
+        el('td', {}, r.artikal),
+        el('td', {}, r.dobavljac),
+        el('td', { class: 'n' }, datS(r.datum_prijema)),
+        el('td', {}, rok(r), r.rok_trajanja
+          ? el('div', { style: 'font-size:11.5px;color:var(--muted);margin-top:2px' },
+              datS(r.rok_trajanja)) : ''),
+        el('td', { class: 'n' }, `${Number(r.ostalo)} / ${Number(r.primljeno)} ${r.jedinica || ''}`))))));
+  } catch (e) {
+    $('#serije').replaceChildren(el('div', { class: 'traka alarm' },
+      el('b', {}, 'Ne mogu da učitam serije'), e.message));
+  }
+}
+
+// `danas()` iz veza.js vraća lokalni datum; ovdje pod drugim imenom da se ne
+// sudari sa funkcijom istog imena ako je stranica ikad dobije.
+function danas_() { return danas(); }
 
 // --------------------------------------------------------------- vježba i sat
 function pokreniVjezbu() {

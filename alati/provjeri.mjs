@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 
 const koren = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
-const IZDANJE_OCEKIVANO = '2026-09-16-ljudi';
+const IZDANJE_OCEKIVANO = '2026-09-17-plan';
 
 const zelen = t => console.log('\x1b[32m  OK  \x1b[0m ' + t);
 const crven = t => console.log('\x1b[31m FALI \x1b[0m ' + t);
@@ -43,7 +43,9 @@ if (!veza) {
     zelen('Baza je dohvatljiva');
     const { rows: [t] } = await k.query(`
       SELECT to_regclass('public.v_dnevni_pregled') IS NOT NULL AS ima07,
-             to_regclass('public.lice')             IS NOT NULL AS ima08`);
+             to_regclass('public.lice')             IS NOT NULL AS ima08,
+             to_regclass('public.v_nalozi')         IS NOT NULL AS ima09,
+             to_regclass('public.plan_obuke')       IS NOT NULL AS ima10`);
     if (t.ima07) zelen('07_dopune_cg.sql primijenjen');
     else { crven('07_dopune_cg.sql NIJE primijenjen'); problemi.push('node alati\\dopune.mjs'); }
     if (t.ima08) {
@@ -53,6 +55,12 @@ if (!veza) {
       crven('08_lica_cg.sql NIJE primijenjen — zato ne možeš upisati lica');
       problemi.push('node alati\\dopune.mjs');
     }
+    if (t.ima09) zelen('09_nalog_lice_cg.sql primijenjen — nalog nosi šifru lica');
+    else { crven('09_nalog_lice_cg.sql NIJE primijenjen — nalozi nemaju šifru');
+           problemi.push('node alati\\dopune.mjs'); }
+    if (t.ima10) zelen('10_plan_obuke_cg.sql primijenjen — godišnji plan obuke');
+    else { crven('10_plan_obuke_cg.sql NIJE primijenjen — Prilog 13 nema odakle da se puni');
+           problemi.push('node alati\\dopune.mjs'); }
     const { rows: u } = await k.query(
       `SELECT uloga, count(*)::int n FROM korisnik WHERE aktivan GROUP BY uloga ORDER BY uloga`);
     if (!u.length) { crven('Nema nijednog aktivnog naloga'); problemi.push('node alati\\prvi-korisnik.mjs ...'); }

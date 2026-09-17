@@ -7,8 +7,10 @@
  * u Supabase, nema `Get-Content`, nema clipboarda.
  *
  * Primjenjuje SAMO dopune koje ne diraju podatke:
- *     07_dopune_cg.sql   pogledi za izvoz i dnevni pregled, naknadan unos
- *     08_lica_cg.sql     lica koja rukuju hranom i sanitarne knjižice
+ *     07_dopune_cg.sql       pogledi za izvoz i dnevni pregled, naknadan unos
+ *     08_lica_cg.sql         lica koja rukuju hranom i sanitarne knjižice
+ *     09_nalog_lice_cg.sql   nalog vezan za lice, šifra uz nalog
+ *     10_plan_obuke_cg.sql   godišnji plan obuke (Prilog 13)
  *
  * NIKAD ne pokreće 04_zapisi_cg.sql (počinje sa DROP TABLE) ni 05_demo_cg.sql
  * (demo podaci). Te dvije se pokreću ručno i samo kad znaš zašto.
@@ -29,6 +31,10 @@ const DOPUNE = [
     sta: 'pogledi za izvoz i dnevni pregled' },
   { fajl: '08_lica_cg.sql',   objekat: 'lice',
     sta: 'lica koja rukuju hranom i sanitarne knjižice' },
+  { fajl: '09_nalog_lice_cg.sql', objekat: 'v_nalozi',
+    sta: 'nalog za prijavu vezan za lice sa spiska' },
+  { fajl: '10_plan_obuke_cg.sql', objekat: 'plan_obuke',
+    sta: 'godišnji plan obuke kao plan, a ne kao dnevni zapis' },
 ];
 
 const veza = process.env.DATABASE_URL;

@@ -935,35 +935,66 @@ async function ciljKorisnik(req) {
 
 app.get('/api/korisnici', dozvoli('izvodjac', 'bzr'), uhvati(async (req, res) => {
   const samoMoji = !jeIzvodjac(req);
+  // `v_nalozi` spaja nalog sa licem sa spiska — odatle ime, šifra i radno
+  // mjesto. Ako pogleda još nema (09 nije primijenjen), pada se na `korisnik`.
+  const izvor = (await upit("SELECT to_regclass('public.v_nalozi') IS NOT NULL AS ima"))
+    .rows[0].ima
+    ? `SELECT id, email, ime, uloga, aktivan, mora_promeniti, poslednja_prijava,
+              sifra, radno_mjesto, lice_id, firma, firma_id FROM v_nalozi`
+    : `SELECT k.id, k.email, k.ime, k.uloga, k.aktivan, k.mora_promeniti,
+              k.poslednja_prijava, NULL::text AS sifra, NULL::text AS radno_mjesto,
+              NULL::int AS lice_id, f.naziv AS firma, k.firma_id
+         FROM korisnik k LEFT JOIN firma f ON f.id = k.firma_id`;
   const { rows } = await upit(
-    `SELECT k.id, k.email, k.ime, k.uloga, k.aktivan, k.mora_promeniti,
-            k.poslednja_prijava, f.naziv AS firma
-       FROM korisnik k LEFT JOIN firma f ON f.id = k.firma_id
-      WHERE NOT $1::bool OR (k.uloga = 'operater' AND k.firma_id = $2)
-      ORDER BY k.uloga, k.ime`,
+    `SELECT * FROM (${izvor}) v
+      WHERE NOT $1::bool OR (v.uloga = 'operater' AND v.firma_id = $2)
+      ORDER BY v.uloga, v.ime`,
     [samoMoji, req.korisnik?.firma_id || null]);
+  rows.forEach(r => { delete r.firma_id; });
   res.json(rows);
 }));
 
 /** Novi korisnik. Lozinku pravi sistem i pokazuje je JEDNOM. */
 app.post('/api/korisnici', dozvoli('izvodjac', 'bzr'), uhvati(async (req, res) => {
-  const { email, ime, uloga } = req.body;
-  if (!email || !ime || !['izvodjac','bzr','uprava','operater'].includes(uloga))
-    return res.status(400).json({ greska: 'Potrebni su email, ime i ispravna uloga.' });
+  const { email, uloga } = req.body;
+  let ime = req.body.ime;
+  if (!email || !['izvodjac','bzr','uprava','operater'].includes(uloga))
+    return res.status(400).json({ greska: 'Potrebni su email i ispravna uloga.' });
   const ne = smijeNadUlogom(req, uloga);
   if (ne) return res.status(403).json({ greska: ne });
   // Odgovorno lice ne bira firmu — nalog nastaje u njegovoj.
   const firma_id = jeIzvodjac(req) ? (req.body.firma_id || null) : req.korisnik.firma_id;
+
+  // Nalog se po pravilu veže za lice sa spiska: odatle ime i šifra kojom
+  // potpisuje zapise. Bez toga se u bazi ne vidi ko je vlasnik naloga.
+  let lice_id = req.body.lice_id ? Number(req.body.lice_id) : null;
+  let sifra = null;
+  if (lice_id) {
+    const { rows: [l] } = await upit(
+      'SELECT id, firma_id, ime_prezime, sifra FROM lice WHERE id = $1', [lice_id]);
+    if (!l) return res.status(400).json({ greska: 'To lice ne postoji na spisku.' });
+    if (!jeIzvodjac(req) && l.firma_id !== req.korisnik.firma_id)
+      return res.status(403).json({ greska: 'To lice nije iz tvoje firme.' });
+    ime = l.ime_prezime;
+    sifra = l.sifra;
+  }
+  if (!ime) return res.status(400).json({
+    greska: 'Izaberi lice sa spiska ili upiši ime i prezime.' });
+
   const lozinka = crypto.randomBytes(9).toString('base64url');
   try {
     const { rows: [k] } = await upit(
-      `INSERT INTO korisnik (firma_id, email, ime, uloga, lozinka_hash)
-       VALUES ($1, lower($2), $3, $4::uloga_t, $5) RETURNING id`,
-      [firma_id, String(email).trim(), ime, uloga, hesirajLozinku(lozinka)]);
-    res.json({ id: k.id, email, lozinka,
+      `INSERT INTO korisnik (firma_id, email, ime, uloga, lozinka_hash, lice_id)
+       VALUES ($1, lower($2), $3, $4::uloga_t, $5, $6) RETURNING id`,
+      [firma_id, String(email).trim(), ime, uloga, hesirajLozinku(lozinka), lice_id]);
+    res.json({ id: k.id, email, ime, uloga, sifra, lozinka,
       poruka: 'Zapiši lozinku — prikazuje se samo sada. Korisnik je menja pri prvoj prijavi.' });
   } catch (e) {
-    if (e.code === '23505') return res.status(409).json({ greska: 'Taj e-mail već postoji.' });
+    if (e.code === '23505') return res.status(409).json({
+      greska: /lice/.test(e.constraint || '')
+        ? 'To lice već ima nalog.' : 'Taj e-mail već postoji.' });
+    if (e.code === '42703') return res.status(500).json({
+      greska: 'Baza nema kolonu lice_id — pokreni: node alati\\dopune.mjs' });
     throw e;
   }
 }));
@@ -974,6 +1005,30 @@ app.post('/api/korisnici/:id/stanje', dozvoli('izvodjac', 'bzr'), uhvati(async (
   await upit(`UPDATE korisnik SET aktivan = $2 WHERE id = $1`,
     [req.params.id, req.body.aktivan !== false]);
   await upit(`DELETE FROM sesija_korisnika WHERE korisnik_id = $1`, [req.params.id]);
+  res.json({ ok: true });
+}));
+
+/** Veže postojeći nalog za lice sa spiska — za naloge otvorene prije spiska. */
+app.post('/api/korisnici/:id/lice', dozvoli('izvodjac', 'bzr'), uhvati(async (req, res) => {
+  const { greska, status } = await ciljKorisnik(req);
+  if (greska) return res.status(status).json({ greska });
+  const lice_id = req.body.lice_id ? Number(req.body.lice_id) : null;
+  if (lice_id) {
+    const { rows: [l] } = await upit(
+      'SELECT id, firma_id, ime_prezime, sifra FROM lice WHERE id = $1', [lice_id]);
+    if (!l) return res.status(400).json({ greska: 'To lice ne postoji na spisku.' });
+    if (!jeIzvodjac(req) && l.firma_id !== req.korisnik.firma_id)
+      return res.status(403).json({ greska: 'To lice nije iz tvoje firme.' });
+    try {
+      await upit('UPDATE korisnik SET lice_id = $2, ime = $3 WHERE id = $1',
+        [req.params.id, lice_id, l.ime_prezime]);
+    } catch (e) {
+      if (e.code === '23505') return res.status(409).json({ greska: 'To lice već ima nalog.' });
+      throw e;
+    }
+    return res.json({ ok: true, ime: l.ime_prezime, sifra: l.sifra });
+  }
+  await upit('UPDATE korisnik SET lice_id = NULL WHERE id = $1', [req.params.id]);
   res.json({ ok: true });
 }));
 
@@ -1002,7 +1057,7 @@ app.get('/api/izvestaj/:grupaId/dopuna-zbirno', iUprava, uhvati(async (req, res)
 
 // Oznaka izdanja. Mijenja se kad se doda nešto što traži restart ili SQL
 // dopunu — po njoj `alati/provjeri.mjs` vidi vrti li se stari kod.
-const IZDANJE = '2026-09-16-ljudi';
+const IZDANJE = '2026-09-17-plan';
 
 app.get('/api/zdravlje', uhvati(async (_req, res) => {
   await upit('SELECT 1');

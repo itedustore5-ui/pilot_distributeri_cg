@@ -149,12 +149,51 @@ async function ucitajJa() {
     const e = document.querySelector('#koSam');
     if (e) e.textContent = ja.ime
       ? `${ja.ime} · ${IME_ULOGE[ja.uloga] || ja.uloga}` : '';
+    dodajOdjavu();
     return ja;
   } catch (e) {
     if (e.prijava) { location.href = '/prijava.html'; return null; }
     bezVeze(true);
     return null;
   }
+}
+
+/* --------------------------------------------------------------- odjava
+   Svaka uloga mora moći da se odjavi — magacioner najviše od svih, jer
+   telefon u magacinu dijeli smjena. Dodaje se ovdje, na jednom mjestu,
+   da se ne zaboravi ni na jednoj stranici. */
+function dodajOdjavu() {
+  const nav = document.querySelector('.nav');
+  if (!nav || nav.querySelector('.odjava')) return;
+  nav.append(
+    el_('a', 'lozinka', 'promijeni lozinku', promijeniLozinku),
+    el_('a', 'odjava', 'odjava', odjava));
+}
+
+function el_(tag, klasa, tekst, radnja) {
+  const a = document.createElement(tag);
+  a.className = klasa;
+  a.href = '#';
+  a.textContent = tekst;
+  a.style.marginLeft = klasa === 'lozinka' ? 'auto' : '';
+  a.addEventListener('click', ev => { ev.preventDefault(); radnja(); });
+  return a;
+}
+
+async function odjava() {
+  try { await fetch('/api/odjava', { method: 'POST', credentials: 'same-origin' }); }
+  catch { /* i ako server ne odgovori, vodi na prijavu */ }
+  location.href = '/prijava.html';
+}
+
+async function promijeniLozinku() {
+  const nova = prompt('Nova lozinka — najmanje 10 znakova:');
+  if (nova === null) return;
+  if (String(nova).length < 10) { alert('Lozinka mora imati bar 10 znakova.'); return; }
+  try {
+    await api('/api/lozinka', { method: 'POST', body: JSON.stringify({ nova }) });
+    alert('Lozinka je promijenjena. Sljedeći put se prijavljuješ novom.');
+  } catch (e) { alert('Nije promijenjeno: ' + e.message); }
 }
 
 /* Operater ne otvara podešavanje, sledljivost ni izvoz — te krajnje tačke

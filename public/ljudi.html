@@ -87,7 +87,7 @@
     <span id="koSam" style="color:#8FA6B2"></span>
     <a data-samo="vodi" href="/tabla.html">Tabla</a>
     <a class="tu" data-samo="vodi" href="/ljudi.html">Ljudi</a>
-    <a data-samo="vodi" href="/podesavanje.html">Podešavanje</a>
+    <a data-samo="vodi" href="/podesavanje.html">Dobavljači i kupci</a>
     <a href="/promet.html">Prijem i isporuka</a>
     <a href="/zapisi.html">Dnevni zapisi</a>
     <a data-samo="vodi" href="/sledljivost.html">Sledljivost</a>
@@ -123,6 +123,7 @@ const dat = s => s ? String(s).slice(0, 10).split('-').reverse().join('.') + '.'
 
 const JEZICCI = [
   { k: 'knjizice', n: 'Sanitarne knjižice' },
+  { k: 'plan',     n: 'Godišnji plan obuke' },
   { k: 'nalozi',   n: 'Nalozi za prijavu' },
 ];
 
@@ -140,7 +141,165 @@ function crtaj() {
   [...$('#jezicci').children].forEach((b, i) =>
     b.setAttribute('aria-selected', String(JEZICCI[i].k === AKTIVAN)));
   $('#poruka').replaceChildren();
-  if (AKTIVAN === 'knjizice') knjizice(); else nalozi();
+  if (AKTIVAN === 'knjizice') knjizice();
+  else if (AKTIVAN === 'plan') planObuke();
+  else nalozi();
+}
+
+/* ==================================================== godišnji plan obuke */
+// Plan se pravi unaprijed i ostaje u evidenciji i kad se ne ostvari. Zato
+// stavka nema „obriši" nego „održano" — propuštena obuka je nalaz, ne greška
+// u unosu, i briše se samo ako je greškom upisana.
+let GODINA = new Date().getFullYear();
+
+const STANJE_PLANA = {
+  'urađeno':     ['ok',    'održano'],
+  'kasni':       ['alarm', 'kasni'],
+  'uskoro':      ['pazi',  'uskoro'],
+  'planirano':   ['tiho',  'planirano'],
+  'bez termina': ['tiho',  'bez termina'],
+};
+
+async function planObuke() {
+  $('#sadrzaj').replaceChildren(el('div', { class: 'prazno' }, 'Učitavam…'));
+  let d = { stavke: [], godine: [], godina: GODINA };
+  try { d = await api('/api/cg/plan-obuke?godina=' + GODINA); }
+  catch (e) {
+    poruka('alarm', 'Ne mogu da učitam plan', e.message
+      + (/v_plan_obuke|plan_obuke/.test(e.message)
+          ? ' — pokreni: node alati\\dopune.mjs' : ''));
+  }
+
+  const godine = [...new Set([...d.godine, GODINA, new Date().getFullYear(),
+    new Date().getFullYear() + 1])].sort((a, b) => b - a);
+
+  const forma = el('div', { class: 'kartica' },
+    el('h2', {}, 'Dodaj stavku plana'),
+    el('div', { class: 'sta' },
+      'Jedna stavka = jedna obuka za jednu grupu. Plan se pravi unaprijed; '
+      + 'kad se obuka održi, upisuje se datum, a stavka ostaje u evidenciji.'),
+    el('div', { class: 'par' },
+      el('div', {}, el('label', { for: 'pGrupa' }, 'Ciljna grupa ',
+          el('span', { class: 'sitno' }, '— ko ide')),
+        el('input', { id: 'pGrupa', placeholder: 'magacin · vozači · svi koji rukuju hranom' })),
+      el('div', {}, el('label', { for: 'pTema' }, 'Tema'),
+        el('input', { id: 'pTema', placeholder: 'Lančana hladnoća i KKT 2' }))),
+    el('div', { class: 'par3' },
+      el('div', {}, el('label', { for: 'pOblik' }, 'Oblik'),
+        el('select', { id: 'pOblik' },
+          el('option', { value: 'teorijska' }, 'teorijska'),
+          el('option', { value: 'praktična' }, 'praktična'),
+          el('option', { value: 'teorijska + praktična' }, 'teorijska + praktična'))),
+      el('div', {}, el('label', { for: 'pTermin' }, 'Planirani termin'),
+        el('input', { id: 'pTermin', type: 'date' })),
+      el('div', {}, el('label', { for: 'pSati' }, 'Trajanje (sati)'),
+        el('input', { id: 'pSati', type: 'number', step: '0.5', min: '0' }))),
+    el('div', { class: 'par' },
+      el('div', {}, el('label', { for: 'pIzvodjac' }, 'Izvođač ',
+          el('span', { class: 'sitno' }, '— ko drži obuku')),
+        el('input', { id: 'pIzvodjac' })),
+      el('div', {}, el('label', { for: 'pOdgovoran' }, 'Odgovoran u firmi'),
+        el('input', { id: 'pOdgovoran' }))),
+    el('input', { id: 'pId', type: 'hidden' }),
+    el('button', { type: 'button', class: 'dugme', onclick: sacuvajStavku }, 'Sačuvaj stavku'));
+
+  const red = s => {
+    const [z, tekst] = STANJE_PLANA[s.stanje] || ['tiho', s.stanje];
+    return el('tr', { class: s.stanje === 'kasni' ? 'alarm' : s.stanje === 'uskoro' ? 'pazi' : '' },
+      el('td', {}, el('b', {}, s.tema),
+        el('div', { style: 'color:var(--muted);font-size:12.5px' },
+          s.ciljna_grupa + (s.oblik ? ' · ' + s.oblik : ''))),
+      el('td', { class: 'd' }, dat(s.planirani_termin),
+        s.trajanje_sati ? el('div', { style: 'color:var(--muted);font-size:12px' },
+          `${Number(s.trajanje_sati)} h`) : ''),
+      el('td', {}, el('span', { class: 'znak ' + z }, tekst),
+        s.izvrseno ? el('div', { style: 'color:var(--muted);font-size:12px;margin-top:3px' },
+          'održano ' + dat(s.izvrseno)) : ''),
+      el('td', {}, s.izvodjac || '—'),
+      el('td', {},
+        s.izvrseno
+          ? el('button', { type: 'button', class: 'veza',
+              onclick: () => oznaciOdrzano(s, null) }, 'poništi')
+          : el('button', { type: 'button', class: 'veza',
+              onclick: () => oznaciOdrzano(s) }, 'održano'),
+        ' · ',
+        el('button', { type: 'button', class: 'veza',
+          onclick: () => popuniStavku(s) }, 'uredi')));
+  };
+
+  const kasne = d.stavke.filter(s => s.stanje === 'kasni').length;
+
+  $('#sadrzaj').replaceChildren(
+    el('div', { class: 'traka info' },
+      el('b', {}, 'Prilog 13 — plan, ne zapis'),
+      'Nije zakonom propisan obrazac. Služi kao dokaz da se HACCP postupci '
+      + 'primjenjuju i kontinuirano održavaju (čl. 36) i traži ga Vodič UBH. '
+      + 'Ono što se ne održi ostaje na spisku — to je pola njegove vrijednosti.'),
+    kasne ? el('div', { class: 'traka pazi' },
+      el('b', {}, `${pade(kasne, 'stavka plana', 'stavke plana', 'stavki plana')} kasni`),
+      'Termin je prošao, a obuka nije zabilježena kao održana.') : '',
+    el('div', { class: 'kartica' },
+      el('h2', {}, 'Plan za godinu'),
+      el('div', { class: 'sta' }, 'Prebacivanjem godine vidiš i prošle planove.'),
+      el('select', { style: 'max-width:180px', onchange: ev => {
+        GODINA = Number(ev.target.value); planObuke(); } },
+        ...godine.map(g => el('option',
+          { value: String(g), selected: g === GODINA ? 'selected' : false }, String(g)))),
+      d.stavke.length
+        ? el('table', {},
+            el('thead', {}, el('tr', {},
+              el('th', {}, 'Tema i grupa'), el('th', {}, 'Termin'), el('th', {}, 'Stanje'),
+              el('th', {}, 'Izvođač'), el('th', {}, ''))),
+            el('tbody', {}, ...d.stavke.map(red)))
+        : el('div', { class: 'prazno' },
+            `Za ${GODINA}. nema nijedne stavke plana. Dodaj bar jednu — obuka bez plana `
+            + 'se na kontroli čita kao improvizacija.')),
+    forma);
+}
+
+function popuniStavku(s) {
+  $('#pId').value = s.id;
+  $('#pGrupa').value = s.ciljna_grupa || '';
+  $('#pTema').value = s.tema || '';
+  $('#pOblik').value = s.oblik || 'teorijska';
+  $('#pTermin').value = (s.planirani_termin || '').slice(0, 10);
+  $('#pSati').value = s.trajanje_sati || '';
+  $('#pIzvodjac').value = s.izvodjac || '';
+  $('#pOdgovoran').value = s.odgovoran || '';
+  $('#pGrupa').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+async function sacuvajStavku() {
+  const grupa = $('#pGrupa').value.trim(), tema = $('#pTema').value.trim();
+  if (!grupa || !tema) return poruka('pazi', 'Ciljna grupa i tema su obavezne', '');
+  try {
+    await api('/api/cg/plan-obuke', { method: 'POST', body: JSON.stringify({
+      id: $('#pId').value || undefined,
+      godina: GODINA,
+      ciljna_grupa: grupa, tema,
+      oblik: $('#pOblik').value,
+      planirani_termin: $('#pTermin').value || null,
+      trajanje_sati: $('#pSati').value || null,
+      izvodjac: $('#pIzvodjac').value.trim() || null,
+      odgovoran: $('#pOdgovoran').value.trim() || null,
+    }) });
+    poruka('ok', 'Upisano', `${tema} — ${grupa}`);
+    planObuke();
+  } catch (e) { poruka('alarm', 'Nije upisano', e.message); }
+}
+
+async function oznaciOdrzano(s, datum = undefined) {
+  let d = datum;
+  if (d === undefined) {
+    d = prompt('Kog datuma je obuka održana? (GGGG-MM-DD)', danas());
+    if (d === null) return;
+  }
+  try {
+    await api(`/api/cg/plan-obuke/${s.id}/izvrseno`, { method: 'POST',
+      body: JSON.stringify({ izvrseno: d || null }) });
+    poruka('ok', d ? 'Zabilježeno kao održano' : 'Poništeno', s.tema);
+    planObuke();
+  } catch (e) { poruka('alarm', 'Nije promijenjeno', e.message); }
 }
 
 /* ==================================================== sanitarne knjižice */
@@ -250,13 +409,25 @@ async function sacuvajLice() {
 }
 
 /* ============================================================ nalozi */
+
+// Šta koja uloga stvarno vidi. Stoji ovdje da se ne pogađa iz naziva.
+const STA_VIDI = {
+  operater: 'Prijem, isporuka i dnevni zapisi — i to samo posljednja dva dana. '
+          + 'Ne vidi sledljivost, izvoz, podešavanje ni ovu stranu.',
+  bzr:      'Sve o hrani: tabla, zapisi, sledljivost, štampa, izvoz, podešavanje '
+          + 'i ovu stranu. Ne vidi banku pitanja.',
+  uprava:   'Samo zbirni izvještaj za direktora — bez imena i bez šifara. Ne unosi ništa.',
+  izvodjac: 'Sve, uključujući komandnu tablu i banku pitanja.',
+};
+
 async function nalozi() {
   $('#sadrzaj').replaceChildren(el('div', { class: 'prazno' }, 'Učitavam…'));
-  let spisak = [];
-  try { spisak = await api('/api/korisnici'); }
+  let spisak = [], lica = [];
+  try { [spisak, lica] = await Promise.all([api('/api/korisnici'), api('/api/cg/lica')]); }
   catch (e) { poruka('alarm', 'Ne mogu da učitam naloge', e.message); }
 
   const samoOperateri = JA.uloga !== 'izvodjac';
+  const bezNaloga = lica.filter(l => !spisak.some(k => k.lice_id === l.id));
 
   const forma = el('div', { class: 'kartica' },
     el('h2', {}, 'Otvori nalog'),
@@ -264,30 +435,73 @@ async function nalozi() {
       ? 'Možeš da otvoriš nalog za magacin i prevoz. Naloge odgovornog lica, uprave i '
         + 'konsultanta otvara konsultant.'
       : 'Konsultantski nalog — bira se uloga.'),
+
+    el('div', {}, el('label', { for: 'nLice' }, 'Ko dobija nalog ',
+        el('span', { class: 'sitno' }, '— sa spiska lica; odatle se uzimaju ime i šifra')),
+      el('select', { id: 'nLice', onchange: osvjeziIzbor },
+        el('option', { value: '' }, bezNaloga.length
+          ? '— izaberi lice —' : '— svi sa spiska već imaju nalog —'),
+        ...bezNaloga.map(l => el('option', { value: String(l.id) },
+          `${l.ime_prezime}${l.sifra ? ' · ' + l.sifra : ' · bez šifre'}`
+          + `${l.radno_mjesto ? ' · ' + l.radno_mjesto : ''}`)),
+        el('option', { value: 'rucno' }, '— nije na spisku, upisujem ručno —'))),
+
     el('div', { class: 'par' },
-      el('div', {}, el('label', { for: 'nEmail' }, 'E-mail'),
+      el('div', {}, el('label', { for: 'nEmail' }, 'E-mail ',
+          el('span', { class: 'sitno' }, '— njime se prijavljuje')),
         el('input', { id: 'nEmail', type: 'email', placeholder: 'ime@firma.me' })),
-      el('div', {}, el('label', { for: 'nIme' }, 'Ime i prezime'),
+      el('div', { id: 'omotIme', hidden: true },
+        el('label', { for: 'nIme' }, 'Ime i prezime'),
         el('input', { id: 'nIme', placeholder: 'Ime Prezime' }))),
-    samoOperateri ? '' : el('div', {}, el('label', { for: 'nUloga' }, 'Uloga'),
-      el('select', { id: 'nUloga' },
-        el('option', { value: 'operater' }, 'magacin i prevoz — unosi zapise'),
-        el('option', { value: 'bzr' }, 'odgovorno lice za bezbjednost hrane'),
-        el('option', { value: 'uprava' }, 'direktor — samo pogled'),
-        el('option', { value: 'izvodjac' }, 'konsultant — sve'))),
+
+    samoOperateri
+      ? el('div', {},
+          el('label', {}, 'Uloga'),
+          el('div', { style: 'padding:10px 11px;border:1px solid var(--linija);'
+            + 'background:#F2F5F6;border-radius:3px;font-size:14.5px' },
+            el('b', {}, 'magacin i prevoz'), ' — ', STA_VIDI.operater))
+      : el('div', {},
+          el('label', { for: 'nUloga' }, 'Uloga'),
+          el('select', { id: 'nUloga', onchange: osvjeziIzbor },
+            el('option', { value: 'operater' }, 'magacin i prevoz — unosi zapise'),
+            el('option', { value: 'bzr' }, 'odgovorno lice za bezbjednost hrane'),
+            el('option', { value: 'uprava' }, 'direktor — samo pogled'),
+            el('option', { value: 'izvodjac' }, 'konsultant — sve')),
+          el('div', { id: 'objasnjenje', class: 'sta', style: 'margin:8px 0 0' })),
+
     el('button', { type: 'button', class: 'dugme', onclick: otvoriNalog }, 'Otvori nalog'),
     el('div', { id: 'novaLozinka', style: 'margin-top:14px' }));
 
   const red = k => el('tr', {},
     el('td', {}, el('b', {}, k.ime),
-      el('div', { style: 'color:var(--muted);font-size:12.5px' }, k.email)),
+      el('div', { style: 'color:var(--muted);font-size:12.5px' }, k.email),
+      k.radno_mjesto
+        ? el('div', { style: 'color:var(--muted);font-size:12.5px' }, k.radno_mjesto) : ''),
+    el('td', { class: 'd' }, k.sifra
+      ? el('span', { class: 'znak ok' }, k.sifra)
+      : el('div', {},
+          el('span', { class: 'znak tiho', title: 'Nalog nije vezan za lice sa spiska' },
+            'bez šifre'),
+          bezNaloga.length
+            ? el('div', { style: 'margin-top:5px' },
+                el('select', { id: 'vez' + k.id, style: 'font-size:12.5px;padding:5px 6px' },
+                  el('option', { value: '' }, '— poveži sa —'),
+                  ...bezNaloga.map(l => el('option', { value: String(l.id) },
+                    l.ime_prezime + (l.sifra ? ` · ${l.sifra}` : '')))),
+                el('button', { type: 'button', class: 'veza',
+                  style: 'margin-top:4px;display:block',
+                  onclick: () => povezi(k) }, 'poveži'))
+            : '')),
     el('td', {}, el('span', { class: 'znak ' + (k.uloga === 'operater' ? 'tiho' : 'ok') },
-      IME_ULOGE[k.uloga] || k.uloga)),
+      IME_ULOGE[k.uloga] || k.uloga),
+      el('div', { style: 'color:var(--muted);font-size:12px;margin-top:3px;max-width:30ch' },
+        STA_VIDI[k.uloga] || '')),
     el('td', {}, k.aktivan
       ? el('span', { class: 'znak ok' }, 'radi')
-      : el('span', { class: 'znak alarm' }, 'zatvoren')),
-    el('td', { class: 'd' }, k.poslednja_prijava
-      ? dat(lokalniDatum(new Date(k.poslednja_prijava))) : 'nikad'),
+      : el('span', { class: 'znak alarm' }, 'zatvoren'),
+      el('div', { style: 'color:var(--muted);font-size:12px;margin-top:3px' },
+        k.poslednja_prijava
+          ? dat(lokalniDatum(new Date(k.poslednja_prijava))) : 'nikad se nije prijavio')),
     el('td', {},
       el('button', { type: 'button', class: 'veza',
         onclick: () => promijeni(k) }, k.aktivan ? 'zatvori' : 'otvori'),
@@ -295,40 +509,79 @@ async function nalozi() {
       el('button', { type: 'button', class: 'veza',
         onclick: () => novaLozinka(k) }, 'nova lozinka')));
 
+  const bezSifre = spisak.filter(k => !k.sifra && k.uloga === 'operater').length;
+
   $('#sadrzaj').replaceChildren(
     el('div', { class: 'traka info' },
       el('b', {}, 'Nalog nije isto što i lice sa spiska'),
       'Na spisku su svi koji rukuju hranom. Nalog dobija samo onaj ko nešto unosi u '
-      + 'aplikaciju. Dok radnik nema svoj nalog, upisuje pod tuđim imenom — a to je '
-      + 'neistinit zapis, teži od praznog dana.'),
+      + 'aplikaciju. Nalog se veže za lice sa spiska, pa se ime i šifra čitaju sa '
+      + 'jednog mjesta i ne mogu se razići.'),
+    bezSifre ? el('div', { class: 'traka pazi' },
+      el('b', {}, `${pade(bezSifre, 'nalog', 'naloga', 'naloga')} bez šifre`),
+      'Ti nalozi su otvoreni prije spiska lica. Upiši to lice na prvom jezičku sa '
+      + 'istom šifrom, pa ću ih povezati — do tada se iz baze ne vidi ko stoji iza zapisa.')
+      : '',
     forma,
     el('div', { class: 'kartica' },
       el('h2', {}, 'Postojeći nalozi'),
+      el('div', { class: 'sta' }, 'Ko se prijavljuje, čime potpisuje zapise i šta smije da vidi.'),
       spisak.length
         ? el('table', {},
             el('thead', {}, el('tr', {},
-              el('th', {}, 'Ko'), el('th', {}, 'Uloga'), el('th', {}, 'Stanje'),
-              el('th', {}, 'Posljednja prijava'), el('th', {}, ''))),
+              el('th', {}, 'Ko'), el('th', {}, 'Šifra'), el('th', {}, 'Uloga i šta vidi'),
+              el('th', {}, 'Stanje'), el('th', {}, ''))),
             el('tbody', {}, ...spisak.map(red)))
         : el('div', { class: 'prazno' }, 'Nema naloga koje smiješ da vidiš.')));
+
+  osvjeziIzbor();
+}
+
+// Ručni unos imena ima smisla samo kad lice nije sa spiska (npr. konsultant).
+function osvjeziIzbor() {
+  const lice = $('#nLice') ? $('#nLice').value : '';
+  const omot = $('#omotIme');
+  if (omot) omot.hidden = lice !== 'rucno';
+  const o = $('#objasnjenje');
+  if (o && $('#nUloga')) o.textContent = STA_VIDI[$('#nUloga').value] || '';
 }
 
 async function otvoriNalog() {
-  const email = $('#nEmail').value.trim(), ime = $('#nIme').value.trim();
-  if (!email || !ime) return poruka('pazi', 'Upiši e-mail i ime', '');
+  const email = $('#nEmail').value.trim();
+  const izbor = $('#nLice') ? $('#nLice').value : '';
+  const ime = $('#nIme') ? $('#nIme').value.trim() : '';
+  if (!email) return poruka('pazi', 'Upiši e-mail', 'Njime se korisnik prijavljuje.');
+  if (!izbor) return poruka('pazi', 'Izaberi ko dobija nalog',
+    'Ako čovjeka nema na spisku, upiši ga prvo na jezičku „Sanitarne knjižice".');
+  if (izbor === 'rucno' && !ime) return poruka('pazi', 'Upiši ime i prezime', '');
   const uloga = $('#nUloga') ? $('#nUloga').value : 'operater';
   try {
-    const d = await api('/api/korisnici', { method: 'POST',
-      body: JSON.stringify({ email, ime, uloga }) });
+    const d = await api('/api/korisnici', { method: 'POST', body: JSON.stringify({
+      email, uloga,
+      lice_id: izbor === 'rucno' ? null : Number(izbor),
+      ime: izbor === 'rucno' ? ime : undefined }) });
     $('#novaLozinka').replaceChildren(el('div', { class: 'traka alarm' },
       el('b', {}, 'Zapiši lozinku sada — više se neće prikazati.'),
+      el('div', {}, `${d.ime} · ${IME_ULOGE[d.uloga] || d.uloga}`
+        + (d.sifra ? ` · šifra ${d.sifra}` : '')),
       el('div', {}, email, ' · ', el('span', { class: 'sifra' }, d.lozinka)),
       el('div', { style: 'margin-top:4px' },
-        'Mijenja je sam pri prvoj prijavi.')));
-    $('#nEmail').value = ''; $('#nIme').value = '';
-    const spisak = $('#sadrzaj').querySelector('table');
-    if (spisak) nalozi();
+        'Lozinku mijenja sam pri prvoj prijavi. Šifra je nešto drugo — njome potpisuje zapise.')));
+    nalozi();
   } catch (e) { poruka('alarm', 'Nalog nije otvoren', e.message); }
+}
+
+// Nalog otvoren prije nego što je spisak lica postojao — veže se naknadno.
+async function povezi(k) {
+  const izbor = $('#vez' + k.id);
+  if (!izbor || !izbor.value) return poruka('pazi', 'Izaberi lice', '');
+  try {
+    const d = await api(`/api/korisnici/${k.id}/lice`, { method: 'POST',
+      body: JSON.stringify({ lice_id: Number(izbor.value) }) });
+    poruka('ok', 'Povezano',
+      `${d.ime}${d.sifra ? ' · šifra ' + d.sifra : ' — to lice nema upisanu šifru'}`);
+    nalozi();
+  } catch (e) { poruka('alarm', 'Nije povezano', e.message); }
 }
 
 async function promijeni(k) {

@@ -87,22 +87,32 @@
   <h1>Prilozi za štampu i potpis</h1>
   <div class="kontrole nestampa">
     <select id="sta">
-      <option value="IMENOVANJE">Rješenje o imenovanju odgovornog lica</option>
-      <option value="LICA">Spisak lica koja rukuju hranom (sanitarne knjižice)</option>
-      <option value="P13">Prilog 13 — Godišnji plan obuke</option>
-      <option value="P14">Prilog 14 — Evidencija prisutnih na obuci</option>
-      <option value="POTVRDA">Potvrda o osposobljenosti (po zaposlenom)</option>
-      <option value="P7">Prilog 7 — Temperature rashladnih uređaja</option>
-      <option value="P8">Prilog 8 — Temperature zamrzivača</option>
-      <option value="P3">Prilog 3 — Evidencija čišćenja</option>
-      <option value="P6">Prilog 6 — Provjera termometra</option>
-      <option value="P11">Prilog 11 — Dezinsekcija</option>
-      <option value="P12">Prilog 12 — Deratizacija</option>
-      <option value="D1">Prilog D1 — Kontrola vozila</option>
-      <option value="D3">Prilog D3 — Povlačenje / opoziv</option>
-      <option value="D4">Prilog D4 — Reklamacije</option>
-      <option value="ODSTUPANJA">Pregled odstupanja (za verifikaciju)</option>
-      <option value="ISPRAVKE">Trag ispravki zapisa</option>
+      <optgroup label="Ljudi — ko i čime je ovlašćen">
+        <option value="IMENOVANJE">Rješenje o imenovanju odgovornog lica</option>
+        <option value="LICA">Spisak lica koja rukuju hranom (sanitarne knjižice)</option>
+      </optgroup>
+      <optgroup label="Obuka — dokaz da postupci žive (nije zakonski obrazac)">
+        <option value="P13">Prilog 13 — Godišnji plan obuke</option>
+        <option value="P14">Prilog 14 — Evidencija prisutnih na obuci</option>
+        <option value="POTVRDA">Potvrda o osposobljenosti (po zaposlenom)</option>
+      </optgroup>
+      <optgroup label="Dnevni i periodični zapisi">
+        <option value="P7">Prilog 7 — Temperature rashladnih uređaja</option>
+        <option value="P8">Prilog 8 — Temperature zamrzivača</option>
+        <option value="P3">Prilog 3 — Evidencija čišćenja</option>
+        <option value="P6">Prilog 6 — Provjera termometra</option>
+        <option value="P11">Prilog 11 — Dezinsekcija</option>
+        <option value="P12">Prilog 12 — Deratizacija</option>
+        <option value="D1">Prilog D1 — Kontrola vozila</option>
+      </optgroup>
+      <optgroup label="Kad nešto pođe naopako">
+        <option value="D3">Prilog D3 — Povlačenje / opoziv</option>
+        <option value="D4">Prilog D4 — Reklamacije</option>
+      </optgroup>
+      <optgroup label="Verifikacija — šta odgovorno lice pregleda i potpisuje">
+        <option value="ODSTUPANJA">Pregled odstupanja (za verifikaciju)</option>
+        <option value="ISPRAVKE">Trag ispravki zapisa</option>
+      </optgroup>
     </select>
     <input id="grupa" value="1" title="grupa" aria-label="Grupa">
     <input id="od" type="date" aria-label="Od">
@@ -114,7 +124,7 @@
     <span id="koSam" style="color:#8FA6B2"></span>
     <a data-samo="vodi" href="/tabla.html">Tabla</a>
     <a data-samo="vodi" href="/ljudi.html">Ljudi</a>
-    <a href="/podesavanje.html">Podešavanje</a>
+    <a href="/podesavanje.html">Dobavljači i kupci</a>
     <a href="/promet.html">Prijem i isporuka</a>
     <a href="/zapisi.html">Zapisi</a>
     <a href="/sledljivost.html">Sledljivost</a>
@@ -204,6 +214,7 @@ async function pripremi() {
   try {
     if (sta === 'IMENOVANJE')     imenovanje();
     else if (sta === 'LICA')      await spisakLica();
+    else if (sta === 'P13')       await planObuke();
     else if (sta === 'P14')       await prilog14();
     else if (sta === 'POTVRDA')   await potvrde();
     else if (sta === 'ODSTUPANJA') await odstupanja();
@@ -330,6 +341,54 @@ async function spisakLica() {
     potpisi('Odgovorno lice za bezbjednost hrane', 'Izvršni direktor')));
 }
 
+// --------------------------- Prilog 13 — godišnji plan obuke
+// Štampa se iz tabele `plan_obuke`, ne iz dnevnih zapisa: plan se pravi
+// unaprijed za cijelu godinu i ima stanje, što dnevni zapis nema.
+async function planObuke() {
+  const godina = new Date($('#doo').value || danas()).getFullYear();
+  const d = await api('/api/cg/plan-obuke?godina=' + godina);
+  if (!d.stavke.length) throw new Error(
+    `Za ${godina}. nema nijedne stavke plana. Upiši plan na strani „Ljudi" → `
+    + 'Godišnji plan obuke, pa se vrati ovdje.');
+
+  const kasne = d.stavke.filter(s => s.stanje === 'kasni').length;
+  if (kasne) poruka('pazi',
+    `${pade(kasne, 'stavka', 'stavke', 'stavki')} plana je prošla bez zabilježene obuke`,
+    'Plan se štampa kakav jeste — propuštena stavka se ne briše. Ako je obuka '
+    + 'održana a nije upisana, upiši je prije štampe.');
+
+  $('#izlaz').replaceChildren(el('div', { class: 'list' },
+    ...zaglavlje(`Godišnji plan obuke za ${godina}. godinu`,
+      'Prilog 13 · Vodič za dobru higijensku praksu (UBH) · dokaz da se HACCP '
+      + 'postupci primjenjuju i održavaju (čl. 36 Zakona o bezbjednosti hrane)',
+      { oznaka: 'PRILOG 13' }),
+    el('table', { class: 'o' },
+      el('thead', {}, el('tr', {},
+        el('th', { style: 'width:5%' }, 'R. br.'),
+        el('th', { style: 'width:19%' }, 'Ciljna grupa'),
+        el('th', { style: 'width:26%' }, 'Tema'),
+        el('th', { style: 'width:13%' }, 'Oblik'),
+        el('th', { style: 'width:11%' }, 'Termin'),
+        el('th', { style: 'width:7%' },  'Sati'),
+        el('th', { style: 'width:19%' }, 'Izvođač / održano'))),
+      el('tbody', {}, ...d.stavke.map((s, i) => el('tr',
+        { class: s.stanje === 'kasni' ? 'odst' : '' },
+        el('td', { class: 'n' }, String(i + 1)),
+        el('td', {}, s.ciljna_grupa),
+        el('td', {}, s.tema),
+        el('td', {}, s.oblik || '—'),
+        el('td', { class: 'n' }, dat(s.planirani_termin)),
+        el('td', { class: 'n' }, s.trajanje_sati ? String(Number(s.trajanje_sati)) : '—'),
+        el('td', {}, s.izvodjac || '—',
+          el('div', { style: 'font-size:9px;color:#6B7A85' },
+            s.izvrseno ? 'održano ' + dat(s.izvrseno)
+                       : s.stanje === 'kasni' ? 'nije zabilježeno' : '')))))),
+    el('div', { style: 'font-size:10px;color:#6B7A85;margin-top:12px;line-height:1.6' },
+      'Stavke koje su prošle bez zabilježene obuke ostaju u planu i označene su. '
+      + 'Prisustvo se evidentira na Prilogu 14.'),
+    potpisi('Odgovorno lice za bezbjednost hrane', 'Izvršni direktor')));
+}
+
 // --------------------------------------------------------------- Prilog 14
 async function prilog14() {
   const g = $('#grupa').value || 1;
@@ -354,7 +413,8 @@ async function prilog14() {
     const prisutni = r.filter(x => x.prisustvovao);
     listovi.push(el('div', { class: 'list' },
       ...zaglavlje('Evidencija prisutnih na obučavanju',
-        'Prilog 14 · Vodič za dobru higijensku praksu (UBH) · čl. 35 Zakona o bezbjednosti hrane',
+        'Prilog 14 · Vodič za dobru higijensku praksu (UBH) · dokaz da se HACCP postupci '
+        + 'primjenjuju i održavaju (čl. 36 Zakona o bezbjednosti hrane)',
         { oznaka: 'PRILOG 14' }),
       el('table', { class: 'par', style: 'margin-bottom:12px' },
         el('tr', {}, el('th', {}, 'Naziv obuke'), el('td', {}, o.obuka)),
@@ -424,7 +484,8 @@ async function potvrde() {
     const polozio = Number(r.rezultat_provere) >= prag;
     return el('div', { class: 'list' },
       ...zaglavlje('Potvrda o osposobljenosti za rad sa hranom',
-        'čl. 35 Zakona o bezbjednosti hrane („Sl. list CG" 59/2026) · Uredba o higijeni hrane',
+        'Vodič UBH · dokaz osposobljenosti uz čl. 36 Zakona o bezbjednosti hrane '
+        + '(„Sl. list CG" 59/2026) — nije zakonom propisan obrazac',
         { oznaka: 'POTVRDA' }),
       el('table', { class: 'par' },
         el('tr', {}, el('th', {}, 'Ime i prezime'),

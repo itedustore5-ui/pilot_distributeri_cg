@@ -210,6 +210,7 @@ app.use(zapisiRuter);                         // odmah ispod
 | `06_ispravke_cg.sql` | ispravke zapisa + uloga `operater`. Ne dira podatke, bezbjedno na živoj bazi. |
 | `07_dopune_cg.sql` | oznaka naknadnog unosa, pogledi za izvoz i dnevni pregled, zabrana prazne korektivne mjere. Ne dira podatke. **Ako ikad ponovo pokreneš 06, odmah poslije pokreni i 07.** |
 | `08_lica_cg.sql` | tabela `lice` i pogled `v_lica` — ko rukuje hranom i dokad važi sanitarna knjižica. Ne dira podatke, bezbjedno na živoj bazi. |
+| `09_nalog_lice_cg.sql` | `korisnik.lice_id` + pogled `v_nalozi` — nalog za prijavu vezan za lice sa spiska, pa nalog nosi šifru i radno mjesto. Ne dira podatke. |
 
 ### Server
 
@@ -284,6 +285,11 @@ Oba posljednja čitaju `alati/klijenti.txt` (`Naziv = postgresql://...`, po jeda
     ne mjeri više znanje. Rezultate i evidenciju obuke odgovorno lice vidi normalno.
 15. **U `lice` se upisuje broj i rok sanitarne knjižice — nikad nalaz pregleda.**
     Rok je podatak o dokumentu, nalaz je podatak o zdravlju.
+16. **Nalog za prijavu i lice sa spiska su dvije stvari, spojene preko `korisnik.lice_id`.**
+    Ime i šifra se čitaju iz `lice`, ne prepisuju u `korisnik` — inače se raziđu.
+    Stari nalozi bez veze prikazuju „bez šifre" i vezuju se dugmetom „poveži".
+17. **Lozinka nije šifra.** Lozinkom se prijavljuje (`korisnik.lozinka_hash`),
+    šifrom potpisuje zapise (`lice.sifra`, polje `izvrsilac`). Ne miješati u tekstu.
 
 ---
 
