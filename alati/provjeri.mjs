@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 
 const koren = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
-const IZDANJE_OCEKIVANO = '2026-09-17-firma';
+const IZDANJE_OCEKIVANO = '2026-09-18-lozinke';
 
 const zelen = t => console.log('\x1b[32m  OK  \x1b[0m ' + t);
 const crven = t => console.log('\x1b[31m FALI \x1b[0m ' + t);
@@ -140,27 +140,49 @@ try {
 
 console.log('\n--- SERVER -------------------------------------------------');
 
+// Koji server se provjerava:
+//   node alati\\provjeri.mjs https://moja-app.onrender.com   ← Render
+//   APP_URL=... u .env                                        ← isto, trajno
+//   bez oboje                                                 ← lokalni
 let port = 3000;
+let env = '';
 try {
-  const env = await readFile(path.join(koren, '.env'), 'utf8');
+  env = await readFile(path.join(koren, '.env'), 'utf8');
   const m = env.match(/^\s*PORT\s*=\s*(\d+)/m);
   if (m) port = Number(m[1]);
 } catch { /* .env se već javio gore */ }
 
+const izEnv = (env.match(/^\s*APP_URL\s*=\s*(\S+)/m) || [])[1];
+const cilj = (process.argv[2] || izEnv || `http://localhost:${port}`).replace(/\/+$/, '');
+const naOblaku = !/localhost|127\.0\.0\.1/.test(cilj);
+
+sivo(`Provjeravam: ${cilj}`);
+if (naOblaku) sivo('Render besplatni plan spava — prvi odgovor može trajati do minut.');
+
 try {
-  const r = await fetch(`http://localhost:${port}/api/zdravlje`, { signal: AbortSignal.timeout(4000) });
+  const r = await fetch(`${cilj}/api/zdravlje`,
+    { signal: AbortSignal.timeout(naOblaku ? 70000 : 4000) });
   const z = await r.json();
   if (z.izdanje === IZDANJE_OCEKIVANO) {
-    zelen(`Server radi na portu ${port}, izdanje ${z.izdanje}`);
-    if (z.ima_lice === false) zuti('Server vidi bazu bez tabele `lice` — primijeni dopunu pa restartuj.');
+    zelen(`Aplikacija radi, izdanje ${z.izdanje}`);
+    if (z.ima_lice === false) zuti('Aplikacija vidi bazu bez tabele `lice` — primijeni dopunu pa restartuj.');
   } else {
-    crven(`Server radi, ali vrti STARI kod (izdanje: ${z.izdanje || 'bez oznake'})`);
+    crven(`Aplikacija radi, ali vrti STARI kod (izdanje: ${z.izdanje || 'bez oznake'})`);
     sivo(`Očekivano: ${IZDANJE_OCEKIVANO}`);
-    problemi.push('Zaustavi server (Ctrl+C ili taskkill /f /im node.exe) i pokreni ga ponovo.');
+    problemi.push(naOblaku
+      ? 'Na Renderu je stara verzija: git add -A && git commit -m "..." && git push, pa Render → Manual Deploy.'
+      : 'Zaustavi server (Ctrl+C ili taskkill /f /im node.exe) i pokreni ga ponovo.');
   }
 } catch {
-  zuti(`Server ne odgovara na portu ${port} — ili je ugašen, ili je na drugom portu.`);
-  sivo('Ako testiraš na Renderu, ovaj dio se ne odnosi na tebe — tamo treba git push i novi deploy.');
+  if (naOblaku) {
+    crven(`${cilj} ne odgovara.`);
+    sivo('Provjeri adresu, ili je servis na Renderu zaustavljen / build pao.');
+    problemi.push('Otvori Render → Logs i vidi zašto servis ne odgovara.');
+  } else {
+    zuti(`Lokalni server ne odgovara na portu ${port} — ili je ugašen, ili je na drugom portu.`);
+    sivo('Ako radiš na Renderu: node alati\\provjeri.mjs https://tvoja-app.onrender.com');
+    sivo('Ili upiši APP_URL=https://tvoja-app.onrender.com u .env, pa ga ne moraš kucati.');
+  }
 }
 
 console.log('\n--- ŠTA DA URADIŠ ------------------------------------------\n');

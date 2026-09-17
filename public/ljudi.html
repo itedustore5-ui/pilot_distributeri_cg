@@ -365,6 +365,9 @@ async function knjizice() {
       el('td', {}, l.radno_mjesto || '—',
         l.rukuje_hranom ? '' : el('div', { style: 'color:var(--muted);font-size:12px' },
           'ne rukuje hranom')),
+      el('td', { class: 'd' }, l.sifra
+        ? el('span', { class: 'znak ok' }, l.sifra)
+        : el('span', { class: 'znak tiho' }, 'nema')),
       el('td', {}, l.ima_nalog
         ? el('span', { class: 'znak ok' }, 'ima nalog')
         : el('span', { class: 'znak tiho' }, 'bez naloga')),
@@ -383,9 +386,9 @@ async function knjizice() {
   const tabela = spisak.length
     ? el('table', {},
         el('thead', {}, el('tr', {},
-          el('th', {}, 'Zaposleni'), el('th', {}, 'Radno mjesto'), el('th', {}, 'Pristup'),
-          el('th', {}, 'Knjižica'), el('th', {}, 'Važi do'), el('th', {}, 'Stanje'),
-          el('th', {}, ''))),
+          el('th', {}, 'Zaposleni'), el('th', {}, 'Radno mjesto'), el('th', {}, 'Šifra'),
+          el('th', {}, 'Pristup'), el('th', {}, 'Knjižica'), el('th', {}, 'Važi do'),
+          el('th', {}, 'Stanje'), el('th', {}, ''))),
         el('tbody', {}, ...spisak.map(red)))
     : el('div', { class: 'prazno' },
         'Nijedno lice još nije upisano. Dok je spisak prazan, na kontroli nema čime da se '
@@ -480,7 +483,7 @@ async function nalozi() {
         ...bezNaloga.map(l => el('option', { value: String(l.id) },
           `${l.ime_prezime}${l.sifra ? ' · ' + l.sifra : ' · bez šifre'}`
           + `${l.radno_mjesto ? ' · ' + l.radno_mjesto : ''}`)),
-        el('option', { value: 'rucno' }, '— nije na spisku, upisujem ručno —'))),
+        el('option', { value: 'rucno' }, '— nije na spisku, dodaj ga sad —'))),
 
     el('div', { class: 'par' },
       el('div', {}, el('label', { for: 'nEmail' }, 'E-mail ',
@@ -489,6 +492,19 @@ async function nalozi() {
       el('div', { id: 'omotIme', hidden: true },
         el('label', { for: 'nIme' }, 'Ime i prezime'),
         el('input', { id: 'nIme', placeholder: 'Ime Prezime' }))),
+
+    // Novi čovjek se istovremeno upisuje na spisak zaposlenih — inače bi
+    // nastao nalog bez šifre, bez knjižice i bez veze sa ičim.
+    el('div', { id: 'omotNovi', hidden: true },
+      el('div', { class: 'par' },
+        el('div', {}, el('label', { for: 'nRm' }, 'Radno mjesto'),
+          el('input', { id: 'nRm', placeholder: 'magacioner · vozač' })),
+        el('div', {}, el('label', { for: 'nSifra' }, 'Šifra za zapise ',
+            el('span', { class: 'sitno' }, '— ona sa ceduljice')),
+          el('input', { id: 'nSifra', placeholder: 'npr. M-04' }))),
+      el('div', { style: 'font-size:12.5px;color:var(--muted);margin-top:6px' },
+        'Ovaj čovjek se dodaje i na spisak zaposlenih. Rok sanitarne knjižice '
+        + 'upiši poslije, na jezičku „Svi zaposleni".')),
 
     samoOperateri
       ? el('div', {},
@@ -581,6 +597,9 @@ function osvjeziIzbor() {
   const lice = $('#nLice') ? $('#nLice').value : '';
   const omot = $('#omotIme');
   if (omot) omot.hidden = lice !== 'rucno';
+  const novi = $('#omotNovi');
+  const uloga = $('#nUloga') ? $('#nUloga').value : 'operater';
+  if (novi) novi.hidden = !(lice === 'rucno' && uloga !== 'izvodjac');
   const o = $('#objasnjenje');
   if (o && $('#nUloga')) o.textContent = STA_VIDI[$('#nUloga').value] || '';
 }
@@ -595,17 +614,21 @@ async function otvoriNalog() {
   if (izbor === 'rucno' && !ime) return poruka('pazi', 'Upiši ime i prezime', '');
   const uloga = $('#nUloga') ? $('#nUloga').value : 'operater';
   try {
+    // Ručni unos: prvo čovjek na spisak, pa nalog vezan za njega. Tako nalog
+    // odmah nosi šifru, a „Moja tabla" i knjižica imaju na šta da se okače.
+    let lice_id = izbor === 'rucno' ? null : Number(izbor);
+    if (izbor === 'rucno' && uloga !== 'izvodjac') {
+      const l = await api('/api/cg/lica', { method: 'POST', body: JSON.stringify({
+        ime_prezime: ime,
+        radno_mjesto: $('#nRm')?.value.trim() || null,
+        sifra: $('#nSifra')?.value.trim() || null,
+      }) });
+      lice_id = l.id;
+    }
     const d = await api('/api/korisnici', { method: 'POST', body: JSON.stringify({
-      email, uloga,
-      lice_id: izbor === 'rucno' ? null : Number(izbor),
-      ime: izbor === 'rucno' ? ime : undefined }) });
-    $('#novaLozinka').replaceChildren(el('div', { class: 'traka alarm' },
-      el('b', {}, 'Zapiši lozinku sada — više se neće prikazati.'),
-      el('div', {}, `${d.ime} · ${IME_ULOGE[d.uloga] || d.uloga}`
-        + (d.sifra ? ` · šifra ${d.sifra}` : '')),
-      el('div', {}, email, ' · ', el('span', { class: 'sifra' }, d.lozinka)),
-      el('div', { style: 'margin-top:4px' },
-        'Lozinku mijenja sam pri prvoj prijavi. Šifra je nešto drugo — njome potpisuje zapise.')));
+      email, uloga, lice_id,
+      ime: lice_id ? undefined : ime }) });
+    prikaziPristup({ ime: d.ime, email, sifra: d.sifra }, d.lozinka, false);
     nalozi();
   } catch (e) { poruka('alarm', 'Nalog nije otvoren', e.message); }
 }
@@ -633,12 +656,75 @@ async function promijeni(k) {
   } catch (e) { poruka('alarm', 'Nije promijenjeno', e.message); }
 }
 
+// Postojeća lozinka se ne može vidjeti — u bazi je samo heš. Može se
+// postaviti nova: ostavi prazno za nasumičnu, ili upiši svoju.
 async function novaLozinka(k) {
+  const nova = prompt(
+    `Nova lozinka za ${k.ime} (${k.email}).\n\n`
+    + 'Ostavi prazno pa će je aplikacija smisliti, ili upiši svoju '
+    + '(najmanje 10 znakova).', '');
+  if (nova === null) return;
   try {
-    const d = await api(`/api/korisnici/${k.id}/nova-lozinka`, { method: 'POST' });
-    poruka('alarm', 'Nova lozinka — zapiši je sada',
-      `${k.email} · ${d.lozinka}`);
+    const d = await api(`/api/korisnici/${k.id}/nova-lozinka`, { method: 'POST',
+      body: JSON.stringify({ nova: nova.trim() || undefined }) });
+    prikaziPristup(k, d.lozinka, d.zadata);
   } catch (e) { poruka('alarm', 'Nije promijenjeno', e.message); }
+}
+
+// Podaci za prijavu se pokazuju jednom i mogu da se odštampaju kao ceduljica.
+// Poslije ovoga ih niko — ni ti — ne može pročitati iz baze.
+function prikaziPristup(k, lozinka, zadata) {
+  const adresa = location.origin + '/prijava.html';
+  const kutija = el('div', { class: 'traka alarm', id: 'pristupBox' },
+    el('b', {}, 'Podaci za prijavu — zapiši ili odštampaj sada'),
+    el('div', { style: 'margin-top:6px;line-height:1.9' },
+      el('div', {}, 'Ko: ', el('b', {}, k.ime)),
+      el('div', {}, 'Adresa: ', el('span', { class: 'sifra' }, adresa)),
+      el('div', {}, 'E-mail: ', el('span', { class: 'sifra' }, k.email)),
+      el('div', {}, 'Lozinka: ', el('span', { class: 'sifra' }, lozinka))),
+    el('div', { style: 'margin-top:8px;font-size:12.5px' },
+      zadata
+        ? 'Lozinka je postavljena kako si upisala — ne traži se promjena pri prijavi.'
+        : 'Korisnik je mijenja pri prvoj prijavi.',
+      ' Lozinka nije isto što i šifra: lozinkom se prijavljuje, šifrom potpisuje zapise.'),
+    el('button', { type: 'button', class: 'dugme', style: 'margin-top:10px',
+      onclick: () => stampajCeduljicu(k, lozinka, adresa) }, 'Štampaj ceduljicu'));
+  $('#poruka').replaceChildren(kutija);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function stampajCeduljicu(k, lozinka, adresa) {
+  const w = window.open('', '_blank', 'width=520,height=640');
+  if (!w) return poruka('pazi', 'Pregledač je blokirao novi prozor',
+    'Dozvoli iskačuće prozore za ovu adresu, pa pokušaj ponovo.');
+  const red = (n, v) => `<tr><th>${n}</th><td>${v}</td></tr>`;
+  w.document.write(`<!DOCTYPE html><html lang="sr-Latn-ME"><head><meta charset="utf-8">
+    <title>Pristup — ${k.ime}</title><style>
+      body{font-family:system-ui,Arial,sans-serif;padding:18mm;color:#131A1F}
+      h1{font-size:15px;margin:0 0 3px}
+      p.o{font-size:11px;color:#6B7A85;margin:0 0 14px}
+      table{border-collapse:collapse;font-size:13px;width:100%}
+      th,td{border:1px solid #3A4A56;padding:7px 9px;text-align:left}
+      th{background:#F2F5F6;width:34%}
+      td{font-family:ui-monospace,Consolas,monospace}
+      .n{font-size:10.5px;color:#6B7A85;margin-top:14px;line-height:1.6}
+    </style></head><body>
+    <h1>Podaci za prijavu u evidenciju</h1>
+    <p class="o">Čuvaj kao lozinku. Ne lijepi na vrata magacina.</p>
+    <table>
+      ${red('Ime i prezime', k.ime)}
+      ${red('Adresa', adresa)}
+      ${red('E-mail', k.email)}
+      ${red('Lozinka', lozinka)}
+      ${red('Šifra za zapise', k.sifra || '—')}
+    </table>
+    <div class="n">Lozinkom se prijavljuješ u aplikaciju.<br>
+      Šifrom se potpisuju zapisi — nju aplikacija upisuje sama.<br>
+      Ako zaboraviš lozinku, javi se odgovornom licu; nova se pravi za minut.</div>
+    </body></html>`);
+  w.document.close();
+  w.focus();
+  w.print();
 }
 </script>
 </body>

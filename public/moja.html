@@ -78,11 +78,22 @@
   <div class="omot">
     <span class="oznaka">Tvoj nalog</span>
     <h1>Moja tabla</h1>
+    <!-- Isti meni kao na ostalim stranama. Ranije je ovdje bio skraćen, pa se
+         odgovornom licu pri svakom otvaranju „Moje table" gubila polovina
+         menija i izgledalo je kao da je aplikacija nešto izgubila.
+         `data-samo="vodi"` sklanja veze magacinu i vozaču — to radi veza.js. -->
     <nav class="nav">
       <span id="koSam" style="color:#8FA6B2"></span>
       <a class="tu" href="/moja.html">Moja tabla</a>
+      <a data-samo="vodi" href="/tabla.html">Tabla</a>
+      <a data-samo="vodi" href="/ljudi.html">Ljudi</a>
+      <a data-samo="vodi" href="/podesavanje.html">Dobavljači i kupci</a>
       <a href="/promet.html">Prijem i isporuka</a>
       <a href="/zapisi.html">Dnevni zapisi</a>
+      <a data-samo="vodi" href="/sledljivost.html">Sledljivost</a>
+      <a data-samo="vodi" href="/prilozi.html">Štampa priloga</a>
+      <a data-samo="vodi" href="/izvoz.html">Izvoz</a>
+      <a data-samo="konsultant" href="/admin.html">Komandna tabla</a>
     </nav>
   </div>
 </header>
@@ -157,11 +168,13 @@ const dat = s => s ? String(s).slice(0, 10).split('-').reverse().join('.') + '.'
           el('dd', {}, d.lice.knjizica_broj || '—', d.lice.knjizica_vazi_do
             ? ` · važi do ${dat(d.lice.knjizica_vazi_do)}` : ''),
         ] : []))));
-  } else {
+  } else if (!['operater', 'vozac'].includes(ja.uloga)) {
+    // Ovo je poruka za onoga ko može da je riješi. Magacioner i vozač ne mogu
+    // — njima bi bila samo šum na ekranu koji svaki dan gledaju.
     dijelovi.push(el('div', { class: 'traka pazi' },
       el('b', {}, 'Tvoj nalog nije vezan za spisak zaposlenih'),
-      'Zato ovdje ne piše tvoja šifra ni rok knjižice. Odgovorno lice to veže na '
-      + 'strani „Ljudi" → Nalozi → poveži.'));
+      'Zato ovdje ne piše šifra ni rok knjižice. Veže se na strani '
+      + '„Ljudi" → Nalozi → poveži.'));
   }
 
   // --- šta danas fali (svima korisno, magacioneru najviše)

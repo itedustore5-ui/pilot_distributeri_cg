@@ -928,12 +928,33 @@ const jeIzvodjac = req => req.korisnik?.uloga === 'izvodjac';
 // Odgovorno lice otvara naloge ISPOD sebe: magacin i vozače. Nikad sebi ravan.
 const NALOZI_ISPOD = ['operater', 'vozac'];
 
-function smijeNadUlogom(req, uloga) {
+// Kojoj firmi korisnik pripada. Nalog napravljen ranije (ili ručno u Supabase)
+// često ima `firma_id = NULL`. Po pravilu „jedan klijent = jedna baza" tada
+// postoji tačno jedna firma i to je ta — pa se nalog ne odbija zbog nečega
+// što je greška u postavci, a ne ovlašćenje. Kad firmi ima više, NULL ostaje
+// NULL i odbijanje je opravdano.
+let _jedinaFirma;                       // undefined = još nije provjereno
+async function jedinaFirmaId() {
+  if (_jedinaFirma !== undefined) return _jedinaFirma;
+  try {
+    const r = await upit('SELECT id FROM firma ORDER BY id LIMIT 2');
+    _jedinaFirma = r.rows.length === 1 ? r.rows[0].id : null;
+  } catch { _jedinaFirma = null; }
+  return _jedinaFirma;
+}
+
+async function firmaKorisnika(req) {
+  if (req.korisnik?.firma_id) return req.korisnik.firma_id;
+  return await jedinaFirmaId();
+}
+
+async function smijeNadUlogom(req, uloga) {
   if (jeIzvodjac(req)) return null;
   if (!NALOZI_ISPOD.includes(uloga))
     return 'Odgovorno lice smije da otvori samo nalog za magacin ili za vozača.';
-  if (!req.korisnik?.firma_id)
-    return 'Tvoj nalog nije vezan za firmu, pa ne može da otvara naloge.';
+  if (!(await firmaKorisnika(req)))
+    return 'Tvoj nalog nije vezan za firmu, a u bazi ih ima više od jedne — '
+         + 'konsultant mora da veže nalog za firmu.';
   return null;
 }
 
@@ -943,7 +964,8 @@ async function ciljKorisnik(req) {
     `SELECT id, uloga, firma_id FROM korisnik WHERE id = $1`, [req.params.id]);
   if (!c) return { greska: 'Korisnik ne postoji.', status: 404 };
   if (jeIzvodjac(req)) return { cilj: c };
-  if (!NALOZI_ISPOD.includes(c.uloga) || c.firma_id !== req.korisnik?.firma_id)
+  const moja = await firmaKorisnika(req);
+  if (!NALOZI_ISPOD.includes(c.uloga) || (c.firma_id || moja) !== moja)
     return { greska: 'Nad tim nalogom nemaš ovlašćenje.', status: 403 };
   return { cilj: c };
 }
@@ -964,7 +986,7 @@ app.get('/api/korisnici', dozvoli('izvodjac', 'bzr'), uhvati(async (req, res) =>
     `SELECT * FROM (${izvor}) v
       WHERE NOT $1::bool OR (v.uloga IN ('operater','vozac') AND v.firma_id = $2)
       ORDER BY v.uloga, v.ime`,
-    [samoMoji, req.korisnik?.firma_id || null]);
+    [samoMoji, await firmaKorisnika(req)]);
   rows.forEach(r => { delete r.firma_id; });
   res.json(rows);
 }));
@@ -975,10 +997,12 @@ app.post('/api/korisnici', dozvoli('izvodjac', 'bzr'), uhvati(async (req, res) =
   let ime = req.body.ime;
   if (!email || !['izvodjac','bzr','uprava','operater','vozac'].includes(uloga))
     return res.status(400).json({ greska: 'Potrebni su email i ispravna uloga.' });
-  const ne = smijeNadUlogom(req, uloga);
+  const ne = await smijeNadUlogom(req, uloga);
   if (ne) return res.status(403).json({ greska: ne });
   // Odgovorno lice ne bira firmu — nalog nastaje u njegovoj.
-  const firma_id = jeIzvodjac(req) ? (req.body.firma_id || null) : req.korisnik.firma_id;
+  const firma_id = jeIzvodjac(req)
+    ? (req.body.firma_id || null)
+    : await firmaKorisnika(req);
 
   // Nalog se po pravilu veže za lice sa spiska: odatle ime i šifra kojom
   // potpisuje zapise. Bez toga se u bazi ne vidi ko je vlasnik naloga.
@@ -988,7 +1012,7 @@ app.post('/api/korisnici', dozvoli('izvodjac', 'bzr'), uhvati(async (req, res) =
     const { rows: [l] } = await upit(
       'SELECT id, firma_id, ime_prezime, sifra FROM lice WHERE id = $1', [lice_id]);
     if (!l) return res.status(400).json({ greska: 'To lice ne postoji na spisku.' });
-    if (!jeIzvodjac(req) && l.firma_id !== req.korisnik.firma_id)
+    if (!jeIzvodjac(req) && l.firma_id !== await firmaKorisnika(req))
       return res.status(403).json({ greska: 'To lice nije iz tvoje firme.' });
     ime = l.ime_prezime;
     sifra = l.sifra;
@@ -1032,7 +1056,7 @@ app.post('/api/korisnici/:id/lice', dozvoli('izvodjac', 'bzr'), uhvati(async (re
     const { rows: [l] } = await upit(
       'SELECT id, firma_id, ime_prezime, sifra FROM lice WHERE id = $1', [lice_id]);
     if (!l) return res.status(400).json({ greska: 'To lice ne postoji na spisku.' });
-    if (!jeIzvodjac(req) && l.firma_id !== req.korisnik.firma_id)
+    if (!jeIzvodjac(req) && l.firma_id !== await firmaKorisnika(req))
       return res.status(403).json({ greska: 'To lice nije iz tvoje firme.' });
     try {
       await upit('UPDATE korisnik SET lice_id = $2, ime = $3 WHERE id = $1',
@@ -1050,13 +1074,21 @@ app.post('/api/korisnici/:id/lice', dozvoli('izvodjac', 'bzr'), uhvati(async (re
 app.post('/api/korisnici/:id/nova-lozinka', dozvoli('izvodjac', 'bzr'), uhvati(async (req, res) => {
   const { greska, status } = await ciljKorisnik(req);
   if (greska) return res.status(status).json({ greska });
-  const lozinka = crypto.randomBytes(9).toString('base64url');
+  // Postojeća lozinka se NE može pročitati — u bazi stoji samo heš i to je
+  // namjerno. Može se postaviti nova: ili zadata (`nova`), ili nasumična.
+  // Zadata se ne traži da se mijenja pri prvoj prijavi — magacioner koji je
+  // dobio ceduljicu ne treba da izmišlja novu lozinku na telefonu u hladnjači.
+  const zadata = String(req.body?.nova || '').trim();
+  if (zadata && zadata.length < 10)
+    return res.status(400).json({ greska: 'Lozinka mora imati bar 10 znakova.' });
+  const lozinka = zadata || crypto.randomBytes(9).toString('base64url');
   const r = await upit(
-    `UPDATE korisnik SET lozinka_hash = $2, mora_promeniti = TRUE WHERE id = $1`,
-    [req.params.id, hesirajLozinku(lozinka)]);
+    `UPDATE korisnik SET lozinka_hash = $2, mora_promeniti = $3 WHERE id = $1`,
+    [req.params.id, hesirajLozinku(lozinka), !zadata]);
   if (!r.rowCount) return res.status(404).json({ greska: 'Korisnik ne postoji.' });
   await upit(`DELETE FROM sesija_korisnika WHERE korisnik_id = $1`, [req.params.id]);
-  res.json({ lozinka, poruka: 'Nova lozinka. Prikazuje se samo sada.' });
+  res.json({ lozinka, zadata: !!zadata,
+    poruka: 'Nova lozinka. Prikazuje se samo sada.' });
 }));
 
 /** Zbirna dopunska obuka — bez šifara, da je uprava sme videti. */
@@ -1072,7 +1104,7 @@ app.get('/api/izvestaj/:grupaId/dopuna-zbirno', iUprava, uhvati(async (req, res)
 
 // Oznaka izdanja. Mijenja se kad se doda nešto što traži restart ili SQL
 // dopunu — po njoj `alati/provjeri.mjs` vidi vrti li se stari kod.
-const IZDANJE = '2026-09-17-moje';
+const IZDANJE = '2026-09-18-lozinke';
 
 app.get('/api/zdravlje', uhvati(async (_req, res) => {
   await upit('SELECT 1');
