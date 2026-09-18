@@ -82,10 +82,24 @@ export async function generisiFormu(k, nacrtId, talasRedni, sifra) {
     );
 
     if (stavke.length === 0) {
-      throw new Error(
-        `Porodica #${p.porodica_id} nema nijednu upotrebljivu stavku. ` +
-        `Najverovatnije čeka potvrdu klijenta (zahteva_potvrdu = true).`
-      );
+      // Poruka koju čita čovjek, ne programer: kaže KOJA porodica, KOLIKO
+      // stavki čeka i GDJE se to potvrđuje. Stavka koja tvrdi kritičnu
+      // granicu se namjerno ne servira dok je klijent ne potvrdi — dok se to
+      // ne uradi, provjera znanja se ne može otvoriti nijednom šifrom.
+      const { rows: [po] } = await k.query(
+        'SELECT oznaka, konstrukt FROM porodica WHERE id = $1', [p.porodica_id]);
+      const { rows: [c] } = await k.query(
+        `SELECT count(*)::int n FROM stavka
+          WHERE porodica_id = $1 AND aktivna AND zahteva_potvrdu AND potvrdio IS NULL`,
+        [p.porodica_id]);
+      const e = new Error(
+        `Pitanja iz grupe „${po?.oznaka || '#' + p.porodica_id}"`
+        + `${po?.konstrukt ? ' (' + po.konstrukt + ')' : ''} čekaju potvrdu`
+        + `${c?.n ? ` — ${c.n} ${c.n === 1 ? 'stavka' : 'stavki'}` : ''}. `
+        + 'Dok ih konsultant ne potvrdi na komandnoj tabli (Banka pitanja → '
+        + '„Potvrdi stavke"), provjera znanja se ne može otvoriti.');
+      e.cekaPotvrdu = true;
+      throw e;
     }
 
     const indeks = p.tip === 'sidro'

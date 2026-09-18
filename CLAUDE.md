@@ -354,6 +354,20 @@ Oba posljednja čitaju `alati/klijenti.txt` (`Naziv = postgresql://...`, po jeda
     koje padne pregledač ne prikaže nikako — klik izgleda kao pokvareno
     dugme, a server je vratio 401, 409 ili 500. `preuzmi()` u `izvoz.html`
     pročita odgovor, ispiše tačnu grešku, i tek onda snimi fajl.
+32. **U provjeru znanja se ulazi ŠIFROM SA SPISKA ZAPOSLENIH.** `lice.sifra` i
+    `ucesnik.sifra` su isti broj sa ceduljice. Ako šifra nije u `ucesnik`,
+    `/api/sesija` je traži u `lice` iste firme i upisuje čovjeka sam, u
+    trenutku ulaska. Nema drugog spiska za održavanje. Ime se prepisuje samo
+    kad `grupa.cuva_imena` — inače mjerenje ostaje anonimno, ali onda i
+    **Prilog 14 izlazi bez imena prisutnih.**
+33. **Tri stvari obaraju provjeru znanja, nijedna se ne vidi iz aplikacije:**
+    (a) `import { generisiFormu } from './forma.js'` u `server/index.js` —
+    bez njega `/api/sesija` puca sa „generisiFormu is not defined"; bio je
+    izgubljen pri odvajanju crnogorske verzije i vidio se samo u logu;
+    (b) stavke banke koje čekaju potvrdu (`zahteva_potvrdu` i `potvrdio IS
+    NULL`) — jedna nepotvrđena porodica obara CIJELU provjeru, potvrđuje se
+    na komandnoj tabli; (c) nema otvorenog termina (`talas.otvoren`).
+    Sve troje provjerava `alati/provjeri.mjs`.
 
 ---
 

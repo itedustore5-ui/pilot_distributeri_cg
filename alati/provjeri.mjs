@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 
 const koren = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
-const IZDANJE_OCEKIVANO = '2026-09-22-izvoz-otporan';
+const IZDANJE_OCEKIVANO = '2026-09-23-provjera-sifra';
 
 const zelen = t => console.log('\x1b[32m  OK  \x1b[0m ' + t);
 const crven = t => console.log('\x1b[31m FALI \x1b[0m ' + t);
@@ -99,6 +99,31 @@ if (!veza) {
     if (t.ima10) zelen('10_plan_obuke_cg.sql primijenjen — godišnji plan obuke');
     else { crven('10_plan_obuke_cg.sql NIJE primijenjen — Prilog 13 nema odakle da se puni');
            problemi.push('node alati\\dopune.mjs'); }
+    // Provjera znanja: tri stvari koje je obaraju, a nijedna se ne vidi iz aplikacije.
+    const { rows: [pz] } = await k.query(`
+      SELECT (SELECT count(*)::int FROM stavka
+               WHERE aktivna AND zahteva_potvrdu AND potvrdio IS NULL) AS ceka,
+             (SELECT count(*)::int FROM talas WHERE otvoren)           AS otvorenih,
+             (SELECT count(*)::int FROM lice WHERE COALESCE(sifra,'') <> '') AS sa_sifrom`);
+    if (pz.ceka) {
+      crven(`${pz.ceka} stavki banke čeka potvrdu — PROVJERA ZNANJA SE NE MOŽE OTVORITI`);
+      problemi.push('Komandna tabla → Banka pitanja → „Potvrdi stavke".');
+    } else zelen('Banka pitanja je potvrđena — provjera znanja se može otvoriti');
+    if (pz.otvorenih) zelen(`Otvorenih termina provjere: ${pz.otvorenih}`);
+    else zuti('Nema nijednog otvorenog termina — zaposleni nemaju gdje da uđu u provjeru.');
+    if (pz.sa_sifrom) zelen(`${pz.sa_sifrom} zaposlenih ima šifru za ulazak u provjeru`);
+    else zuti('Nijedan zaposleni nema šifru — upiši ih u Ljudi → Svi zaposleni.');
+    // Grupa koja ne čuva imena daje anonimno mjerenje — dobro za mjerenje,
+    // loše za Prilog 14, koji je spisak prisutnih SA IMENIMA.
+    const { rows: an } = await k.query(
+      `SELECT naziv FROM grupa WHERE NOT cuva_imena
+          AND EXISTS (SELECT 1 FROM talas t WHERE t.grupa_id = grupa.id)`);
+    if (an.length) {
+      zuti(`${an.length} grupa ne čuva imena — Prilog 14 će izaći bez imena prisutnih`);
+      sivo('   ' + an.map(g => g.naziv).join(' · '));
+      sivo('   Za evidenciju obuke uključi „čuva imena"; za anonimno mjerenje ostavi ovako.');
+    }
+
     const { rows: u } = await k.query(
       `SELECT uloga, count(*)::int n FROM korisnik WHERE aktivan GROUP BY uloga ORDER BY uloga`);
     if (!u.length) { crven('Nema nijednog aktivnog naloga'); problemi.push('node alati\\prvi-korisnik.mjs ...'); }

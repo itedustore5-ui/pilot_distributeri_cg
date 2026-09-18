@@ -6,6 +6,10 @@ import 'dotenv/config';
 import { pool, upit } from './db.js';
 import { zapisiRuter } from './zapisi.js';
 import { proveriPriPokretanju } from './licenca.js';
+// Bez ovog import-a `/api/sesija` puca sa „generisiFormu is not defined“ i
+// provjera znanja se NE MOŽE otvoriti ni sa jednom šifrom. Izgubljen je pri
+// odvajanju crnogorske verzije i nije se vidio nigdje osim u logu servera.
+import { generisiFormu } from './forma.js';
 import { hesirajLozinku, proveriLozinku, napraviSesiju, nadjiSesiju,
          obrisiSesiju, dozvoli, kolacicSesije } from './auth.js';
 
@@ -70,18 +74,53 @@ app.post('/api/sesija', uhvati(async (req, res) => {
     await k.query('BEGIN');
 
     const { rows: [talas] } = await k.query(
-      `SELECT w.id, w.redni, w.otvoren, k.id AS grupa_id, k.nacrt_id
+      `SELECT w.id, w.redni, w.otvoren, k.id AS grupa_id, k.nacrt_id,
+              k.firma_id, k.cuva_imena
          FROM talas w JOIN grupa k ON k.id = w.grupa_id
         WHERE w.id = $1`, [talasId]
     );
     if (!talas) { await k.query('ROLLBACK'); return res.status(404).json({ greska: 'Talas ne postoji.' }); }
     if (!talas.otvoren) { await k.query('ROLLBACK'); return res.status(403).json({ greska: 'Ovaj termin merenja nije otvoren.' }); }
 
-    const { rows: [ucesnik] } = await k.query(
+    let { rows: [ucesnik] } = await k.query(
       `SELECT id FROM ucesnik WHERE grupa_id = $1 AND sifra = $2`,
       [talas.grupa_id, sifra]
     );
-    if (!ucesnik) { await k.query('ROLLBACK'); return res.status(404).json({ greska: 'Šifra nije prepoznata. Proveri sa nadzornikom.' }); }
+
+    // Šifra sa spiska zaposlenih vrijedi i ovdje.
+    //
+    // Do sada su postojala DVA spiska ljudi: `lice` (zaposleni, šifra kojom se
+    // potpisuju zapisi) i `ucesnik` (spisak za mjerenje znanja). Čovjek je imao
+    // šifru M-01 na ceduljici, kucao je M-01 i dobijao „šifra nije prepoznata",
+    // jer njega u `ucesnik` nikad niko nije upisao. Nije bila greška u šifri
+    // nego u tome što spiskovi nisu povezani.
+    //
+    // Sada: ako šifra nije u `ucesnik`, traži se među zaposlenima ISTE firme.
+    // Ako se nađe, čovjek se upisuje sam, u trenutku ulaska. Nema drugog
+    // spiska za održavanje i nema prepisivanja imena pred svaku obuku.
+    if (!ucesnik) {
+      const { rows: [l] } = await k.query(
+        `SELECT id, ime_prezime, radno_mjesto FROM lice
+          WHERE firma_id = $1 AND upper(btrim(sifra)) = $2 AND COALESCE(aktivan, TRUE)`,
+        [talas.firma_id, sifra]);
+      if (l) {
+        // Ime se prepisuje SAMO ako grupa čuva imena. Kad ne čuva, mjerenje je
+        // anonimno i ime bi ga poništilo — ostaje šifra i radno mjesto.
+        const { rows: [novi] } = await k.query(
+          `INSERT INTO ucesnik (grupa_id, sifra, ime_prezime, radno_mesto)
+           VALUES ($1,$2,$3,$4)
+           ON CONFLICT (grupa_id, sifra) DO UPDATE SET sifra = EXCLUDED.sifra
+           RETURNING id`,
+          [talas.grupa_id, sifra,
+           talas.cuva_imena ? l.ime_prezime : null, l.radno_mjesto || null]);
+        ucesnik = novi;
+      }
+    }
+
+    if (!ucesnik) { await k.query('ROLLBACK'); return res.status(404).json({
+      greska: 'Ova šifra nije ni na spisku zaposlenih ni na spisku za provjeru. '
+            + 'Provjeri je na ceduljici, ili je odgovorno lice upiše u Ljudi → '
+            + 'Svi zaposleni.' }); }
 
     const { rows: [postoji] } = await k.query(
       `SELECT id, predata FROM sesija WHERE talas_id = $1 AND ucesnik_id = $2`,
@@ -134,6 +173,9 @@ app.post('/api/sesija', uhvati(async (req, res) => {
     res.json({ sesija_id: sesijaId, ukupno: pitanja.length, pitanja });
   } catch (e) {
     await k.query('ROLLBACK').catch(() => {});
+    // Banka koja čeka potvrdu nije kvar aplikacije nego nedovršeno podešavanje.
+    // Zaposlenom ispred ekrana se ne pokazuje greška servera nego šta da uradi.
+    if (e.cekaPotvrdu) return res.status(409).json({ greska: e.message });
     throw e;
   } finally {
     k.release();
@@ -1126,7 +1168,7 @@ app.get('/api/izvestaj/:grupaId/dopuna-zbirno', iUprava, uhvati(async (req, res)
 
 // Oznaka izdanja. Mijenja se kad se doda nešto što traži restart ili SQL
 // dopunu — po njoj `alati/provjeri.mjs` vidi vrti li se stari kod.
-const IZDANJE = '2026-09-22-izvoz-otporan';
+const IZDANJE = '2026-09-23-provjera-sifra';
 
 app.get('/api/zdravlje', uhvati(async (_req, res) => {
   await upit('SELECT 1');
