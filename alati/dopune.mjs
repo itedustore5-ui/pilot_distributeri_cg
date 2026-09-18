@@ -16,6 +16,7 @@
  *     12_ko_je_unio_cg.sql   nalog koji je unio zapis (uneo_korisnik_id)
  *     13_uloga_vozac_cg.sql  vozač kao zasebna uloga
  *     14_moje_liste_cg.sql   pogledi nose uneo_korisnik_id („vidim samo svoje")
+ *     15_trag_ispravki_cg.sql  pogled v_trag_ispravki (dio 06 koji često ne prođe)
  *
  * NIKAD ne pokreće 04_zapisi_cg.sql (počinje sa DROP TABLE) ni 05_demo_cg.sql
  * (demo podaci). Te dvije se pokreću ručno i samo kad znaš zašto.
@@ -50,6 +51,8 @@ const DOPUNE = [
     sta: 'vozač kao zasebna uloga' },
   { fajl: '14_moje_liste_cg.sql', kolona: ['v_sledljivost_napred', 'uneo_korisnik_id'],
     sta: 'pogledi nose nalog koji je unio — „vidim samo svoje"' },
+  { fajl: '15_trag_ispravki_cg.sql', objekat: 'v_trag_ispravki',
+    sta: 'trag ispravki — bez njega cio izvoz pada sa „relation does not exist"' },
 ];
 
 const veza = process.env.DATABASE_URL;

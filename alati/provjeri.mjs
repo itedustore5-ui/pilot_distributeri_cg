@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 
 const koren = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
-const IZDANJE_OCEKIVANO = '2026-09-21-zaglavlje-izvoz';
+const IZDANJE_OCEKIVANO = '2026-09-22-izvoz-otporan';
 
 const zelen = t => console.log('\x1b[32m  OK  \x1b[0m ' + t);
 const crven = t => console.log('\x1b[31m FALI \x1b[0m ' + t);
@@ -72,6 +72,11 @@ if (!veza) {
       `SELECT EXISTS (SELECT 1 FROM information_schema.columns
                        WHERE table_schema='public' AND table_name='v_sledljivost_napred'
                          AND column_name='uneo_korisnik_id') AS ima14`);
+    const { rows: [t15] } = await k.query(
+      `SELECT to_regclass('public.v_trag_ispravki') IS NOT NULL AS ima15`);
+    if (t15.ima15) zelen('15_trag_ispravki_cg.sql primijenjen — trag ispravki postoji');
+    else { crven('Nema pogleda `v_trag_ispravki` — IZVOZ NE RADI, pada na svakoj rubrici');
+           problemi.push('node alati\\dopune.mjs'); }
     if (c14.ima14) zelen('14_moje_liste_cg.sql primijenjen — svako vidi svoje unose');
     else { crven('14_moje_liste_cg.sql NIJE primijenjen — vozač vidi tuđe isporuke');
            problemi.push('node alati\\dopune.mjs'); }

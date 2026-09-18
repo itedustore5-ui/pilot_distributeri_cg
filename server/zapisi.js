@@ -914,10 +914,27 @@ function csv(redovi) {
   return '﻿' + linije.join('\r\n') + '\r\n';
 }
 
+/**
+ * Postoji li izvor u bazi. Jedna dopuna koja nije prošla obarala je CIO
+ * izvoz greškom `relation "..." does not exist` — i klijent je ostajao bez
+ * svih podataka zbog jednog pogleda. Sada se nedostajući izvor prijavi
+ * poimence, a sve ostalo se izveze normalno.
+ */
+async function postoji(izvor) {
+  return (await upit('SELECT to_regclass($1) IS NOT NULL AS ima',
+    ['public.' + izvor])).rows[0].ima;
+}
+
 zapisiRuter.get('/api/cg/izvoz', vodi, uhvati(async (req, res) => {
   const f = firmaZa(req);
   const spisak = [];
   for (const [k, def] of Object.entries(IZVOZI)) {
+    if (!await postoji(def.izvor)) {
+      spisak.push({ sta: k, opis: def.opis, redova: 0, nedostaje: def.izvor,
+        razlog: `U bazi nema ${def.izvor} — SQL dopuna nije prošla. `
+              + 'Pokreni: node alati\\dopune.mjs' });
+      continue;
+    }
     const n = (await upit(
       `SELECT count(*)::int n FROM ${def.izvor} WHERE firma_id = $1`, [f])).rows[0].n;
     spisak.push({ sta: k, opis: def.opis, redova: n });
@@ -937,7 +954,16 @@ zapisiRuter.get('/api/cg/izvoz/sve.json', vodi, uhvati(async (req, res) => {
   const f = firmaZa(req);
   const sve = { izvezeno: new Date().toISOString(), firma: null, podaci: {} };
   sve.firma = (await upit('SELECT * FROM firma WHERE id = $1', [f])).rows[0] || null;
+  // Nedostajući izvor se ne prećutkuje i ne obara izvoz — upisuje se u fajl,
+  // da se poslije zna da ta rubrika nije bila prazna nego nedostupna.
+  sve.nedostaje = [];
   for (const [k, def] of Object.entries(IZVOZI)) {
+    if (!await postoji(def.izvor)) {
+      sve.nedostaje.push({ sta: k, izvor: def.izvor,
+        razlog: 'SQL dopuna nije primijenjena na ovoj bazi' });
+      sve.podaci[k] = null;
+      continue;
+    }
     sve.podaci[k] = (await upit(
       `SELECT * FROM ${def.izvor} WHERE firma_id = $1 ORDER BY ${def.red}`, [f])).rows;
   }
@@ -957,6 +983,10 @@ zapisiRuter.get('/api/cg/izvoz/:sta', vodi, uhvati(async (req, res) => {
   } else {
     const def = IZVOZI[sta];
     if (!def) return res.status(404).json({ greska: `Nepoznat izvoz: ${sta}` });
+    if (!await postoji(def.izvor)) return res.status(409).json({
+      greska: `U bazi nema ${def.izvor}, pa se „${sta}" ne može izvesti. `
+            + 'Nije greška u podacima — SQL dopuna nije prošla. '
+            + 'Pokreni: node alati\\dopune.mjs, pa pokušaj ponovo.' });
     // Ime izvora je iz našeg spiska, nikad iz adrese — bez toga bi ovo bila rupa.
     redovi = (await upit(
       `SELECT * FROM ${def.izvor} WHERE firma_id = $1 ORDER BY ${def.red}`, [f])).rows;

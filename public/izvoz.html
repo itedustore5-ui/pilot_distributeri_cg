@@ -213,17 +213,34 @@ async function preuzmi(put, dugme) {
         el('th', {}, 'Šta'), el('th', {}, 'Redova'), el('th', {}, ''))),
       el('tbody', {}, ...spisak.map(s => el('tr',
         { class: s.redova ? '' : 'prazan' },
-        el('td', {}, el('b', {}, s.sta), el('span', { class: 'opis' }, s.opis)),
-        el('td', { class: 'n' }, String(s.redova)),
+        el('td', {}, el('b', {}, s.sta), el('span', { class: 'opis' }, s.opis),
+          // Rubrika kojoj fali pogled u bazi nije prazna — nedostupna je.
+          // Razlika je bitna: prazno se rješava unosom, ovo dopunom baze.
+          s.nedostaje
+            ? el('span', { class: 'opis', style: 'color:var(--signal)' }, s.razlog)
+            : ''),
+        el('td', { class: 'n' }, s.nedostaje ? '—' : String(s.redova)),
         el('td', { style: 'text-align:right' },
-          s.redova
-            ? el('button', { class: 'dugme tiho', type: 'button',
-                onclick: ev => preuzmi(`/api/cg/izvoz/${s.sta}.csv`, ev.currentTarget) }, 'CSV')
-            : el('button', { class: 'dugme tiho', type: 'button', disabled: 'disabled',
-                title: 'U bazi nema nijednog reda ove vrste' }, 'prazno')))))));
+          s.nedostaje
+            ? el('button', { class: 'dugme tiho', type: 'button', disabled: 'disabled',
+                title: s.razlog }, 'fali u bazi')
+            : s.redova
+              ? el('button', { class: 'dugme tiho', type: 'button',
+                  onclick: ev => preuzmi(`/api/cg/izvoz/${s.sta}.csv`, ev.currentTarget) }, 'CSV')
+              : el('button', { class: 'dugme tiho', type: 'button', disabled: 'disabled',
+                  title: 'U bazi nema nijednog reda ove vrste' }, 'prazno')))))));
+
+    const fale = spisak.filter(s => s.nedostaje);
+    if (fale.length) poruka('pazi',
+      `${pade(fale.length, 'rubrika nije', 'rubrike nisu', 'rubrika nije')} dostupna`,
+      'U bazi nema: ' + fale.map(s => s.nedostaje).join(', ')
+      + '. To nije greška u podacima nego SQL dopuna koja nije prošla. '
+      + 'Pokreni node alati\\dopune.mjs, pa osvježi stranicu. '
+      + 'Sve ostalo se u međuvremenu izvozi normalno.');
 
     const ukupno = spisak.reduce((z, s) => z + s.redova, 0);
-    if (!ukupno) poruka('alarm', 'Nema šta da se izveze',
+    if (fale.length) { /* poruka o dopuni je važnija, ostaje na ekranu */ }
+    else if (!ukupno) poruka('alarm', 'Nema šta da se izveze',
       'Aplikacija je odgovorila, ali u bazi nema nijednog reda. Ako ovo nije '
       + 'nova firma, gledaš pogrešnu bazu ili unos ne stiže do servera.');
     else poruka('info', `Ukupno ${pade(ukupno, 'red', 'reda', 'redova')}`,

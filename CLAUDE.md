@@ -216,6 +216,7 @@ app.use(zapisiRuter);                         // odmah ispod
 | `12_ko_je_unio_cg.sql` | `uneo_korisnik_id` na `zapis`, `prijem`, `isporuka` — nalog sa kojeg je zapis poslat. Ne dira podatke. |
 | `13_uloga_vozac_cg.sql` | `uloga_t` dobija `vozac`. **`ALTER TYPE ... ADD VALUE` mora biti samostalna naredba.** |
 | `14_moje_liste_cg.sql` | `v_sledljivost_nazad` i `v_sledljivost_napred` nose `uneo_korisnik_id` — bez toga filter „vidim samo svoje" nema po čemu da radi. `v_izvoz_sledljivost` se obnavlja **nepromijenjen** (njegove kolone su zaglavlja CSV-a). |
+| `15_trag_ispravki_cg.sql` | pogled `v_trag_ispravki`, izvučen iz 06. **Bez njega cio izvoz pada** sa `relation "v_trag_ispravki" does not exist` — 06 se ne pokreće ponovo, jer bi vratio poglede na stariju verziju od 07 i 14. Ne dira podatke. |
 
 ### Server
 
@@ -342,6 +343,17 @@ Oba posljednja čitaju `alati/klijenti.txt` (`Naziv = postgresql://...`, po jeda
 29. **Šifre za potpisivanje stoje na jezičku „Godišnji plan obuke"**, kao
     spisak ime · radno mjesto · šifra sa dugmetom za štampu. Tamo se dijele —
     uz obuku. Mijenjaju se i dalje na „Svi zaposleni".
+30. **Izvoz ne smije da padne zbog jednog nedostajućeg pogleda.** Prije svakog
+    upita `postoji()` u `zapisi.js` provjeri `to_regclass`. Nedostajući izvor
+    se prijavi poimence (spisak dobije `nedostaje` i `razlog`, `sve.json`
+    dobije listu `nedostaje`, pojedinačni CSV vraća 409 sa komandom za
+    popravku) — sve ostalo se izveze normalno. Ranije je jedan pogled koji
+    nije ušao rušio CIO izvoz sa `relation ... does not exist`, a klijent je
+    ostajao bez svih podataka.
+31. **Preuzimanje ide kroz `fetch`, ne kroz `<a href>`.** Obično preuzimanje
+    koje padne pregledač ne prikaže nikako — klik izgleda kao pokvareno
+    dugme, a server je vratio 401, 409 ili 500. `preuzmi()` u `izvoz.html`
+    pročita odgovor, ispiše tačnu grešku, i tek onda snimi fajl.
 
 ---
 
