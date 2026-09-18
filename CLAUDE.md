@@ -313,8 +313,11 @@ Oba posljednja čitaju `alati/klijenti.txt` (`Naziv = postgresql://...`, po jeda
     tabla" broji po nalogu; stari zapisi bez naloga se i dalje traže po imenu.
 23. **`potpis` u `/api/ja` je IME, ne šifra.** Zapis čita inspektor, a „M-01"
     mu ne znači ništa. Pregledač i server rade isti račun — ne smiju se razići.
-24. **Pet uloga, ne četiri.** `operater` = magacin (prijem + P3/P7/P8/D1),
-    `vozac` = prevoz (samo isporuka + D1). Obje su „na terenu": prozor od
+24. **Pet uloga, ne četiri.** `operater` = magacin (prijem + P3/P7/P8),
+    `vozac` = prevoz (isporuka + D1 kontrola vozila). **D1 vidi SAMO vozač** —
+    zapis o vozilu potpisuje onaj ko je stajao pored njega; `MOJI` u
+    `zapisi.html` više ne daje magacinu vozačke obrasce. Firma bez ijednog
+    vozačkog naloga: D1 unosi odgovorno lice. Obje su „na terenu": prozor od
     jednog dana, potpis zaključan, `NA_TERENU` u `zapisi.js`. Firma u kojoj
     isti čovjek prima i vozi koristi `operater` — podjela se ne nameće.
 25. **Obrazac nosi `uloga` u `obrasci-cg.json`.** Po njoj se filtriraju pločice:
@@ -324,6 +327,21 @@ Oba posljednja čitaju `alati/klijenti.txt` (`Naziv = postgresql://...`, po jeda
     `samoMojeIsporuke()` u `zapisi.js`. Filtrira se po `uneo_korisnik_id`, a
     za stare zapise bez naloga po potpisu, da čovjeku ne nestane istorija.
     Odgovorno lice i konsultant vide sve i to se nigdje ne ograničava.
+27. **Radno mjesto nije uloga.** `lice.radno_mjesto` je podatak o čovjeku i ide
+    na štampu; `korisnik.uloga` odlučuje KOJU TABLU vidi. Mogu se razići i
+    razišli su se u praksi (magacioner sa ulogom `vozac` → vozačka tabla).
+    Zato: uloga se predlaže iz radnog mjesta pri otvaranju naloga,
+    neslaganje se ispisuje, a `POST /api/korisnici/:id/uloga` je ispravlja
+    bez zatvaranja naloga. Promjena uloge briše sesiju — stara nosi staru ulogu.
+28. **Lozinka se nigdje ne prikazuje osim jednom, pri postavljanju.** U bazi je
+    samo heš. Na ekranu naloga stoji STANJE (`privremena` / `svoja` /
+    `postavljena`), nikad vrijednost. Traženo je dvaput i dvaput odbijeno —
+    ako se ikad popusti, svaki potpis u aplikaciji gubi vrijednost.
+    Najmanja dužina je **10 znakova**, provjerava se i u pregledaču i na
+    serveru, i piše na tri mjesta u interfejsu.
+29. **Šifre za potpisivanje stoje na jezičku „Godišnji plan obuke"**, kao
+    spisak ime · radno mjesto · šifra sa dugmetom za štampu. Tamo se dijele —
+    uz obuku. Mijenjaju se i dalje na „Svi zaposleni".
 
 ---
 

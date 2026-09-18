@@ -102,7 +102,6 @@
   <span class="oznaka">Zakon o bezbjednosti hrane „Sl. list CG" 59/2026 · čl. 35 i 36</span>
   <h1>Dnevni zapisi</h1>
   <nav class="nav">
-    <span id="koSam" style="color:#8FA6B2"></span>
     <a data-samo="vodi" href="/tabla.html">Tabla</a>
     <a data-samo="vodi" href="/ljudi.html">Ljudi</a>
     <a data-samo="vodi" href="/podesavanje.html">Dobavljači i kupci</a>
@@ -170,9 +169,11 @@ const poruka = (vrsta, naslov, tekst) => {
   } catch (e) { poruka('alarm', 'Ne mogu da učitam stranicu', e.message); return; }
 
   DEF = await (await fetch('/obrasci-cg.json')).json();
-  // Svako vidi obrasce svog posla. Magacin radi i svoje i vozačke (utovar je
-  // njegov posao kad nema vozača); vozač vidi samo svoje. Odgovorno lice sve.
-  const MOJI = { operater: ['operater', 'vozac'], vozac: ['vozac'] };
+  // Svako vidi obrasce SVOG posla i ničije tuđe. Kontrola vozila prije utovara
+  // (D1) je vozačev zapis — on stoji pored vozila i on ga potpisuje. Magacin je
+  // ne vidi, jer zapis koji potpisuje čovjek koji nije bio tamo ništa ne dokazuje.
+  // Firma bez nijednog vozačkog naloga: D1 unosi odgovorno lice sa svoje table.
+  const MOJI = { operater: ['operater'], vozac: ['vozac'] };
   const dozvoljeni = MOJI[JA?.uloga] || null;
   const rucni = DEF.obrasci.filter(o =>
     !o.generisan && (!dozvoljeni || dozvoljeni.includes(o.uloga)));
@@ -278,10 +279,13 @@ function nacrtajFormu() {
 
   // Ko ovo obično unosi, i šta znači kad unosi neko drugi. Bez ovoga je
   // obrazac tehnički ispravan, a niko u firmi ne zna čiji je posao.
-  const MOJA = { operater: 'magacin i prevoz', bzr: 'odgovorno lice',
+  // Ko OBIČNO unosi ovaj obrazac čita se iz same definicije obrasca, ne
+  // pogađa se iz uloge onoga ko gleda. D1 je vozačev, P3/P7/P8 magacinovi,
+  // ostalo je posao odgovornog lica.
+  const MOJA = { operater: 'magacin', vozac: 'vozač', bzr: 'odgovorno lice',
                  izvodjac: 'konsultant', uprava: 'direktor' };
-  const trazena = o.uloga === 'operater' ? 'magacin i prevoz' : 'odgovorno lice';
-  if (JA && MOJA[JA.uloga] !== trazena && JA.uloga !== 'operater')
+  const trazena = MOJA[o.uloga] || 'odgovorno lice';
+  if (JA && MOJA[JA.uloga] !== trazena)
     k.append(el('div', { class: 'traka info' },
       el('b', {}, `Ovaj obrazac obično unosi: ${trazena}`),
       'Ti ga smiješ unijeti umjesto njega — u polju „Izvršilac" izaberi ko je '

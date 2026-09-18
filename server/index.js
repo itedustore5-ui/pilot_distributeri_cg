@@ -1126,7 +1126,7 @@ app.get('/api/izvestaj/:grupaId/dopuna-zbirno', iUprava, uhvati(async (req, res)
 
 // Oznaka izdanja. Mijenja se kad se doda nešto što traži restart ili SQL
 // dopunu — po njoj `alati/provjeri.mjs` vidi vrti li se stari kod.
-const IZDANJE = '2026-09-19-uloge';
+const IZDANJE = '2026-09-21-zaglavlje-izvoz';
 
 app.get('/api/zdravlje', uhvati(async (_req, res) => {
   await upit('SELECT 1');

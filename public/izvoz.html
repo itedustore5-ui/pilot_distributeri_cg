@@ -44,11 +44,13 @@
   td .opis{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
   tr.prazan td{color:var(--muted)}
 
-  a.dugme{display:inline-block;font-size:13px;font-weight:600;padding:7px 14px;border-radius:3px;
-    background:var(--cold);color:#fff;text-decoration:none;white-space:nowrap}
-  a.dugme.tiho{background:transparent;color:var(--cold);border:1px solid var(--cold)}
-  a.dugme.veliko{font-size:14px;padding:11px 20px}
-  a.dugme[aria-disabled="true"]{background:#D6DEE1;color:#8B989F;pointer-events:none}
+  .dugme{display:inline-block;font-size:13px;font-weight:600;padding:7px 14px;border-radius:3px;
+    background:var(--cold);color:#fff;text-decoration:none;white-space:nowrap;
+    border:1px solid var(--cold);font-family:var(--sans);cursor:pointer}
+  .dugme.tiho{background:transparent;color:var(--cold)}
+  .dugme.veliko{font-size:14px;padding:11px 20px}
+  .dugme:disabled{background:#D6DEE1;color:#8B989F;border-color:#C3CDD1;cursor:default}
+  .dugme.radi{opacity:.6;cursor:progress}
 
   .prazno{color:var(--muted);text-align:center;padding:28px 0;font-size:13.5px}
   .sitno{font-size:12.5px;color:var(--muted)}
@@ -60,7 +62,6 @@
   <span class="oznaka">Član 7 ugovora · podaci su klijentovi</span>
   <h1>Izvoz podataka</h1>
   <nav class="nav">
-    <span id="koSam" style="color:#8FA6B2"></span>
     <a data-samo="vodi" href="/tabla.html">Tabla</a>
     <a data-samo="vodi" href="/ljudi.html">Ljudi</a>
     <a href="/podesavanje.html">Dobavljači i kupci</a>
@@ -87,14 +88,22 @@
       Imena zaposlenih, brojevi sanitarnih knjižica, imena i telefoni kupaca.
       Čuvati kao i svaki drugi spisak zaposlenih — ne slati nezaštićeno.
     </p>
-    <a class="dugme veliko" href="/api/cg/izvoz/sve.json">Preuzmi sve (JSON)</a>
+    <button class="dugme veliko" type="button"
+      onclick="preuzmi('/api/cg/izvoz/sve.json', this)">Preuzmi sve (JSON)</button>
   </div>
 
   <div class="kartica">
     <h2>Pojedinačno, za Excel</h2>
     <p class="uvod">
-      CSV sa tačka-zarezom i UTF-8 oznakom — otvara se dvoklikom u Excelu, bez
-      čarobnjaka za uvoz i bez raspadnutih slova č, ć, š, ž, đ.
+      <b style="display:block;margin-bottom:4px">CSV jeste Excel fajl</b>
+      Nema posebnog dugmeta za .xlsx i ne treba ga. Ovi fajlovi imaju
+      tačka-zarez i UTF-8 oznaku, pa se <b>otvaraju dvoklikom u Excelu</b> —
+      bez čarobnjaka za uvoz i bez raspadnutih slova č, ć, š, ž, đ. Kad ih
+      otvorite, Excel nudi „Sačuvaj kao .xlsx" ako vam treba baš taj format.
+      <span style="display:block;margin-top:6px;color:var(--muted)">
+      Ako vam se sve slijepi u jednu kolonu, u Windowsu je decimalni razdjelnik
+      podešen na tačku — otvorite Excel pa Podaci → Iz teksta i izaberite
+      tačka-zarez.</span>
     </p>
     <div id="spisak"><div class="prazno">Učitavam…</div></div>
   </div>
@@ -138,6 +147,60 @@ const poruka = (v, n, t) => $('#poruka').replaceChildren(
   el('div', { class: 'traka ' + v }, el('b', {}, n), t || ''));
 
 
+/* Preuzimanje ide kroz fetch, ne kroz običan <a href>.
+   Razlog: kad obično preuzimanje padne — istekla sesija, uspavan Render,
+   greška u upitu — pregledač NIŠTA ne prikaže. Klik izgleda kao da ništa
+   ne radi, a server je zapravo vratio 401 ili 500. Ovako se odgovor
+   pročita, greška se ispiše čovjeku, a fajl se snimi tek ako je stvarno
+   stigao. */
+async function preuzmi(put, dugme) {
+  const staro = dugme ? dugme.textContent : '';
+  if (dugme) { dugme.disabled = true; dugme.classList.add('radi'); dugme.textContent = 'čekam…'; }
+  poruka('info', 'Preuzimam…',
+    'Ako aplikacija spava, prvi odgovor može trajati do minut.');
+  try {
+    const r = await fetch(put, { credentials: 'same-origin' });
+
+    if (r.status === 401) return poruka('alarm', 'Sesija je istekla',
+      'Prijavi se ponovo, pa pokušaj opet. Podaci su netaknuti.');
+    if (r.status === 403) return poruka('alarm', 'Ovaj nalog ne smije da izvozi',
+      'Izvoz otvaraju odgovorno lice i konsultant. Magacin i vozač ga ne vide.');
+    if (!r.ok) {
+      const t = await r.text().catch(() => '');
+      let d = t;
+      try { d = JSON.parse(t).greska || t; } catch { /* nije JSON */ }
+      return poruka('alarm', `Server je odbio preuzimanje (${r.status})`,
+        d ? String(d).slice(0, 400) : 'Bez objašnjenja. Pogledaj Render → Logs.');
+    }
+
+    const blob = await r.blob();
+    if (!blob.size) return poruka('alarm', 'Fajl je stigao prazan',
+      'Upit je prošao, ali nije vratio nijedan bajt. Javi ovo konsultantu.');
+
+    // Ime fajla server šalje u zaglavlju; ako ga nema, pravimo ga sami.
+    const zag = r.headers.get('Content-Disposition') || '';
+    const ime = (zag.match(/filename="?([^";]+)"?/) || [])[1]
+      || put.split('/').pop() || 'izvoz';
+
+    const u = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = u; a.download = ime;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(u), 4000);
+
+    poruka('ok', 'Preuzeto: ' + ime,
+      `${(blob.size / 1024).toFixed(1)} kB. Traži ga u fascikli „Preuzimanja".`);
+  } catch (e) {
+    poruka('alarm', 'Nema veze sa serverom',
+      'Preuzimanje nije ni krenulo. Provjeri internet, pa pokušaj ponovo. '
+      + (e.message || ''));
+  } finally {
+    if (dugme) { dugme.disabled = false; dugme.classList.remove('radi'); dugme.textContent = staro; }
+  }
+}
+
 (async () => {
   const ja = await ucitajJa();
   if (ja) sakrijNedozvoljeno(ja);
@@ -154,16 +217,21 @@ const poruka = (v, n, t) => $('#poruka').replaceChildren(
         el('td', { class: 'n' }, String(s.redova)),
         el('td', { style: 'text-align:right' },
           s.redova
-            ? el('a', { class: 'dugme tiho', href: `/api/cg/izvoz/${s.sta}.csv` }, 'CSV')
-            : el('a', { class: 'dugme tiho', 'aria-disabled': 'true', href: '#' }, 'prazno')))))));
+            ? el('button', { class: 'dugme tiho', type: 'button',
+                onclick: ev => preuzmi(`/api/cg/izvoz/${s.sta}.csv`, ev.currentTarget) }, 'CSV')
+            : el('button', { class: 'dugme tiho', type: 'button', disabled: 'disabled',
+                title: 'U bazi nema nijednog reda ove vrste' }, 'prazno')))))));
+
     const ukupno = spisak.reduce((z, s) => z + s.redova, 0);
     if (!ukupno) poruka('alarm', 'Nema šta da se izveze',
-      'U bazi nema nijednog zapisa. Ako ovo nije nova firma, provjeri da li se '
-      + 'gleda prava baza i da li unos uopšte stiže.');
+      'Aplikacija je odgovorila, ali u bazi nema nijednog reda. Ako ovo nije '
+      + 'nova firma, gledaš pogrešnu bazu ili unos ne stiže do servera.');
     else poruka('info', `Ukupno ${pade(ukupno, 'red', 'reda', 'redova')}`,
-      'Preuzimanje ne mijenja ništa u bazi i može se ponoviti koliko god puta treba.');
+      'Preuzimanje ne mijenja ništa u bazi i ponavlja se koliko god puta treba.');
   } catch (e) {
     $('#spisak').replaceChildren(el('div', { class: 'prazno' }, e.message));
+    poruka('alarm', 'Spisak se nije učitao',
+      'Bez njega nema ni dugmadi za CSV. Tačan tekst greške: ' + (e.message || '—'));
   }
 })();
 </script>

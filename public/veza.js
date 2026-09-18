@@ -193,9 +193,7 @@ async function ucitajJa() {
   try {
     const ja = await api('/api/ja');
     MOJ_POTPIS = ja.potpis || ja.ime || '';
-    const e = document.querySelector('#koSam');
-    if (e) e.textContent = ja.ime
-      ? `${ja.ime} · ${IME_ULOGE[ja.uloga] || ja.uloga}` : '';
+    zaglavljeKoSam(ja);
     dodajOdjavu();
     return ja;
   } catch (e) {
@@ -204,6 +202,62 @@ async function ucitajJa() {
     return null;
   }
 }
+
+/* ------------------------------------------------------------- zaglavlje
+   Ime i uloga su stajali u redu menija i jeli mjesto stavkama — na užem
+   ekranu bi meni prelomio u dva reda i pola stavki bi nestalo ispod.
+   Sada su izdvojeni u gornji desni ugao zaglavlja, kao potpis: vidi se ko
+   je prijavljen, a meni dobija cio red za sebe.
+
+   Stoji ovdje, a ne po stranicama, jer zaglavlje ima svaka stranica i
+   razišlo bi se prvim sljedećim dodavanjem stavke u meni. */
+function zaglavljeKoSam(ja) {
+  const zag = document.querySelector('header');
+  if (!zag) return;
+
+  // Stari `#koSam` je bio unutar `.nav`. Ako ga stranica još ima, sklanja se.
+  document.querySelector('#koSam')?.remove();
+
+  if (!document.querySelector('#stilKoSam')) {
+    const s = document.createElement('style');
+    s.id = 'stilKoSam';
+    s.textContent = `
+      header{position:relative}
+      .koSam{position:absolute; top:14px; right:16px; text-align:right;
+        line-height:1.3; max-width:42%}
+      .koSam b{display:block; font-size:14px; font-weight:600; color:#fff}
+      .koSam span{display:block; font-size:11px; letter-spacing:.06em;
+        text-transform:uppercase; color:#8FA6B2; margin-top:2px}
+      @media (max-width:640px){
+        .koSam{position:static; text-align:left; max-width:none; margin-top:6px}
+        .koSam b{font-size:13.5px}
+      }`;
+    document.head.append(s);
+  }
+
+  const stari = zag.querySelector('.koSam');
+  if (stari) stari.remove();
+  if (!ja?.ime) return;
+
+  const blok = document.createElement('div');
+  blok.className = 'koSam';
+  const ime = document.createElement('b');
+  ime.textContent = ja.ime;
+  const uloga = document.createElement('span');
+  uloga.textContent = PUNA_ULOGA[ja.uloga] || IME_ULOGE[ja.uloga] || ja.uloga;
+  blok.append(ime, uloga);
+  zag.append(blok);
+}
+
+// Kratko ime uloge ide na dugmad i u tabele; ovdje, u zaglavlju, stoji puno —
+// jer ga čita i onaj ko prvi put sjeda za aplikaciju.
+const PUNA_ULOGA = {
+  bzr:      'odgovorno lice za bezbjednost hrane',
+  uprava:   'direktor — samo pogled',
+  operater: 'magacin',
+  vozac:    'vozač',
+  izvodjac: 'konsultant',
+};
 
 /* --------------------------------------------------------------- odjava
    Svaka uloga mora moći da se odjavi — magacioner najviše od svih, jer
